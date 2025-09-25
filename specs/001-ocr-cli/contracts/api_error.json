@@ -1,0 +1,20 @@
+{
+  "title": "Mistral AI OCR API Error Response Contract",
+  "description": "Contract for error responses from Mistral AI API",
+  "type": "object",
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Error message"
+    },
+    "code": {
+      "type": "integer",
+      "description": "Error code (optional)"
+    },
+    "details": {
+      "type": "string",
+      "description": "Additional error details (optional)"
+    }
+  }
+}

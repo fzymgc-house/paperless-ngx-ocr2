@@ -1,0 +1,39 @@
+{
+  "title": "Mistral AI File Upload Response Contract",
+  "description": "Contract for file upload response from Mistral AI Files API",
+  "type": "object",
+  "required": ["id", "object", "bytes", "created_at", "filename", "purpose"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the uploaded file"
+    },
+    "object": {
+      "type": "string",
+      "enum": ["file"],
+      "description": "Object type"
+    },
+    "bytes": {
+      "type": "integer",
+      "description": "File size in bytes"
+    },
+    "created_at": {
+      "type": "integer",
+      "description": "Unix timestamp when file was created"
+    },
+    "filename": {
+      "type": "string",
+      "description": "Original filename"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["ocr"],
+      "description": "Purpose of the file"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["uploaded", "processing", "processed", "error"],
+      "description": "Processing status of the file"
+    }
+  }
+}

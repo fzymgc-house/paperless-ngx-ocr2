@@ -1,0 +1,19 @@
+{
+  "title": "Mistral AI File Upload Request Contract",
+  "description": "Contract for uploading files to Mistral AI Files API",
+  "type": "object",
+  "required": ["file"],
+  "properties": {
+    "file": {
+      "type": "string",
+      "format": "binary",
+      "description": "The file to upload (multipart/form-data)"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["ocr"],
+      "description": "Purpose of the file upload",
+      "default": "ocr"
+    }
+  }
+}

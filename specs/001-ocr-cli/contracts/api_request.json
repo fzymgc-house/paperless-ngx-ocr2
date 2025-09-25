@@ -1,0 +1,13 @@
+{
+  "title": "Mistral AI OCR API Request Contract",
+  "description": "Contract for OCR processing request to Mistral AI API",
+  "type": "object",
+  "required": ["file_id"],
+  "properties": {
+    "file_id": {
+      "type": "string",
+      "description": "ID of the file uploaded via /v1/files endpoint",
+      "minLength": 1
+    }
+  }
+}
