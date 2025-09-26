@@ -1,0 +1,27 @@
+# Rustfmt configuration for paperless-ngx-ocr2
+# Based on constitutional requirement for consistent formatting
+# Using stable Rust features only
+
+# Edition and basic settings
+edition = "2021"
+
+# Code layout
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+use_small_heuristics = "Default"
+
+# Imports (stable features only)
+reorder_imports = true
+
+# Formatting options
+remove_nested_parens = true
+use_field_init_shorthand = true
+force_explicit_abi = true
+
+# Error handling
+use_try_shorthand = false
+
+# Miscellaneous
+merge_derives = true

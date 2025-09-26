@@ -2,6 +2,7 @@
 
 ## Installation
 
+### Option 1: From Source
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -14,9 +15,25 @@ cargo build --release
 cargo install --path .
 ```
 
+### Option 2: Using Docker
+```bash
+# Pull the multi-architecture image
+docker pull ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest
+
+# Run directly
+docker run --rm -v $(pwd):/workspace ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest --file /workspace/document.pdf
+
+# Create an alias for easier usage
+alias paperless-ocr='docker run --rm -v $(pwd):/workspace ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest'
+```
+
 ## Configuration
 
+### Native Installation
 Create a configuration file at `~/.config/paperless-ngx-ocr2/config.toml`:
+
+### Docker Usage
+For Docker usage, mount a config file or use environment variables:
 
 ```toml
 api_key = "your_mistral_ai_api_key_here"
@@ -40,10 +57,17 @@ log_level = "info"
 
 ### Use custom API key and base URL
 ```bash
+# Native
 ./target/release/paperless-ngx-ocr2 \
   --file document.pdf \
   --api-key "your_api_key" \
   --api-base-url "https://api.mistral.ai"
+
+# Docker
+docker run --rm -v $(pwd):/workspace \
+  ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest \
+  --file /workspace/document.pdf \
+  --api-key "your_api_key"
 ```
 
 ### Get JSON output

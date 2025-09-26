@@ -1,0 +1,30 @@
+# Custom Dockerfile example for paperless-ngx-ocr2
+# This example shows how to create a custom Docker image with additional tools
+
+FROM ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest
+
+# Add additional tools
+RUN apk add --no-cache \
+    curl \
+    jq \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Create a non-root user for security
+RUN addgroup -g 1000 ocruser && \
+    adduser -D -s /bin/bash -u 1000 -G ocruser ocruser
+
+# Create working directory
+WORKDIR /workspace
+
+# Change ownership of workspace to ocruser
+RUN chown -R ocruser:ocruser /workspace
+
+# Switch to non-root user
+USER ocruser
+
+# Set custom entrypoint
+ENTRYPOINT ["paperless-ngx-ocr2"]
+
+# Default command
+CMD ["--help"]

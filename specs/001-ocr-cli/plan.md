@@ -1,6 +1,7 @@
+
 # Implementation Plan: OCR CLI Tool
 
-**Branch**: `001-ocr-cli` | **Date**: 2025-01-23 | **Spec**: [link]
+**Branch**: `001-ocr-cli` | **Date**: 2025-01-23 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-ocr-cli/spec.md`
 
 ## Execution Flow (/plan command scope)
@@ -30,18 +31,42 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction. Supports TOML configuration, 12-factor app principles, and provides both human-readable and JSON output formats.
+OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction. Supports TOML configuration, 12-factor app principles, and provides both human-readable and JSON output formats. Uses Rust for cross-platform CLI with official Mistral AI Files and OCR APIs. Includes multi-architecture container image for deployment.
+
+## Updated Functional Requirements (Post-Clarification)
+Based on clarification session, the following additional requirements have been added:
+
+### Configuration Management
+- **FR-021**: System MUST support --config flag for custom configuration file path
+- **FR-022**: System MUST search for config files in: custom path (if specified), current directory, then ~/.config/paperless-ngx-ocr2/
+- **Configuration Priority**: CLI args → Environment variables → .env file → TOML config → defaults
+
+### Error Handling & Resilience
+- **FR-018**: System MUST implement retry logic with exponential backoff for rate limit errors (3 attempts max)
+- **FR-019**: System MUST detect and reject password-protected PDFs with validation error
+- **FR-020**: System MUST return warning message for files with no extractable text (exit code 0)
+
+### Shell Completion Support
+- **FR-023**: System MUST support generating shell completion scripts via --completions flag
+- **FR-024**: System MUST support completion generation for bash, zsh, fish, and PowerShell shells
+- **FR-025**: System MUST make --file argument optional when generating completions
+- **FR-026**: System MUST output completion scripts to stdout for easy redirection to files
+
+### Dependencies
+- **dotenv**: Added for .env file support in configuration loading
+- **clap_complete**: Added for shell completion generation support
 
 ## Technical Context
 **Language/Version**: Rust 1.80 (stable)  
-**Primary Dependencies**: clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml  
+**Primary Dependencies**: clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml, dotenv, clap_complete  
 **Storage**: N/A (stateless CLI tool)  
 **Testing**: cargo test with assert_cmd, predicates  
-**Target Platform**: macOS, Linux (cross-platform CLI)  
+**Target Platform**: macOS, Linux (cross-platform CLI)
 **Project Type**: single (CLI application)  
 **Performance Goals**: <5s for typical PDF/image processing  
-**Constraints**: <50MB file size limit, network timeout handling, memory efficient streaming  
+**Constraints**: <50MB file size limit, network timeout handling, memory efficient streaming, retry logic for rate limits, password-protected PDF detection  
 **Scale/Scope**: Single-user CLI tool, batch processing capability
+**Containerization**: Must have a multi-architecture container image
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -56,6 +81,8 @@ OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction
 - ✅ Error handling with anyhow/thiserror (no unwrap in CLI paths)
 - ✅ Input validation for file paths and API credentials
 - ✅ Network error handling with timeouts
+- ✅ Retry logic with exponential backoff for rate limits
+- ✅ Password-protected PDF detection and rejection
 
 ### Test-First Discipline
 - ✅ CLI behavior tests with assert_cmd
@@ -70,12 +97,20 @@ OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction
 ### Versioning & Compatibility
 - ✅ Semantic versioning for CLI interface
 - ✅ Backward compatible configuration format
+- ✅ Configuration file search order with fallback paths
+- ✅ Shell completion generation for multiple shells (bash, zsh, fish, PowerShell)
+
+### Containerization Compliance
+- ✅ Cross-platform support (macOS, Linux) enables container deployment
+- ✅ Stateless design suitable for container environments
+- ✅ 12-factor app principles support containerization
+- ✅ Multi-architecture image requirement noted for implementation
 
 ## Project Structure
 
 ### Documentation (this feature)
 ```
-specs/001-ocr-cli/
+specs/[###-feature]/
 ├── plan.md              # This file (/plan command output)
 ├── research.md          # Phase 0 output (/plan command)
 ├── data-model.md        # Phase 1 output (/plan command)
@@ -86,44 +121,55 @@ specs/001-ocr-cli/
 
 ### Source Code (repository root)
 ```
-# Single project (CLI application)
+# Option 1: Single project (DEFAULT)
 src/
-├── main.rs              # CLI entry point with clap
-├── lib.rs               # Core library functionality
-├── config.rs            # TOML configuration handling
-├── api/                 # Mistral AI API client
-│   ├── mod.rs
-│   ├── file.rs          # File upload API
-│   └── ocr.rs           # OCR processing API
-├── cli/                 # CLI command definitions
-│   ├── mod.rs
-│   └── commands.rs
-└── error.rs             # Error types and handling
+├── models/
+├── services/
+├── cli/
+└── lib/
 
 tests/
-├── integration/         # CLI integration tests
-│   └── cli_tests.rs
-└── unit/               # Unit tests for core modules
-    ├── config_tests.rs
-    └── api_tests.rs
+├── contract/
+├── integration/
+└── unit/
+
+# Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure]
 ```
 
-**Structure Decision**: Single project (CLI application)
+**Structure Decision**: Option 1 (Single CLI application) with containerization support
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
-   - Mistral AI file upload API specifications and limits
-   - Mistral AI OCR API response format and processing time
-   - Supported file formats and size limits
-   - Authentication method and rate limiting
+   - For each NEEDS CLARIFICATION → research task
+   - For each dependency → best practices task
+   - For each integration → patterns task
 
 2. **Generate and dispatch research agents**:
    ```
    For each unknown in Technical Context:
-     Task: "Research Mistral AI file upload API specifications and limits"
-     Task: "Research Mistral AI OCR API response format and processing time"
-     Task: "Research supported file formats and size limits for Mistral AI"
-     Task: "Research Mistral AI authentication and rate limiting"
+     Task: "Research {unknown} for {feature context}"
+   For each technology choice:
+     Task: "Find best practices for {tech} in {domain}"
    ```
 
 3. **Consolidate findings** in `research.md` using format:
@@ -137,26 +183,27 @@ tests/
 *Prerequisites: research.md complete*
 
 1. **Extract entities from feature spec** → `data-model.md`:
-   - Configuration entity (TOML structure)
-   - File upload entity (metadata, validation)
-   - OCR result entity (text content, metadata)
-   - API credentials entity (key, endpoint, validation)
+   - Entity name, fields, relationships
+   - Validation rules from requirements
+   - State transitions if applicable
+   - Configuration loading priority and file search paths
+   - Retry logic configuration and error handling patterns
 
 2. **Generate API contracts** from functional requirements:
-   - File upload endpoint contract
-   - OCR processing endpoint contract
-   - Error response schemas
-   - Output format schemas (human-readable, JSON)
+   - For each user action → endpoint
+   - Use standard REST/GraphQL patterns
+   - Output OpenAPI/GraphQL schema to `/contracts/`
 
 3. **Generate contract tests** from contracts:
-   - API response validation tests
-   - Error handling tests
-   - Output format tests
+   - One test file per endpoint
+   - Assert request/response schemas
+   - Tests must fail (no implementation yet)
 
 4. **Extract test scenarios** from user stories:
-   - Happy path: valid file upload and OCR
-   - Error paths: invalid file, API errors, network issues
-   - Edge cases: large files, unsupported formats
+   - Each story → integration test scenario
+   - Quickstart test = story validation steps
+   - Error handling scenarios for rate limits, password-protected PDFs, empty text
+   - Configuration loading priority test scenarios
 
 5. **Update agent file incrementally** (O(1) operation):
    - Run `.specify/scripts/bash/update-agent-context.sh cursor`
@@ -179,13 +226,16 @@ tests/
 - Each entity → model creation task [P] 
 - Each user story → integration test task
 - Implementation tasks to make tests pass
+- Configuration management tasks (dotenv, file search, priority order)
+- Error handling tasks (retry logic, PDF validation, empty text handling)
+- Shell completion generation tasks (--completions flag, multi-shell support)
 
 **Ordering Strategy**:
 - TDD order: Tests before implementation 
-- Dependency order: Models before services before CLI
+- Dependency order: Models before services before UI
 - Mark [P] for parallel execution (independent files)
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+**Estimated Output**: 35-40 numbered, ordered tasks in tasks.md (increased due to additional requirements including shell completion)
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -201,24 +251,28 @@ tests/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| None | N/A | N/A |
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+
 
 ## Progress Tracking
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Phase 0: Research complete (/plan command) - Updated with containerization
+- [x] Phase 1: Design complete (/plan command) - Updated with container deployment
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Plan Update: Updated with clarification session requirements (2025-01-23)
+- [x] Plan Update: Updated with shell completion feature requirements (2025-01-23)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS - Including containerization compliance
+- [x] All NEEDS CLARIFICATION resolved
+- [x] Complexity deviations documented
 
 ---
 *Based on Constitution v1.0.0 - See `.specify/memory/constitution.md`*

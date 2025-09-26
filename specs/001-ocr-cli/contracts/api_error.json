@@ -1,6 +1,9 @@
 {
   "title": "Mistral AI OCR API Error Response Contract",
   "description": "Contract for error responses from Mistral AI API",
+  "version": "1.0.0",
+  "api_version": "v1",
+  "last_updated": "2025-01-26",
   "type": "object",
   "required": ["error"],
   "properties": {

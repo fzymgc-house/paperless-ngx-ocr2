@@ -1,0 +1,18 @@
+# Production configuration for paperless-ngx-ocr2
+# Optimized for production use with stricter limits and better logging
+
+# Mistral AI API key (required)
+# Set via environment variable in production for security
+api_key = "your-production-api-key"
+
+# Mistral AI API base URL
+api_base_url = "https://api.mistral.ai"
+
+# Longer timeout for production workloads
+timeout_seconds = 60
+
+# Smaller file size limit for production
+max_file_size_mb = 50
+
+# Warning level logging for production
+log_level = "warn"

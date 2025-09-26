@@ -1,0 +1,67 @@
+# Docker ignore file for paperless-ngx-ocr2
+
+# Rust build artifacts
+/target/
+Cargo.lock
+
+# Git
+.git/
+.gitignore
+
+# Documentation and specs (not needed in container)
+specs/
+*.md
+LICENSE
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+logs/
+
+# Environment files
+.env*
+
+# Test files and artifacts
+test-files/
+sample-files/
+test-results/
+test-outputs/
+coverage/
+*.lcov
+*.profraw
+
+# Local configuration
+config.local.toml
+*.local.toml
+
+# Development artifacts
+.local/
+scratch/
+playground/
+
+# Container build artifacts
+.dockerignore.tmp
+
+# GitHub Actions
+.github/
+
+# Linting configuration (included in image)
+# rustfmt.toml - keep
+# clippy.toml - keep
+# .cargo/ - keep

@@ -1,6 +1,9 @@
 {
   "title": "CLI Output Contract",
   "description": "Contract for CLI output format (--json flag)",
+  "version": "1.0.0",
+  "tool_version": "0.1.0",
+  "last_updated": "2025-01-26",
   "type": "object",
   "required": ["success", "data"],
   "properties": {

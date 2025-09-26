@@ -1,0 +1,31 @@
+# Clippy configuration for paperless-ngx-ocr2
+# Based on constitutional requirement for `-D warnings` in CI
+
+# Cognitive complexity limits
+cognitive-complexity-threshold = 30
+
+# Documentation requirements
+missing-docs-in-crate-items = true
+
+# Performance and efficiency
+too-many-arguments-threshold = 7
+type-complexity-threshold = 250
+trivial-copy-size-limit = 128
+
+# Error handling (aligned with constitutional principles)
+# We prefer Result-based flows and explicit error handling
+allow-expect-in-tests = true
+allow-unwrap-in-tests = true
+
+# String and formatting
+max-suggested-slice-pattern-length = 3
+
+# Enum and struct configuration
+enum-variant-name-threshold = 3
+large-error-threshold = 128
+
+# Function and method configuration
+too-many-lines-threshold = 100
+
+# Avoid certain patterns that conflict with our error handling approach
+avoid-breaking-exported-api = false

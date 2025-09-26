@@ -1,0 +1,23 @@
+# Basic configuration for paperless-ngx-ocr2
+# Copy this file to your project directory and customize as needed
+
+# Mistral AI API key (required)
+# You can also set this via environment variable: PAPERLESS_OCR_API_KEY
+api_key = "your-api-key-here"
+
+# Mistral AI API base URL (optional)
+# Default: https://api.mistral.ai
+api_base_url = "https://api.mistral.ai"
+
+# Request timeout in seconds (optional)
+# Default: 30
+timeout_seconds = 30
+
+# Maximum file size in MB (optional)
+# Default: 100
+max_file_size_mb = 100
+
+# Logging level (optional)
+# Options: error, warn, info, debug, trace
+# Default: info
+log_level = "info"
