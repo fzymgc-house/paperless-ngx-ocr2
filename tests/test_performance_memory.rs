@@ -173,8 +173,17 @@ fn test_streaming_validation_efficiency() {
 #[test]
 fn test_file_metadata_access_performance() {
     // Test that accessing file metadata is fast
-    let file_upload =
-        FileUpload::new("tests/fixtures/sample.pdf").expect("Should create FileUpload");
+    let mut temp_file = NamedTempFile::new().unwrap();
+    temp_file
+        .write_all(
+            b"%PDF-1.4\n% Sample metadata performance test PDF\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF",
+        )
+        .unwrap();
+
+    let temp_path = temp_file.path().with_extension("pdf");
+    fs::copy(temp_file.path(), &temp_path).unwrap();
+
+    let file_upload = FileUpload::new(&temp_path).expect("Should create FileUpload");
 
     // Test multiple metadata accesses
     let start = Instant::now();
@@ -192,6 +201,8 @@ fn test_file_metadata_access_performance() {
         "Metadata access should be very fast: {:?}",
         duration
     );
+
+    fs::remove_file(&temp_path).ok();
 }
 
 #[test]
