@@ -2,7 +2,7 @@
 # Supports multi-architecture builds (AMD64, ARM64)
 
 # Build stage
-FROM rust:1.80-alpine AS builder
+FROM rust:1.75-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \

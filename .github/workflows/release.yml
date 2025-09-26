@@ -60,15 +60,18 @@ jobs:
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             binary_name="${binary_name}.exe"
           fi
-          
+
           mkdir -p "dist/${{ matrix.target }}"
-          cp "target/${{ matrix.target }}/release/${binary_name}" "dist/${{ matrix.target }}/"
-          
+          cp "target/${{ matrix.target }}/release/${binary_name}" \
+            "dist/${{ matrix.target }}/"
+
           cd "dist/${{ matrix.target }}"
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            7z a "../paperless-ngx-ocr2-${{ matrix.target }}.zip" "${binary_name}"
+            7z a "../paperless-ngx-ocr2-${{ matrix.target }}.zip" \
+              "${binary_name}"
           else
-            tar czf "../paperless-ngx-ocr2-${{ matrix.target }}.tar.gz" "${binary_name}"
+            tar czf "../paperless-ngx-ocr2-${{ matrix.target }}.tar.gz" \
+              "${binary_name}"
           fi
 
       - name: Upload artifacts
