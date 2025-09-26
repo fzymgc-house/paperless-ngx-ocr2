@@ -98,8 +98,11 @@ fn test_file_size_boundary_conditions() {
     let result = file_upload_over.validate_file();
     assert!(result.is_err(), "File over 100MB should fail validation");
     if let Err(e) = result {
-        assert!(e.to_string().contains("exceeds maximum"), 
-                "Error should mention size limit, got: {}", e);
+        assert!(
+            e.to_string().contains("exceeds maximum"),
+            "Error should mention size limit, got: {}",
+            e
+        );
     }
 
     // Cleanup
