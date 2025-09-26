@@ -87,3 +87,17 @@
 ### Decision: Validate file paths to prevent directory traversal
 **Rationale**: Prevent security issues with malicious file paths.
 **Alternatives considered**: Trust user input, but file path validation is essential for security.
+
+## Containerization Requirements
+
+### Decision: Multi-architecture container image support
+**Rationale**: Support for both AMD64 and ARM64 architectures to enable deployment on various platforms including Apple Silicon and ARM-based cloud instances.
+**Alternatives considered**: Single architecture, but multi-arch provides broader deployment compatibility.
+
+### Decision: Use Alpine Linux as base image
+**Rationale**: Alpine Linux provides a minimal, secure base image with small size suitable for CLI tools.
+**Alternatives considered**: Ubuntu/Debian, but Alpine provides better security posture and smaller image size for CLI applications.
+
+### Decision: Static binary compilation for container deployment
+**Rationale**: Static Rust binaries eliminate runtime dependencies and reduce container size and attack surface.
+**Alternatives considered**: Dynamic linking, but static compilation provides better portability and security.

@@ -1,6 +1,9 @@
 {
   "title": "Mistral AI File Upload Response Contract",
   "description": "Contract for file upload response from Mistral AI Files API",
+  "version": "1.0.0",
+  "api_version": "v1",
+  "last_updated": "2025-01-26",
   "type": "object",
   "required": ["id", "object", "bytes", "created_at", "filename", "purpose"],
   "properties": {

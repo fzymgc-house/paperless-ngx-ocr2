@@ -1,13 +1,34 @@
 {
   "title": "Mistral AI OCR API Request Contract",
   "description": "Contract for OCR processing request to Mistral AI API",
+  "version": "1.0.0",
+  "api_version": "v1",
+  "last_updated": "2025-01-26",
   "type": "object",
-  "required": ["file_id"],
+  "required": ["model", "document"],
   "properties": {
-    "file_id": {
+    "model": {
       "type": "string",
-      "description": "ID of the file uploaded via /v1/files endpoint",
-      "minLength": 1
+      "description": "Model to use for OCR processing",
+      "enum": ["mistral-ocr-latest"],
+      "default": "mistral-ocr-latest"
+    },
+    "document": {
+      "type": "object",
+      "description": "Document to process",
+      "required": ["type", "file_id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of document to process",
+          "enum": ["file"],
+          "default": "file"
+        },
+        "file_id": {
+          "type": "string",
+          "description": "ID of the file uploaded via /v1/files endpoint"
+        }
+      }
     }
   }
 }

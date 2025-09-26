@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  paperless-ngx-ocr2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    image: paperless-ngx-ocr2:latest
+    container_name: paperless-ngx-ocr2
+    environment:
+      # Mistral AI API configuration
+      - PAPERLESS_OCR_API_KEY=${PAPERLESS_OCR_API_KEY:-}
+      - PAPERLESS_OCR_API_BASE_URL=${PAPERLESS_OCR_API_BASE_URL:-https://api.mistral.ai}
+      # Logging configuration
+      - RUST_LOG=${RUST_LOG:-info}
+    volumes:
+      # Mount current directory for testing with local files
+      - .:/workspace:ro
+      # Mount config directory if it exists
+      - ./config.toml:/app/config.toml:ro
+    working_dir: /workspace
+    # Override the default entrypoint to allow testing
+    entrypoint: ["/app/paperless-ngx-ocr2"]
+    # Keep container running for interactive testing
+    tty: true
+    stdin_open: true
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+
+  # Development service with hot reload (optional)
+  paperless-ngx-ocr2-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: paperless-ngx-ocr2:dev
+    container_name: paperless-ngx-ocr2-dev
+    environment:
+      - PAPERLESS_OCR_API_KEY=${PAPERLESS_OCR_API_KEY:-}
+      - PAPERLESS_OCR_API_BASE_URL=${PAPERLESS_OCR_API_BASE_URL:-https://api.mistral.ai}
+      - RUST_LOG=debug
+    volumes:
+      - .:/workspace
+      - ./config.toml:/app/config.toml:ro
+    working_dir: /workspace
+    command: ["cargo", "run", "--"]
+    profiles:
+      - dev
+
+networks:
+  default:
+    name: paperless-ngx-ocr2-network

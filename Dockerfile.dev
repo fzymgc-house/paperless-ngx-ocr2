@@ -1,0 +1,50 @@
+# Development Dockerfile for hot reload
+FROM rust:1.80-slim as builder
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy manifests
+COPY Cargo.toml Cargo.lock ./
+
+# Copy source code
+COPY src/ ./src/
+COPY build.rs ./
+
+# Build the application
+RUN cargo build --release
+
+# Runtime stage
+FROM rust:1.80-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Copy the binary from builder stage
+COPY --from=builder /app/target/release/paperless-ngx-ocr2 /app/paperless-ngx-ocr2
+
+# Make binary executable
+RUN chmod +x /app/paperless-ngx-ocr2
+
+# Switch to non-root user
+USER appuser
+
+# Set working directory
+WORKDIR /workspace
+
+# Expose any ports if needed (none for CLI tool)
+# EXPOSE 8080
+
+# Default command
+ENTRYPOINT ["/app/paperless-ngx-ocr2"]

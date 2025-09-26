@@ -1,0 +1,95 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate configuration for paperless-ngx-ocr2",
+  "extends": [
+    "config:base",
+    ":dependencyDashboard",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":ignoreModulesAndTests"
+  ],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "assignees": ["@fzymgc-house"],
+  "reviewers": ["@fzymgc-house"],
+  "packageRules": [
+    {
+      "description": "Group Rust dependencies",
+      "matchManagers": ["cargo"],
+      "groupName": "rust dependencies",
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "description": "Auto-merge patch updates for Rust dependencies",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "description": "Auto-merge patch updates for GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Hold back major version updates for manual review",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Security updates get high priority",
+      "matchPackageNames": ["*"],
+      "vulnerabilityAlerts": {
+        "labels": ["security", "dependencies"],
+        "assignees": ["@fzymgc-house"],
+        "reviewers": ["@fzymgc-house"]
+      }
+    }
+  ],
+  "rust": {
+    "enabled": true
+  },
+  "cargo": {
+    "enabled": true,
+    "rangeStrategy": "bump"
+  },
+  "github-actions": {
+    "enabled": true,
+    "fileMatch": ["\\.github/workflows/[^/]+\\.ya?ml$"]
+  },
+  "docker": {
+    "enabled": true,
+    "fileMatch": ["Dockerfile", "docker-compose.yml"]
+  },
+  "regexManagers": [
+    {
+      "description": "Update Rust version in Dockerfile",
+      "fileMatch": ["Dockerfile"],
+      "matchStrings": ["FROM rust:(?<currentValue>.*?)-alpine"],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "rust",
+      "versioningTemplate": "docker"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "suppressNotifications": ["prIgnoreNotification"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps"
+}

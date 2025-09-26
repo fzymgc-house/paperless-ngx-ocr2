@@ -1,0 +1,18 @@
+# Development configuration for paperless-ngx-ocr2
+# Optimized for development with verbose logging and smaller limits
+
+# Mistral AI API key (required)
+# Use a development/test API key
+api_key = "your-dev-api-key"
+
+# Mistral AI API base URL
+api_base_url = "https://api.mistral.ai"
+
+# Standard timeout for development
+timeout_seconds = 30
+
+# Smaller file size limit for development testing
+max_file_size_mb = 10
+
+# Debug level logging for development
+log_level = "debug"

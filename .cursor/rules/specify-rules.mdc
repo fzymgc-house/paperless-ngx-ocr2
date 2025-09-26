@@ -1,0 +1,26 @@
+# paperless-ngx-ocr2 Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-09-24
+
+## Active Technologies
+- Rust 1.80 (stable) + clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml (001-ocr-cli)
+- N/A (stateless CLI tool) (001-ocr-cli)
+
+## Project Structure
+```
+src/
+tests/
+```
+
+## Commands
+cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] cargo clippy
+
+## Code Style
+Rust 1.80 (stable): Follow standard conventions
+
+## Recent Changes
+- 001-ocr-cli: Added Rust 1.80 (stable) + clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml
+- 001-ocr-cli: Added Rust 1.80 (stable) + clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

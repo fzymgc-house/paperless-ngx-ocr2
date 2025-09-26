@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "/Volumes/Code/github.com/fzymgc-house/paperless-ngx-ocr2"]
+    }
+  }
+}
