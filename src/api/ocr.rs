@@ -70,12 +70,24 @@ pub struct Dimensions {
     pub width: i32,
 }
 
+/// Image structure for OCR response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Image {
+    pub id: String,
+    pub top_left_x: i32,
+    pub top_left_y: i32,
+    pub bottom_right_x: i32,
+    pub bottom_right_y: i32,
+    pub image_base64: Option<String>,
+    pub image_annotation: Option<String>,
+}
+
 /// Page structure for OCR response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Page {
     pub index: i32,
     pub markdown: String,
-    pub images: Vec<String>,
+    pub images: Vec<Image>,
     pub dimensions: Dimensions,
 }
 

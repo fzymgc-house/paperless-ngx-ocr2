@@ -163,28 +163,26 @@ impl FileUpload {
 
     /// Check if PDF is password-protected by looking for encryption dictionary
     fn check_pdf_password_protection(&self) -> Result<()> {
-        use std::io::{BufRead, BufReader};
+        use std::io::Read;
 
-        let file = fs::File::open(&self.file_path).map_err(Error::Io)?;
+        let mut file = fs::File::open(&self.file_path).map_err(Error::Io)?;
+        let mut buffer = [0; 8192]; // Read first 8KB
+        let bytes_read = file.read(&mut buffer).map_err(Error::Io)?;
 
-        let reader = BufReader::new(file);
+        // Convert to string, ignoring invalid UTF-8 sequences
+        let content = String::from_utf8_lossy(&buffer[..bytes_read]);
 
-        // Look for encryption dictionary in the first 8KB of the file
-        for line in reader.lines().take(100) {
-            let line = line.map_err(Error::Io)?;
-
-            // Check for common password protection indicators
-            if line.contains("/Encrypt")
-                || line.contains("/P -")
-                || line.contains("/U ")
-                || line.contains("/O ")
-                || line.contains("/Filter/Standard")
-            {
-                return Err(Error::Validation(
-                    "Password-protected PDF detected. Please provide an unprotected PDF file."
-                        .to_string(),
-                ));
-            }
+        // Check for common password protection indicators
+        if content.contains("/Encrypt")
+            || content.contains("/P -")
+            || content.contains("/U ")
+            || content.contains("/O ")
+            || content.contains("/Filter/Standard")
+        {
+            return Err(Error::Validation(
+                "Password-protected PDF detected. Please provide an unprotected PDF file."
+                    .to_string(),
+            ));
         }
 
         Ok(())
