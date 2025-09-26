@@ -42,7 +42,12 @@ impl Default for APIMetrics {
 
 impl APIMetrics {
     /// Record a successful API call
-    pub fn record_success(&mut self, duration: Duration, bytes_uploaded: u64, bytes_downloaded: u64) {
+    pub fn record_success(
+        &mut self,
+        duration: Duration,
+        bytes_uploaded: u64,
+        bytes_downloaded: u64,
+    ) {
         self.successful_calls += 1;
         self.total_duration += duration;
         self.total_bytes_uploaded += bytes_uploaded;
@@ -71,9 +76,8 @@ impl APIMetrics {
     fn update_average_response_time(&mut self) {
         let total_calls = self.successful_calls + self.failed_calls;
         if total_calls > 0 {
-            self.average_response_time = Duration::from_millis(
-                self.total_duration.as_millis() as u64 / total_calls
-            );
+            self.average_response_time =
+                Duration::from_millis(self.total_duration.as_millis() as u64 / total_calls);
         }
     }
 
@@ -119,7 +123,12 @@ impl MetricsCollector {
     }
 
     /// Record a successful API call
-    pub async fn record_success(&self, duration: Duration, bytes_uploaded: u64, bytes_downloaded: u64) {
+    pub async fn record_success(
+        &self,
+        duration: Duration,
+        bytes_uploaded: u64,
+        bytes_downloaded: u64,
+    ) {
         let mut metrics = self.metrics.write().await;
         metrics.record_success(duration, bytes_uploaded, bytes_downloaded);
     }
@@ -188,7 +197,6 @@ impl MetricsCollector {
     }
 }
 
-/// Global metrics collector instance
 lazy_static::lazy_static! {
     pub static ref GLOBAL_METRICS: MetricsCollector = MetricsCollector::new();
 }
@@ -200,16 +208,18 @@ macro_rules! measure_api_call {
         let start = std::time::Instant::now();
         let result = $operation;
         let duration = start.elapsed();
-        
+
         match result {
             Ok(_) => {
-                $metrics.record_success(duration, $bytes_uploaded, $bytes_downloaded).await;
+                $metrics
+                    .record_success(duration, $bytes_uploaded, $bytes_downloaded)
+                    .await;
             }
             Err(_) => {
                 $metrics.record_failure(duration).await;
             }
         }
-        
+
         result
     }};
 }
@@ -247,11 +257,11 @@ impl FileMetrics {
         self.files_processed += 1;
         self.total_file_size += file_size;
         self.total_processing_time += processing_time;
-        
+
         if self.files_processed > 0 {
             self.average_file_size = self.total_file_size / self.files_processed;
             self.average_processing_time = Duration::from_millis(
-                self.total_processing_time.as_millis() as u64 / self.files_processed
+                self.total_processing_time.as_millis() as u64 / self.files_processed,
             );
         }
     }
@@ -274,23 +284,27 @@ mod tests {
     #[tokio::test]
     async fn test_metrics_collection() {
         let metrics = MetricsCollector::new();
-        
+
         // Record some test data
-        metrics.record_success(Duration::from_millis(100), 1024, 512).await;
-        metrics.record_success(Duration::from_millis(200), 2048, 1024).await;
+        metrics
+            .record_success(Duration::from_millis(100), 1024, 512)
+            .await;
+        metrics
+            .record_success(Duration::from_millis(200), 2048, 1024)
+            .await;
         metrics.record_failure(Duration::from_millis(150)).await;
         metrics.record_retry().await;
         metrics.record_rate_limit_hit().await;
-        
+
         let collected_metrics = metrics.get_metrics().await;
-        
+
         assert_eq!(collected_metrics.successful_calls, 2);
         assert_eq!(collected_metrics.failed_calls, 1);
         assert_eq!(collected_metrics.total_retries, 1);
         assert_eq!(collected_metrics.rate_limit_hits, 1);
         assert_eq!(collected_metrics.total_bytes_uploaded, 3072);
         assert_eq!(collected_metrics.total_bytes_downloaded, 1536);
-        
+
         // Test success rate calculation
         assert!((collected_metrics.success_rate() - 66.67).abs() < 0.1);
     }
@@ -298,14 +312,14 @@ mod tests {
     #[test]
     fn test_file_metrics() {
         let mut file_metrics = FileMetrics::default();
-        
+
         file_metrics.record_file_processed(1024, Duration::from_millis(100));
         file_metrics.record_file_processed(2048, Duration::from_millis(200));
-        
+
         assert_eq!(file_metrics.files_processed, 2);
         assert_eq!(file_metrics.total_file_size, 3072);
         assert_eq!(file_metrics.average_file_size, 1536);
-        
+
         let throughput = file_metrics.throughput_bytes_per_second();
         assert!(throughput >= 0.0);
     }
@@ -313,10 +327,12 @@ mod tests {
     #[tokio::test]
     async fn test_metrics_json_output() {
         let metrics = MetricsCollector::new();
-        metrics.record_success(Duration::from_millis(100), 1024, 512).await;
-        
+        metrics
+            .record_success(Duration::from_millis(100), 1024, 512)
+            .await;
+
         let json = metrics.get_metrics_json().await;
-        
+
         assert!(json.get("successful_calls").is_some());
         assert!(json.get("success_rate_percent").is_some());
         assert!(json.get("average_response_time_ms").is_some());

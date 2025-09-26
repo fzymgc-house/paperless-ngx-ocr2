@@ -31,12 +31,12 @@ pub struct DocumentChunk {
 impl OCRRequest {
     /// Create a new OCR request
     pub fn new(file_id: String) -> Self {
-        Self { 
+        Self {
             model: "mistral-ocr-latest".to_string(),
             document: DocumentChunk {
                 chunk_type: "file".to_string(),
                 file_id,
-            }
+            },
         }
     }
 
@@ -47,11 +47,15 @@ impl OCRRequest {
         }
 
         if self.model != "mistral-ocr-latest" {
-            return Err(Error::Validation("Invalid model for OCR processing".to_string()));
+            return Err(Error::Validation(
+                "Invalid model for OCR processing".to_string(),
+            ));
         }
 
         if self.document.chunk_type != "file" {
-            return Err(Error::Validation("Invalid document type for OCR processing".to_string()));
+            return Err(Error::Validation(
+                "Invalid document type for OCR processing".to_string(),
+            ));
         }
 
         Ok(())
@@ -105,9 +109,11 @@ impl OCRResponse {
     pub fn validate(&self) -> Result<()> {
         // Validate model field
         if self.model.is_empty() {
-            return Err(Error::Validation("Response model cannot be empty".to_string()));
+            return Err(Error::Validation(
+                "Response model cannot be empty".to_string(),
+            ));
         }
-        
+
         // Validate model name format
         if !self.model.starts_with("mistral-") {
             return Err(Error::Validation(format!(
@@ -118,7 +124,9 @@ impl OCRResponse {
 
         // Validate pages array
         if self.pages.is_empty() {
-            return Err(Error::Validation("Response must contain at least one page".to_string()));
+            return Err(Error::Validation(
+                "Response must contain at least one page".to_string(),
+            ));
         }
 
         // Validate each page structure and content
@@ -129,12 +137,12 @@ impl OCRResponse {
                     i, page.index
                 )));
             }
-            
+
             // Validate page content
             if page.markdown.is_empty() {
                 tracing::warn!("Page {} has empty markdown content", page.index);
             }
-            
+
             // Validate dimensions if present
             if page.dimensions.width <= 0 || page.dimensions.height <= 0 {
                 return Err(Error::Validation(format!(
@@ -142,7 +150,7 @@ impl OCRResponse {
                     page.dimensions.width, page.dimensions.height
                 )));
             }
-            
+
             // Validate DPI is reasonable
             if page.dimensions.dpi < 50 || page.dimensions.dpi > 600 {
                 tracing::warn!("Unusual DPI value: {}", page.dimensions.dpi);
@@ -153,10 +161,11 @@ impl OCRResponse {
         if self.usage_info.pages_processed != self.pages.len() as i32 {
             return Err(Error::Validation(format!(
                 "Usage info pages_processed ({}) doesn't match actual pages ({})",
-                self.usage_info.pages_processed, self.pages.len()
+                self.usage_info.pages_processed,
+                self.pages.len()
             )));
         }
-        
+
         if self.usage_info.doc_size_bytes <= 0 {
             return Err(Error::Validation(format!(
                 "Invalid document size in usage info: {} bytes",
@@ -182,7 +191,7 @@ impl OCRClient {
     /// Process a file with OCR
     pub async fn process_ocr(&self, file_id: &str) -> Result<OCRResponse> {
         let url = self.client.build_url("v1/ocr");
-        
+
         self.client.log_request("POST", &url);
 
         // Create OCR request
@@ -190,33 +199,36 @@ impl OCRClient {
         ocr_request.validate()?;
 
         // Get authorization headers
-        let auth_headers = crate::api::auth::AuthHandler::new(
-            crate::credentials::APICredentials::new(
+        let auth_headers =
+            crate::api::auth::AuthHandler::new(crate::credentials::APICredentials::new(
                 self.client.credentials.api_key.clone(),
                 self.client.credentials.api_base_url.clone(),
-            )?
-        ).get_auth_headers()?;
+            )?)
+            .get_auth_headers()?;
 
         // Send request with retry logic and metrics
         let start_time = Instant::now();
-        let response = self.client.execute_with_retry(|| {
-            let client = self.client.client().clone();
-            let url = url.clone();
-            let auth_headers = auth_headers.clone();
-            let ocr_request = ocr_request.clone();
-            
-            async move {
-                let response = client
-                    .post(&url)
-                    .headers(auth_headers)
-                    .json(&ocr_request)
-                    .send()
-                    .await
-                    .map_err(Error::Network)?;
-                
-                MistralClient::handle_response(response).await
-            }
-        }).await;
+        let response = self
+            .client
+            .execute_with_retry(|| {
+                let client = self.client.client().clone();
+                let url = url.clone();
+                let auth_headers = auth_headers.clone();
+                let ocr_request = ocr_request.clone();
+
+                async move {
+                    let response = client
+                        .post(&url)
+                        .headers(auth_headers)
+                        .json(&ocr_request)
+                        .send()
+                        .await
+                        .map_err(Error::Network)?;
+
+                    MistralClient::handle_response(response).await
+                }
+            })
+            .await;
 
         // Record metrics
         let duration = start_time.elapsed();
@@ -233,8 +245,7 @@ impl OCRClient {
 
         // Parse response
         let status = response.status().as_u16();
-        let response_text = response.text().await
-            .map_err(Error::Network)?;
+        let response_text = response.text().await.map_err(Error::Network)?;
 
         self.client.log_response(status, Some(response_text.len()));
 

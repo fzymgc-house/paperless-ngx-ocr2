@@ -58,8 +58,8 @@ pub struct OCRCacheKey {
 
 /// Generic cache implementation
 #[derive(Debug)]
-pub struct Cache<K, V> 
-where 
+pub struct Cache<K, V>
+where
     K: Hash + Eq + Clone + Send + Sync + 'static,
     V: Clone + Send + Sync + 'static,
 {
@@ -69,7 +69,7 @@ where
 }
 
 impl<K, V> Cache<K, V>
-where 
+where
     K: Hash + Eq + Clone + Send + Sync + 'static,
     V: Clone + Send + Sync + 'static,
 {
@@ -85,7 +85,7 @@ where
     /// Get an entry from the cache
     pub async fn get(&self, key: &K) -> Option<V> {
         let mut entries = self.entries.write().await;
-        
+
         if let Some(entry) = entries.get(key) {
             if entry.is_expired() {
                 entries.remove(key);
@@ -101,11 +101,11 @@ where
     /// Put an entry into the cache
     pub async fn put(&self, key: K, value: V) -> Result<()> {
         let mut entries = self.entries.write().await;
-        
+
         // Check if we need to evict entries
         if entries.len() >= self.max_entries {
             self.evict_expired_entries(&mut entries).await;
-            
+
             // If still at max capacity, remove oldest entry
             if entries.len() >= self.max_entries {
                 if let Some(oldest_key) = self.find_oldest_entry(&entries).await {
@@ -122,11 +122,11 @@ where
     /// Put an entry with custom TTL
     pub async fn put_with_ttl(&self, key: K, value: V, ttl: Duration) -> Result<()> {
         let mut entries = self.entries.write().await;
-        
+
         // Check if we need to evict entries
         if entries.len() >= self.max_entries {
             self.evict_expired_entries(&mut entries).await;
-            
+
             // If still at max capacity, remove oldest entry
             if entries.len() >= self.max_entries {
                 if let Some(oldest_key) = self.find_oldest_entry(&entries).await {
@@ -214,6 +214,12 @@ pub struct CacheManager {
     pub ocr_result_cache: OCRResultCache,
 }
 
+impl Default for CacheManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CacheManager {
     /// Create a new cache manager
     pub fn new() -> Self {
@@ -232,7 +238,8 @@ impl CacheManager {
             file_upload_cache: file_stats.clone(),
             ocr_result_cache: ocr_stats.clone(),
             total_active_entries: file_stats.active_entries + ocr_stats.active_entries,
-            total_estimated_size_bytes: file_stats.estimated_size_bytes + ocr_stats.estimated_size_bytes,
+            total_estimated_size_bytes: file_stats.estimated_size_bytes
+                + ocr_stats.estimated_size_bytes,
         }
     }
 
@@ -252,7 +259,6 @@ pub struct CombinedCacheStats {
     pub total_estimated_size_bytes: usize,
 }
 
-/// Global cache manager instance
 lazy_static::lazy_static! {
     pub static ref GLOBAL_CACHE: CacheManager = CacheManager::new();
 }
@@ -260,7 +266,7 @@ lazy_static::lazy_static! {
 /// Helper function to generate file hash for caching
 pub fn generate_file_hash(file_data: &[u8]) -> String {
     use std::collections::hash_map::DefaultHasher;
-    
+
     let mut hasher = DefaultHasher::new();
     file_data.hash(&mut hasher);
     format!("{:x}", hasher.finish())
@@ -274,11 +280,17 @@ mod tests {
     #[tokio::test]
     async fn test_cache_basic_operations() {
         let cache: Cache<String, String> = Cache::new(Duration::from_secs(1), 10);
-        
+
         // Test put and get
-        cache.put("key1".to_string(), "value1".to_string()).await.unwrap();
-        assert_eq!(cache.get(&"key1".to_string()).await, Some("value1".to_string()));
-        
+        cache
+            .put("key1".to_string(), "value1".to_string())
+            .await
+            .unwrap();
+        assert_eq!(
+            cache.get(&"key1".to_string()).await,
+            Some("value1".to_string())
+        );
+
         // Test expiration
         tokio::time::sleep(Duration::from_millis(1100)).await;
         assert_eq!(cache.get(&"key1".to_string()).await, None);
@@ -287,27 +299,48 @@ mod tests {
     #[tokio::test]
     async fn test_cache_max_entries() {
         let cache: Cache<String, String> = Cache::new(Duration::from_secs(10), 2);
-        
-        cache.put("key1".to_string(), "value1".to_string()).await.unwrap();
-        cache.put("key2".to_string(), "value2".to_string()).await.unwrap();
-        cache.put("key3".to_string(), "value3".to_string()).await.unwrap(); // Should evict key1
-        
+
+        cache
+            .put("key1".to_string(), "value1".to_string())
+            .await
+            .unwrap();
+        cache
+            .put("key2".to_string(), "value2".to_string())
+            .await
+            .unwrap();
+        cache
+            .put("key3".to_string(), "value3".to_string())
+            .await
+            .unwrap(); // Should evict key1
+
         assert_eq!(cache.get(&"key1".to_string()).await, None);
-        assert_eq!(cache.get(&"key2".to_string()).await, Some("value2".to_string()));
-        assert_eq!(cache.get(&"key3".to_string()).await, Some("value3".to_string()));
+        assert_eq!(
+            cache.get(&"key2".to_string()).await,
+            Some("value2".to_string())
+        );
+        assert_eq!(
+            cache.get(&"key3".to_string()).await,
+            Some("value3".to_string())
+        );
     }
 
     #[tokio::test]
     async fn test_cache_stats() {
         let cache: Cache<String, String> = Cache::new(Duration::from_secs(1), 10);
-        
-        cache.put("key1".to_string(), "value1".to_string()).await.unwrap();
-        cache.put("key2".to_string(), "value2".to_string()).await.unwrap();
-        
+
+        cache
+            .put("key1".to_string(), "value1".to_string())
+            .await
+            .unwrap();
+        cache
+            .put("key2".to_string(), "value2".to_string())
+            .await
+            .unwrap();
+
         let stats = cache.stats().await;
         assert_eq!(stats.active_entries, 2);
         assert_eq!(stats.total_entries, 2);
-        
+
         tokio::time::sleep(Duration::from_millis(1100)).await;
         let stats_after_expiry = cache.stats().await;
         assert_eq!(stats_after_expiry.active_entries, 0);
@@ -318,11 +351,11 @@ mod tests {
         let data1 = b"test data";
         let data2 = b"test data";
         let data3 = b"different data";
-        
+
         let hash1 = generate_file_hash(data1);
         let hash2 = generate_file_hash(data2);
         let hash3 = generate_file_hash(data3);
-        
+
         assert_eq!(hash1, hash2); // Same data should produce same hash
         assert_ne!(hash1, hash3); // Different data should produce different hash
     }
@@ -330,17 +363,17 @@ mod tests {
     #[tokio::test]
     async fn test_cache_manager() {
         let manager = CacheManager::new();
-        
+
         let file_key = FileCacheKey {
             file_hash: "test_hash".to_string(),
             purpose: "ocr".to_string(),
         };
-        
+
         let ocr_key = OCRCacheKey {
             file_id: "test_file_id".to_string(),
             model: "mistral-large".to_string(),
         };
-        
+
         // Test file upload cache
         let upload_response = crate::api::files::FileUploadResponse {
             id: "test_id".to_string(),
@@ -351,10 +384,14 @@ mod tests {
             purpose: "ocr".to_string(),
             status: None,
         };
-        
-        manager.file_upload_cache.put(file_key.clone(), upload_response.clone()).await.unwrap();
+
+        manager
+            .file_upload_cache
+            .put(file_key.clone(), upload_response.clone())
+            .await
+            .unwrap();
         assert!(manager.file_upload_cache.get(&file_key).await.is_some());
-        
+
         // Test OCR result cache
         let ocr_response = crate::api::ocr::OCRResponse {
             model: "mistral-large".to_string(),
@@ -365,10 +402,14 @@ mod tests {
             },
             document_annotation: None,
         };
-        
-        manager.ocr_result_cache.put(ocr_key.clone(), ocr_response.clone()).await.unwrap();
+
+        manager
+            .ocr_result_cache
+            .put(ocr_key.clone(), ocr_response.clone())
+            .await
+            .unwrap();
         assert!(manager.ocr_result_cache.get(&ocr_key).await.is_some());
-        
+
         // Test combined stats
         let stats = manager.get_stats().await;
         assert_eq!(stats.total_active_entries, 2);

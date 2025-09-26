@@ -8,8 +8,7 @@ fn main() -> Result<()> {
     if env::var("PROFILE").unwrap() == "release" || env::var("GENERATE_MAN").is_ok() {
         generate_man_page()?;
     }
-    
-    
+
     Ok(())
 }
 

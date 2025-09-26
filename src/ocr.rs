@@ -86,16 +86,12 @@ impl OCRResult {
 
         // Validate file_name is not empty
         if self.file_name.is_empty() {
-            return Err(Error::Validation(
-                "File name must not be empty".to_string(),
-            ));
+            return Err(Error::Validation("File name must not be empty".to_string()));
         }
 
         // Validate file_size is positive
         if self.file_size == 0 {
-            return Err(Error::Validation(
-                "File size must be positive".to_string(),
-            ));
+            return Err(Error::Validation("File size must be positive".to_string()));
         }
 
         Ok(())
@@ -124,9 +120,7 @@ impl OCRResult {
         } else {
             format!(
                 "Extracted text from {} ({} bytes):\n\n{}",
-                self.file_name,
-                self.file_size,
-                self.extracted_text
+                self.file_name, self.file_size, self.extracted_text
             )
         }
     }

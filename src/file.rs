@@ -42,8 +42,7 @@ impl FileUpload {
         }
 
         // Get file metadata
-        let metadata = fs::metadata(path)
-            .map_err(Error::Io)?;
+        let metadata = fs::metadata(path).map_err(Error::Io)?;
 
         let file_size = metadata.len();
 
@@ -89,12 +88,7 @@ impl FileUpload {
         }
 
         // Validate MIME type
-        let supported_types = [
-            "application/pdf",
-            "image/png",
-            "image/jpeg",
-            "image/jpg",
-        ];
+        let supported_types = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 
         if !supported_types.contains(&self.mime_type.as_str()) {
             return Err(Error::Validation(format!(
@@ -111,13 +105,11 @@ impl FileUpload {
 
     /// Validate file content by checking magic bytes
     fn validate_file_content(&self) -> Result<()> {
-        let mut file = fs::File::open(&self.file_path)
-            .map_err(Error::Io)?;
+        let mut file = fs::File::open(&self.file_path).map_err(Error::Io)?;
 
         let mut buffer = [0; 8];
         use std::io::Read;
-        let bytes_read = file.read(&mut buffer)
-            .map_err(Error::Io)?;
+        let bytes_read = file.read(&mut buffer).map_err(Error::Io)?;
 
         if bytes_read < 4 {
             return Err(Error::Validation(
@@ -131,7 +123,7 @@ impl FileUpload {
                 // PDF: %PDF - check for password protection
                 self.check_pdf_password_protection()?;
                 Ok(())
-            },
+            }
             [0x89, 0x50, 0x4E, 0x47] => Ok(()), // PNG
             [0xFF, 0xD8, 0xFF, _] => Ok(()),    // JPEG
             _ => Err(Error::Validation(format!(
@@ -157,8 +149,7 @@ impl FileUpload {
 
     /// Get file data as bytes
     pub fn read_file_data(&self) -> Result<Vec<u8>> {
-        fs::read(&self.file_path)
-            .map_err(Error::Io)
+        fs::read(&self.file_path).map_err(Error::Io)
     }
 
     /// Get filename from path
@@ -173,28 +164,29 @@ impl FileUpload {
     /// Check if PDF is password-protected by looking for encryption dictionary
     fn check_pdf_password_protection(&self) -> Result<()> {
         use std::io::{BufRead, BufReader};
-        
-        let file = fs::File::open(&self.file_path)
-            .map_err(Error::Io)?;
-        
+
+        let file = fs::File::open(&self.file_path).map_err(Error::Io)?;
+
         let reader = BufReader::new(file);
-        
+
         // Look for encryption dictionary in the first 8KB of the file
         for line in reader.lines().take(100) {
             let line = line.map_err(Error::Io)?;
-            
+
             // Check for common password protection indicators
-            if line.contains("/Encrypt") || 
-               line.contains("/P -") || 
-               line.contains("/U ") ||
-               line.contains("/O ") ||
-               line.contains("/Filter/Standard") {
+            if line.contains("/Encrypt")
+                || line.contains("/P -")
+                || line.contains("/U ")
+                || line.contains("/O ")
+                || line.contains("/Filter/Standard")
+            {
                 return Err(Error::Validation(
-                    "Password-protected PDF detected. Please provide an unprotected PDF file.".to_string()
+                    "Password-protected PDF detected. Please provide an unprotected PDF file."
+                        .to_string(),
                 ));
             }
         }
-        
+
         Ok(())
     }
 }
@@ -213,13 +205,14 @@ mod tests {
         temp_file.write_all(b"%PDF-1.4\nTest content").unwrap();
         let temp_path = temp_file.path().with_extension("pdf");
         fs::copy(temp_file.path(), &temp_path).unwrap();
-        
-        let file_upload = FileUpload::new(&temp_path).expect("Should create FileUpload for valid PDF");
-        
+
+        let file_upload =
+            FileUpload::new(&temp_path).expect("Should create FileUpload for valid PDF");
+
         assert_eq!(file_upload.mime_type, "application/pdf");
         assert!(file_upload.is_valid);
         assert!(file_upload.file_size > 0);
-        
+
         // Cleanup
         fs::remove_file(&temp_path).ok();
     }
@@ -238,19 +231,19 @@ mod tests {
         pdf_file.write_all(b"%PDF-1.4\nValid PDF").unwrap();
         let pdf_path = pdf_file.path().with_extension("pdf");
         fs::copy(pdf_file.path(), &pdf_path).unwrap();
-        
+
         let pdf_upload = FileUpload::new(&pdf_path);
         assert!(pdf_upload.is_ok());
-        
+
         // Test invalid magic bytes with PDF extension
         let mut fake_pdf = NamedTempFile::new().unwrap();
         fake_pdf.write_all(b"Not a PDF file").unwrap();
         let fake_path = fake_pdf.path().with_extension("pdf");
         fs::copy(fake_pdf.path(), &fake_path).unwrap();
-        
+
         let fake_result = FileUpload::new(&fake_path);
         assert!(fake_result.is_err());
-        
+
         // Cleanup
         fs::remove_file(&pdf_path).ok();
         fs::remove_file(&fake_path).ok();
@@ -262,14 +255,14 @@ mod tests {
         temp_file.write_all(b"%PDF-1.4\nTest").unwrap();
         let temp_path = temp_file.path().with_extension("pdf");
         fs::copy(temp_file.path(), &temp_path).unwrap();
-        
+
         let mut file_upload = FileUpload::new(&temp_path).expect("Should create FileUpload");
-        
+
         assert!(file_upload.file_id.is_none());
-        
+
         file_upload.set_file_id("file-123".to_string());
         assert_eq!(file_upload.file_id, Some("file-123".to_string()));
-        
+
         // Cleanup
         fs::remove_file(&temp_path).ok();
     }
@@ -280,17 +273,17 @@ mod tests {
         temp_file.write_all(b"%PDF-1.4\nTest").unwrap();
         let temp_path = temp_file.path().with_extension("pdf");
         fs::copy(temp_file.path(), &temp_path).unwrap();
-        
+
         let mut file_upload = FileUpload::new(&temp_path).expect("Should create FileUpload");
-        
+
         // Test valid status
         file_upload.set_upload_status("uploaded".to_string());
         assert_eq!(file_upload.upload_status, Some("uploaded".to_string()));
-        
+
         // Test invalid status (should be ignored)
         file_upload.set_upload_status("invalid_status".to_string());
         assert_eq!(file_upload.upload_status, Some("uploaded".to_string()));
-        
+
         // Cleanup
         fs::remove_file(&temp_path).ok();
     }

@@ -1,4 +1,4 @@
-use clap::{Parser, CommandFactory};
+use clap::{CommandFactory, Parser};
 use paperless_ngx_ocr2::cli::Cli;
 
 #[tokio::main]

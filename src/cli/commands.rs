@@ -1,6 +1,6 @@
 //! CLI command implementations
 
-use crate::api::{MistralClient, files::FilesClient, ocr::OCRClient};
+use crate::api::{files::FilesClient, ocr::OCRClient, MistralClient};
 use crate::config::Config;
 use crate::credentials::APICredentials;
 use crate::error::{Error, Result};
@@ -21,7 +21,7 @@ pub async fn process_ocr_command(
 
     // Validate file exists and is supported format
     let file_upload = FileUpload::new(input_file_path)?;
-    
+
     if enable_verbose_logging {
         tracing::debug!(
             "File validation passed: {} ({} bytes, {})",
@@ -44,7 +44,7 @@ pub async fn process_ocr_command(
     // Create API credentials and client
     let api_credentials = APICredentials::from_config(app_config)?;
     let mistral_client = MistralClient::new(api_credentials, app_config.timeout_seconds)?;
-    
+
     if enable_verbose_logging {
         tracing::debug!("API client initialized");
     }
@@ -52,7 +52,7 @@ pub async fn process_ocr_command(
     // Upload file to Mistral AI Files API
     let files_client = FilesClient::new(mistral_client.clone());
     let upload_response = files_client.upload_file(&file_upload).await?;
-    
+
     if enable_verbose_logging {
         tracing::info!("File uploaded successfully: {}", upload_response.id);
     }
@@ -60,7 +60,7 @@ pub async fn process_ocr_command(
     // Process with OCR API
     let ocr_client = OCRClient::new(mistral_client);
     let ocr_response = ocr_client.process_ocr(&upload_response.id).await?;
-    
+
     if enable_verbose_logging {
         tracing::info!("OCR processing completed");
     }
@@ -74,8 +74,14 @@ pub async fn process_ocr_command(
         file_upload.file_size,
         {
             let mut usage_map = std::collections::HashMap::new();
-            usage_map.insert("pages_processed".to_string(), ocr_response.usage_info.pages_processed as i64);
-            usage_map.insert("doc_size_bytes".to_string(), ocr_response.usage_info.doc_size_bytes as i64);
+            usage_map.insert(
+                "pages_processed".to_string(),
+                ocr_response.usage_info.pages_processed as i64,
+            );
+            usage_map.insert(
+                "doc_size_bytes".to_string(),
+                ocr_response.usage_info.doc_size_bytes as i64,
+            );
             Some(usage_map)
         },
     );
@@ -94,7 +100,7 @@ pub async fn process_ocr_command(
 /// Validate input file path and format
 pub fn validate_file_path(input_file_path: &str) -> Result<()> {
     let file_path = Path::new(input_file_path);
-    
+
     // Check if file exists
     if !file_path.exists() {
         return Err(Error::Io(std::io::Error::new(

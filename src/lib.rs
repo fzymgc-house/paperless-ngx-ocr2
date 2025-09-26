@@ -14,12 +14,12 @@ pub mod file;
 pub mod metrics;
 pub mod ocr;
 
-pub use cache::{CacheManager, GLOBAL_CACHE, FileCacheKey, OCRCacheKey, generate_file_hash};
+pub use cache::{generate_file_hash, CacheManager, FileCacheKey, OCRCacheKey, GLOBAL_CACHE};
 pub use config::{Config, RetryPolicy};
 pub use credentials::APICredentials;
 pub use error::{Error, Result};
 pub use file::FileUpload;
-pub use metrics::{MetricsCollector, APIMetrics, FileMetrics, GLOBAL_METRICS};
+pub use metrics::{APIMetrics, FileMetrics, MetricsCollector, GLOBAL_METRICS};
 pub use ocr::OCRResult;
 
 /// Initialize the application with proper logging configuration
@@ -51,7 +51,7 @@ pub fn init_logging(verbose: bool) -> Result<()> {
     };
 
     let log_format = std::env::var("RUST_LOG_FORMAT").unwrap_or_else(|_| "pretty".to_string());
-    
+
     let subscriber = tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()

@@ -50,7 +50,8 @@ impl RetryPolicy {
 
         // Apply jitter
         if self.jitter_factor > 0.0 {
-            let jitter = (delay_ms as f64 * self.jitter_factor * (rand::random::<f64>() - 0.5) * 2.0) as i64;
+            let jitter =
+                (delay_ms as f64 * self.jitter_factor * (rand::random::<f64>() - 0.5) * 2.0) as i64;
             delay_ms = (delay_ms as i64 + jitter).max(1) as u64;
         }
 
@@ -67,7 +68,9 @@ impl RetryPolicy {
         }
 
         if self.base_delay_ms == 0 {
-            return Err(Error::Config("Base delay must be greater than 0".to_string()));
+            return Err(Error::Config(
+                "Base delay must be greater than 0".to_string(),
+            ));
         }
 
         if self.max_delay_ms < self.base_delay_ms {
@@ -75,7 +78,9 @@ impl RetryPolicy {
         }
 
         if self.jitter_factor < 0.0 || self.jitter_factor > 1.0 {
-            return Err(Error::Config("Jitter factor must be between 0.0 and 1.0".to_string()));
+            return Err(Error::Config(
+                "Jitter factor must be between 0.0 and 1.0".to_string(),
+            ));
         }
 
         Ok(())
@@ -133,7 +138,7 @@ impl Config {
     pub fn load() -> Result<Self> {
         // Load .env file first
         dotenv::dotenv().ok(); // Ignore errors if .env doesn't exist
-        
+
         let mut config = Self::load_from_file()?;
         config.apply_env_overrides();
         config.validate()?;
@@ -144,7 +149,7 @@ impl Config {
     pub fn load_without_validation() -> Result<Self> {
         // Load .env file first
         dotenv::dotenv().ok(); // Ignore errors if .env doesn't exist
-        
+
         let mut config = Self::load_from_file().unwrap_or_default();
         config.apply_env_overrides();
         Ok(config)
@@ -153,14 +158,14 @@ impl Config {
     /// Load configuration from TOML file
     fn load_from_file() -> Result<Self> {
         let config_path = Self::get_config_path();
-        
+
         if config_path.exists() {
             let content = fs::read_to_string(&config_path)
                 .map_err(|e| Error::Config(format!("Failed to read config file: {}", e)))?;
-            
+
             let config: Config = toml::from_str(&content)
                 .map_err(|e| Error::Config(format!("Failed to parse config file: {}", e)))?;
-            
+
             Ok(config)
         } else {
             // Return default config if file doesn't exist
@@ -172,16 +177,16 @@ impl Config {
     pub fn load_from_path(path: &str) -> Result<Self> {
         // Load .env file first
         dotenv::dotenv().ok(); // Ignore errors if .env doesn't exist
-        
+
         let config_path = PathBuf::from(path);
-        
+
         if config_path.exists() {
             let content = fs::read_to_string(&config_path)
                 .map_err(|e| Error::Config(format!("Failed to read config file: {}", e)))?;
-            
+
             let mut config: Config = toml::from_str(&content)
                 .map_err(|e| Error::Config(format!("Failed to parse config file: {}", e)))?;
-            
+
             config.apply_env_overrides();
             config.validate()?;
             Ok(config)
@@ -195,23 +200,23 @@ impl Config {
         if let Ok(api_key) = env::var("PAPERLESS_OCR_API_KEY") {
             self.api_key = api_key;
         }
-        
+
         if let Ok(api_base_url) = env::var("PAPERLESS_OCR_API_BASE_URL") {
             self.api_base_url = api_base_url;
         }
-        
+
         if let Ok(timeout) = env::var("PAPERLESS_OCR_TIMEOUT") {
             if let Ok(timeout_val) = timeout.parse::<u64>() {
                 self.timeout_seconds = timeout_val;
             }
         }
-        
+
         if let Ok(max_size) = env::var("PAPERLESS_OCR_MAX_FILE_SIZE") {
             if let Ok(size_val) = max_size.parse::<u64>() {
                 self.max_file_size_mb = size_val;
             }
         }
-        
+
         if let Ok(log_level) = env::var("PAPERLESS_OCR_LOG_LEVEL") {
             self.log_level = log_level;
         }
@@ -265,23 +270,28 @@ impl Config {
         if current_dir_config.exists() {
             return current_dir_config;
         }
-        
+
         // Then try XDG config directory
         if let Ok(config_dir) = env::var("XDG_CONFIG_HOME") {
-            let xdg_config = PathBuf::from(config_dir).join("paperless-ngx-ocr2").join("config.toml");
+            let xdg_config = PathBuf::from(config_dir)
+                .join("paperless-ngx-ocr2")
+                .join("config.toml");
             if xdg_config.exists() {
                 return xdg_config;
             }
         }
-        
+
         // Finally try ~/.config/paperless-ngx-ocr2/
         if let Ok(home_dir) = env::var("HOME") {
-            let home_config = PathBuf::from(home_dir).join(".config").join("paperless-ngx-ocr2").join("config.toml");
+            let home_config = PathBuf::from(home_dir)
+                .join(".config")
+                .join("paperless-ngx-ocr2")
+                .join("config.toml");
             if home_config.exists() {
                 return home_config;
             }
         }
-        
+
         // Return current directory as default (will be created if needed)
         PathBuf::from("config.toml")
     }
@@ -307,7 +317,7 @@ mod tests {
     #[test]
     fn test_default_values() {
         let config = Config::default();
-        
+
         assert_eq!(config.api_base_url, "https://api.mistral.ai");
         assert_eq!(config.timeout_seconds, 30);
         assert_eq!(config.max_file_size_mb, 100);
@@ -325,7 +335,7 @@ mod tests {
             log_level: "info".to_string(),
             retry_policy: RetryPolicy::default(),
         };
-        
+
         assert!(config.validate().is_ok());
     }
 
@@ -339,7 +349,7 @@ mod tests {
             log_level: "info".to_string(),
             retry_policy: RetryPolicy::default(),
         };
-        
+
         assert!(config.validate().is_err());
     }
 
@@ -353,7 +363,7 @@ mod tests {
             log_level: "info".to_string(),
             retry_policy: RetryPolicy::default(),
         };
-        
+
         assert!(config.validate().is_err());
     }
 
@@ -369,7 +379,7 @@ mod tests {
             retry_policy: RetryPolicy::default(),
         };
         assert!(config_low.validate().is_err());
-        
+
         // Test timeout too high
         let config_high = Config {
             api_key: "sk-test123".to_string(),
@@ -394,7 +404,7 @@ mod tests {
             retry_policy: RetryPolicy::default(),
         };
         assert!(config_low.validate().is_err());
-        
+
         // Test file size too high
         let config_high = Config {
             api_key: "sk-test123".to_string(),
@@ -410,7 +420,7 @@ mod tests {
     #[test]
     fn test_validation_log_level() {
         let valid_levels = ["error", "warn", "info", "debug", "trace"];
-        
+
         for level in valid_levels {
             let config = Config {
                 api_key: "sk-test123".to_string(),
@@ -420,9 +430,13 @@ mod tests {
                 log_level: level.to_string(),
                 retry_policy: RetryPolicy::default(),
             };
-            assert!(config.validate().is_ok(), "Level '{}' should be valid", level);
+            assert!(
+                config.validate().is_ok(),
+                "Level '{}' should be valid",
+                level
+            );
         }
-        
+
         // Test invalid log level
         let config_invalid = Config {
             api_key: "sk-test123".to_string(),

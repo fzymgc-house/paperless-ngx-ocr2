@@ -87,7 +87,10 @@ pub struct Cli {
     pub api_base_url: Option<String>,
 
     /// Output format as JSON
-    #[arg(long, help = "Output result in JSON format instead of human-readable text")]
+    #[arg(
+        long,
+        help = "Output result in JSON format instead of human-readable text"
+    )]
     pub json: bool,
 
     /// Verbose output
@@ -95,11 +98,7 @@ pub struct Cli {
     pub verbose: bool,
 
     /// Custom configuration file path
-    #[arg(
-        long,
-        help = "Path to custom configuration file",
-        value_name = "PATH"
-    )]
+    #[arg(long, help = "Path to custom configuration file", value_name = "PATH")]
     pub config: Option<String>,
 
     /// Generate shell completion scripts
@@ -125,8 +124,12 @@ impl Cli {
         // Initialize logging
         crate::init_logging(self.verbose)?;
 
-        tracing::debug!("CLI arguments parsed: file={:?}, json={}, verbose={}", 
-                       self.file, self.json, self.verbose);
+        tracing::debug!(
+            "CLI arguments parsed: file={:?}, json={}, verbose={}",
+            self.file,
+            self.json,
+            self.verbose
+        );
 
         // Load configuration - use custom path if provided, otherwise use default search
         let mut config = if let Some(ref config_path) = self.config {
@@ -174,13 +177,16 @@ impl Cli {
                             details: Some(e.to_string()),
                         }),
                     };
-                    println!("{}", serde_json::to_string_pretty(&json_error)
-                        .unwrap_or_else(|_| "{}".to_string()));
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&json_error)
+                            .unwrap_or_else(|_| "{}".to_string())
+                    );
                 } else {
                     // Human-readable error output goes to stderr
                     eprintln!("Error: {}", e.user_message());
                 }
-                
+
                 // Return the original error
                 Err(e)
             }
@@ -196,7 +202,9 @@ impl Cli {
 
         // For OCR processing, file is required
         if self.file.is_none() {
-            return Err(Error::Validation("File path is required for OCR processing".to_string()));
+            return Err(Error::Validation(
+                "File path is required for OCR processing".to_string(),
+            ));
         }
 
         // Validate file argument if provided
@@ -226,19 +234,23 @@ impl Cli {
     /// Generate shell completion script
     fn generate_completion_script(&self, shell: &str) -> Result<()> {
         let bin_name = "paperless-ngx-ocr2";
-        
+
         match shell.to_lowercase().as_str() {
             "bash" => self.generate_bash_completion(bin_name),
             "zsh" => self.generate_zsh_completion(bin_name),
             "fish" => self.generate_fish_completion(bin_name),
             "powershell" | "ps1" => self.generate_powershell_completion(bin_name),
-            _ => Err(Error::Config(format!("Unsupported shell: {}. Supported shells: bash, zsh, fish, powershell", shell))),
+            _ => Err(Error::Config(format!(
+                "Unsupported shell: {}. Supported shells: bash, zsh, fish, powershell",
+                shell
+            ))),
         }
     }
 
     /// Generate bash completion script
     fn generate_bash_completion(&self, bin_name: &str) -> Result<()> {
-        println!(r#"# Bash completion for {}
+        println!(
+            r#"# Bash completion for {}
 complete -F _paperless_ngx_ocr2_completion {} 
 
 _paperless_ngx_ocr2_completion() {{
@@ -274,13 +286,16 @@ _paperless_ngx_ocr2_completion() {{
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return 0
     fi
-}}"#, bin_name, bin_name);
+}}"#,
+            bin_name, bin_name
+        );
         Ok(())
     }
 
     /// Generate zsh completion script
     fn generate_zsh_completion(&self, bin_name: &str) -> Result<()> {
-        println!(r#"#compdef {}
+        println!(
+            r#"#compdef {}
 local -a opts
 opts=(
     '(-f --file)'{{-f,--file}}'[Path to the PDF or image file to process]:file:_files'
@@ -293,13 +308,16 @@ opts=(
     '(-h --help)'{{-h,--help}}'[Print help]'
     '(-V --version)'{{-V,--version}}'[Print version]'
 )
-_arguments $opts"#, bin_name);
+_arguments $opts"#,
+            bin_name
+        );
         Ok(())
     }
 
     /// Generate fish completion script
     fn generate_fish_completion(&self, bin_name: &str) -> Result<()> {
-        println!(r#"# Fish completion for {}
+        println!(
+            r#"# Fish completion for {}
 complete -c {} -s f -l file -d "Path to the PDF or image file to process" -r
 complete -c {} -s a -l api-key -d "Mistral AI API key" -r
 complete -c {} -l api-base-url -d "Mistral AI API base URL" -r
@@ -308,13 +326,25 @@ complete -c {} -l json -d "Output result in JSON format instead of human-readabl
 complete -c {} -s v -l verbose -d "Enable verbose logging output"
 complete -c {} -l completions -d "Generate shell completion scripts for the specified shell" -x -a "bash zsh fish powershell"
 complete -c {} -s h -l help -d "Print help"
-complete -c {} -s V -l version -d "Print version""#, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name);
+complete -c {} -s V -l version -d "Print version""#,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name,
+            bin_name
+        );
         Ok(())
     }
 
     /// Generate PowerShell completion script
     fn generate_powershell_completion(&self, bin_name: &str) -> Result<()> {
-        println!(r#"# PowerShell completion for {}
+        println!(
+            r#"# PowerShell completion for {}
 Register-ArgumentCompleter -CommandName {} -ScriptBlock {{
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
     
@@ -336,7 +366,9 @@ Register-ArgumentCompleter -CommandName {} -ScriptBlock {{
     }}
     
     return $completions
-}}"#, bin_name, bin_name);
+}}"#,
+            bin_name, bin_name
+        );
         Ok(())
     }
 }

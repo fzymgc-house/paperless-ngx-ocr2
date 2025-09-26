@@ -50,9 +50,7 @@ impl APICredentials {
 
         // Ensure it's HTTPS
         if url.scheme() != "https" {
-            return Err(Error::Config(
-                "API base URL must use HTTPS".to_string(),
-            ));
+            return Err(Error::Config("API base URL must use HTTPS".to_string()));
         }
 
         // Validate it points to Mistral AI API

@@ -15,7 +15,9 @@ impl APIErrorResponse {
     /// Validate API error response
     pub fn validate(&self) -> Result<()> {
         if self.error.is_empty() {
-            return Err(Error::Validation("Error message cannot be empty".to_string()));
+            return Err(Error::Validation(
+                "Error message cannot be empty".to_string(),
+            ));
         }
         Ok(())
     }
@@ -94,12 +96,12 @@ impl APIError {
     /// Format for logging (with API key redaction)
     pub fn to_log_string(&self) -> String {
         let mut log_msg = format!("[{}] {}", self.error_type, self.message);
-        
+
         // Redact API keys in log output (security requirement)
         if log_msg.contains("sk-") {
             log_msg = log_msg.replace("sk-", "***redacted***");
         }
-        
+
         if let Some(ref details) = self.details {
             let mut redacted_details = details.clone();
             if redacted_details.contains("sk-") {
@@ -107,19 +109,19 @@ impl APIError {
             }
             log_msg.push_str(&format!(" ({})", redacted_details));
         }
-        
+
         log_msg
     }
 
     /// Format for user display (without sensitive details)
     pub fn to_user_string(&self) -> String {
         let mut user_msg = self.message.clone();
-        
+
         // Remove any API key details from user message
         if user_msg.contains("sk-") {
             user_msg = user_msg.replace("sk-", "***");
         }
-        
+
         user_msg
     }
 }
