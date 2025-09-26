@@ -1,0 +1,16 @@
+---
+alwaysApply: true
+description: Always prefer using available tools over scripts, direct web access, or manual operations. This ensures better integration, error handling, and consistency.
+---
+
+# Tool Usage Priority Rules
+
+## Core Principle
+Always prefer using available tools over scripts, direct web access, or manual operations. This ensures better integration, error handling, and consistency.
+
+
+Remember: Tools provide better integration, error handling, and consistency than manual operations. Always prefer tool usage when available.
+
+
+
+
