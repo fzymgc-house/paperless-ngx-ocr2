@@ -134,7 +134,8 @@ async fn test_error_handling_network_timeout() {
         .stderr(
             predicate::str::contains("timeout")
                 .or(predicate::str::contains("network"))
-                .or(predicate::str::contains("connect")),
+                .or(predicate::str::contains("connect"))
+                .or(predicate::str::contains("operation timed out")),
         );
 
     // Cleanup

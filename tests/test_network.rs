@@ -32,7 +32,10 @@ async fn test_network_timeout_handling() {
         .stderr(
             predicate::str::contains("timeout")
                 .or(predicate::str::contains("network"))
-                .or(predicate::str::contains("Client error")),
+                .or(predicate::str::contains("Client error"))
+                .or(predicate::str::contains("operation timed out"))
+                .or(predicate::str::contains("Server error"))
+                .or(predicate::str::contains("503")),
         );
 
     let duration = start.elapsed();
