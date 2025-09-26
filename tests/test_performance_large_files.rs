@@ -61,9 +61,19 @@ fn test_file_size_limit_enforcement() {
 
 #[test]
 fn test_file_size_boundary_conditions() {
+    use std::fs;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    // Create a temporary file for testing
+    let mut temp_file = NamedTempFile::new().unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content").unwrap();
+    let temp_path = temp_file.path().with_extension("pdf");
+    fs::copy(temp_file.path(), &temp_path).unwrap();
+
     // Test exactly 100MB (should pass)
     let file_upload_100mb = FileUpload {
-        file_path: "tests/fixtures/sample.pdf".to_string(),
+        file_path: temp_path.to_string_lossy().to_string(),
         file_size: 100 * 1024 * 1024, // Exactly 100MB
         mime_type: "application/pdf".to_string(),
         file_id: None,
@@ -71,17 +81,13 @@ fn test_file_size_boundary_conditions() {
         is_valid: false,
     };
 
-    // Note: This will fail because the actual file doesn't exist at that size,
-    // but it tests the size validation logic
+    // This should pass size validation (file exists and is exactly 100MB)
     let result = file_upload_100mb.validate_file();
-    // The error should be about file existence, not size
-    if let Err(e) = result {
-        assert!(!e.to_string().contains("exceeds maximum"));
-    }
+    assert!(result.is_ok(), "100MB file should pass validation");
 
     // Test 100MB + 1 byte (should fail due to size)
     let file_upload_over = FileUpload {
-        file_path: "tests/fixtures/sample.pdf".to_string(),
+        file_path: temp_path.to_string_lossy().to_string(),
         file_size: (100 * 1024 * 1024) + 1, // 100MB + 1 byte
         mime_type: "application/pdf".to_string(),
         file_id: None,
@@ -90,10 +96,14 @@ fn test_file_size_boundary_conditions() {
     };
 
     let result = file_upload_over.validate_file();
-    assert!(result.is_err());
+    assert!(result.is_err(), "File over 100MB should fail validation");
     if let Err(e) = result {
-        assert!(e.to_string().contains("exceeds maximum"));
+        assert!(e.to_string().contains("exceeds maximum"), 
+                "Error should mention size limit, got: {}", e);
     }
+
+    // Cleanup
+    fs::remove_file(&temp_path).ok();
 }
 
 #[test]
