@@ -210,8 +210,10 @@ Releases are managed through GitHub Actions and follow semantic versioning:
 
 ## Code of Conduct
 
-Please be respectful and inclusive in all interactions. This project follows the Contributor Covenant Code of Conduct.
+Please be respectful and inclusive in all interactions. This project
+follows the Contributor Covenant Code of Conduct.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the same license as the project (see LICENSE file).
+By contributing, you agree that your contributions will be licensed
+under the same license as the project (see LICENSE file).

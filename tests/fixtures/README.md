@@ -1,6 +1,7 @@
 # Test Fixtures
 
-This directory contains example test input files for both happy path and failure scenarios.
+This directory contains example test input files for both happy path
+and failure scenarios.
 
 ## Happy Path Files
 

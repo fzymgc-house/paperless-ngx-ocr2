@@ -1,7 +1,7 @@
 mod common;
 
-use predicates::prelude::*;
 use common::*;
+use predicates::prelude::*;
 use std::process::Command;
 use std::time::Duration;
 use tempfile::TempDir;
@@ -34,12 +34,7 @@ fn test_docker_container_help() {
 
     // Then run the container with --help
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "--help"
-    ]);
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "--help"]);
 
     let output = cmd.output().expect("Failed to execute docker run");
 
@@ -60,12 +55,7 @@ fn test_docker_container_help() {
 #[test]
 fn test_docker_container_version() {
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "--version"
-    ]);
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "--version"]);
 
     let output = cmd.output().expect("Failed to execute docker run");
 
@@ -89,7 +79,7 @@ fn test_docker_container_completions() {
         "--rm",
         "paperless-ngx-ocr2:test",
         "--completions",
-        "bash"
+        "bash",
     ]);
 
     let output = cmd.output().expect("Failed to execute docker run");
@@ -114,7 +104,7 @@ fn test_docker_container_missing_api_key() {
         "--rm",
         "paperless-ngx-ocr2:test",
         "--file",
-        "/dev/null"
+        "/dev/null",
     ]);
 
     let output = cmd.output().expect("Failed to execute docker run");
@@ -146,12 +136,15 @@ fn test_docker_container_with_api_key() {
         "run",
         "--rm",
         "-e",
-        &format!("PAPERLESS_OCR_API_KEY={}", std::env::var("PAPERLESS_OCR_API_KEY").unwrap()),
+        &format!(
+            "PAPERLESS_OCR_API_KEY={}",
+            std::env::var("PAPERLESS_OCR_API_KEY").unwrap()
+        ),
         "-v",
         &format!("{}:/test.pdf:ro", test_file_path.display()),
         "paperless-ngx-ocr2:test",
         "--file",
-        "/test.pdf"
+        "/test.pdf",
     ]);
 
     let output = cmd.output().expect("Failed to execute docker run");
@@ -173,12 +166,7 @@ fn test_docker_container_with_api_key() {
 #[test]
 fn test_docker_compose_help() {
     let mut cmd = Command::new("docker-compose");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2",
-        "--help"
-    ]);
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2", "--help"]);
 
     let output = cmd.output().expect("Failed to execute docker-compose run");
 
@@ -203,7 +191,7 @@ fn test_docker_compose_with_env() {
         "-e",
         "PAPERLESS_OCR_API_KEY=test-key",
         "paperless-ngx-ocr2",
-        "--version"
+        "--version",
     ]);
 
     let output = cmd.output().expect("Failed to execute docker-compose run");
@@ -219,13 +207,7 @@ fn test_docker_compose_with_env() {
 #[test]
 fn test_docker_container_architecture() {
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "uname",
-        "-m"
-    ]);
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "uname", "-m"]);
 
     let output = cmd.output().expect("Failed to execute docker run");
 
@@ -254,10 +236,12 @@ fn test_docker_container_resources() {
         "--memory=256m",
         "--cpus=0.5",
         "paperless-ngx-ocr2:test",
-        "--help"
+        "--help",
     ]);
 
-    let output = cmd.output().expect("Failed to execute docker run with resource limits");
+    let output = cmd
+        .output()
+        .expect("Failed to execute docker run with resource limits");
 
     assert!(
         output.status.success(),
@@ -270,12 +254,7 @@ fn test_docker_container_resources() {
 #[test]
 fn test_docker_container_security() {
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "id"
-    ]);
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "id"]);
 
     let output = cmd.output().expect("Failed to execute docker run");
 

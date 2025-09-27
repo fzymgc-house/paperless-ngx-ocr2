@@ -63,7 +63,9 @@ principles, and provides both human-readable and JSON output formats.
 2. **Run with Docker**:
 
    ```bash
-   docker run --rm -v $(pwd):/workspace ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest --file /workspace/document.pdf --api-key YOUR_API_KEY
+   docker run --rm -v $(pwd):/workspace \
+     ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest \
+     --file /workspace/document.pdf --api-key YOUR_API_KEY
    ```
 
 ### Pre-built Binaries
@@ -114,7 +116,8 @@ log_level = "info"
 
 ### Configuration Priority
 
-The tool loads configuration in the following order (later values override earlier ones):
+The tool loads configuration in the following order (later values
+override earlier ones):
 
 1. Default values
 2. TOML configuration file
@@ -228,7 +231,8 @@ source paperless-ngx-ocr2.fish  # For fish
 
 ### Pre-commit Hooks
 
-This project uses pre-commit hooks to ensure code quality and consistency. The hooks automatically run:
+This project uses pre-commit hooks to ensure code quality and
+consistency. The hooks automatically run:
 
 - **Rust formatting** (`rustfmt`)
 - **Rust linting** (`clippy`)
@@ -253,7 +257,7 @@ pre-commit install
 pre-commit autoupdate
 ```
 
-#### Usage
+### Running Pre-commit Hooks
 
 ```bash
 # Run hooks on all files
@@ -307,16 +311,17 @@ $ paperless-ngx-ocr2 --file sample.pdf --api-key sk-... --json
 }
 ```
 
-### Error Handling
+### Error Examples
 
 ```bash
 $ paperless-ngx-ocr2 --file password-protected.pdf --api-key sk-...
-Error: Validation error: Password-protected PDF detected. Please provide an unprotected PDF file.
+Error: Validation error: Password-protected PDF detected. Please
+provide an unprotected PDF file.
 ```
 
-## Development
+## Building from Source
 
-### Building from Source
+### Source Code Setup
 
 ```bash
 git clone https://github.com/fzymgc-house/paperless-ngx-ocr2.git
@@ -324,7 +329,7 @@ cd paperless-ngx-ocr2
 cargo build
 ```
 
-### Running Tests
+### Test Commands
 
 ```bash
 # Run all tests
@@ -387,7 +392,8 @@ services:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE)
+file for details.
 
 ## Acknowledgments
 

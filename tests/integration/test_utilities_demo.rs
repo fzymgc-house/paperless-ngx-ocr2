@@ -6,8 +6,8 @@
 mod common;
 
 use assert_cmd::Command;
-use predicates::prelude::*;
 use common::*;
+use predicates::prelude::*;
 use std::time::Duration;
 
 /// Comprehensive test demonstrating all test utilities
@@ -80,10 +80,7 @@ async fn test_comprehensive_utility_demonstration() {
         }
     });
 
-    assert!(validate_json_contract(
-        &success_json.to_string(),
-        ContractType::CliOutput
-    ).is_ok());
+    assert!(validate_json_contract(&success_json.to_string(), ContractType::CliOutput).is_ok());
 
     // Test error contract validation
     let error_json = serde_json::json!({
@@ -95,10 +92,7 @@ async fn test_comprehensive_utility_demonstration() {
         }
     });
 
-    assert!(validate_json_contract(
-        &error_json.to_string(),
-        ContractType::CliOutput
-    ).is_ok());
+    assert!(validate_json_contract(&error_json.to_string(), ContractType::CliOutput).is_ok());
 
     // Test API error contract validation
     let api_error_json = serde_json::json!({
@@ -107,10 +101,7 @@ async fn test_comprehensive_utility_demonstration() {
         "details": "Invalid API key provided"
     });
 
-    assert!(validate_json_contract(
-        &api_error_json.to_string(),
-        ContractType::ApiError
-    ).is_ok());
+    assert!(validate_json_contract(&api_error_json.to_string(), ContractType::ApiError).is_ok());
 
     print_status!("✅ Contract validation utilities working correctly");
 
@@ -145,8 +136,7 @@ async fn test_comprehensive_utility_demonstration() {
     use performance::memory::*;
 
     reset_memory_tracking();
-    let memory_test = MemoryTest::new()
-        .with_max_increase(1024 * 1024); // 1MB max increase
+    let memory_test = MemoryTest::new().with_max_increase(1024 * 1024); // 1MB max increase
 
     // Simulate some memory allocation
     let _data: Vec<u8> = vec![0; 1000];
@@ -189,16 +179,12 @@ async fn test_comprehensive_utility_demonstration() {
     // 8. CLI Integration Test
     print_status!("🖥️  Testing CLI integration...");
 
-    let config = presets::json_output()
-        .with_api_key("test-key");
+    let config = presets::json_output().with_api_key("test-key");
 
     let mut cmd = cli::create_configured_command(&config);
 
     // Test that the command is properly configured
-    let output = cmd
-        .arg("--file")
-        .arg(temp_pdf.path())
-        .output();
+    let output = cmd.arg("--file").arg(temp_pdf.path()).output();
 
     // Should fail due to invalid API key, but command should be properly configured
     assert!(output.is_ok());
@@ -273,8 +259,7 @@ fn test_utility_combinations() {
     let mut test_env = env::TestEnv::new();
     test_env.set("PAPERLESS_OCR_API_KEY", "env-key");
 
-    let env_config = TestConfig::new()
-        .with_api_key("env-key");
+    let env_config = TestConfig::new().with_api_key("env-key");
 
     let mut env_cmd = cli::create_configured_command(&env_config);
     // Command should be configured with environment variables

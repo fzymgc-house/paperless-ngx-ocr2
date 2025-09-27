@@ -1,6 +1,9 @@
 # Test Utilities Documentation
 
-This directory contains reusable test utilities and helpers for the `paperless-ngx-ocr2` project. These utilities provide consistent patterns for test file management, configuration, contract validation, and performance testing.
+This directory contains reusable test utilities and helpers for the
+`paperless-ngx-ocr2` project. These utilities provide consistent patterns
+for test file management, configuration, contract validation, and
+performance testing.
 
 ## Modules
 
@@ -8,12 +11,12 @@ This directory contains reusable test utilities and helpers for the `paperless-n
 
 Provides utilities for creating and managing test files with automatic cleanup.
 
-#### Key Types
+#### Fixtures Key Types
 
 - `TestFile`: A test file that automatically cleans up on drop
 - `fixtures::*`: Access to predefined test fixtures
 
-#### Usage Examples
+#### Fixtures Usage Examples
 
 ```rust
 use tests::common::fixtures::*;
@@ -51,13 +54,13 @@ fn test_with_large_file() {
 
 Provides utilities for managing test configurations and CLI command setup.
 
-#### Key Types
+#### Config Key Types
 
 - `TestConfig`: Configuration for API and CLI settings
 - `TestConfigBuilder`: Builder pattern for complex configurations
 - `presets::*`: Predefined configurations for common scenarios
 
-#### Usage Examples
+#### Config Usage Examples
 
 ```rust
 use tests::common::config::*;
@@ -103,12 +106,12 @@ fn test_with_preset() {
 
 Provides utilities for validating API contracts and CLI output against expected schemas.
 
-#### Key Types
+#### Contract Key Types
 
 - `ContractType`: Enum of available contract types
 - Various validation functions for different contract types
 
-#### Usage Examples
+#### Contract Usage Examples
 
 ```rust
 use tests::common::contracts::*;
@@ -141,14 +144,14 @@ fn test_api_error_validation() {
 
 Provides utilities for measuring and validating performance in tests.
 
-#### Key Types
+#### Performance Key Types
 
 - `PerformanceTest`: Time-based performance validation
 - `Benchmark`: Statistical performance benchmarking
 - `memory::*`: Memory usage monitoring
 - `stress::*`: Stress testing utilities
 
-#### Usage Examples
+#### Performance Usage Examples
 
 ```rust
 use tests::common::performance::*;
@@ -199,15 +202,21 @@ fn test_stress_test() {
 
 ### File Management
 
-1. **Use fixtures for stable test data**: Use predefined fixtures for consistent, small test files
-2. **Use temporary files for dynamic content**: Create temporary files for test-specific content
-3. **Prefer `TestFile` over manual cleanup**: Always use `TestFile` for automatic cleanup
-4. **Use `TempDir` for directory-based tests**: For tests that need multiple files
+1. **Use fixtures for stable test data**: Use predefined fixtures for
+   consistent, small test files
+2. **Use temporary files for dynamic content**: Create temporary files for
+   test-specific content
+3. **Prefer `TestFile` over manual cleanup**: Always use `TestFile` for
+   automatic cleanup
+4. **Use `TempDir` for directory-based tests**: For tests that need multiple
+   files
 
 ### Configuration
 
-1. **Use presets when possible**: Leverage predefined configurations for common scenarios
-2. **Use builder pattern for complex configs**: Use `TestConfigBuilder` for multi-parameter configurations
+1. **Use presets when possible**: Leverage predefined configurations for
+   common scenarios
+2. **Use builder pattern for complex configs**: Use `TestConfigBuilder` for
+   multi-parameter configurations
 3. **Apply configs consistently**: Use `apply_to_command()` for consistent CLI setup
 
 ### Contract Validation

@@ -1,6 +1,7 @@
 # Docker Usage Examples
 
-This directory contains Docker-related examples and configurations for the paperless-ngx-ocr2 CLI tool.
+This directory contains Docker-related examples and configurations for the
+paperless-ngx-ocr2 CLI tool.
 
 ## Files
 
@@ -79,7 +80,8 @@ The Dockerfile supports multi-architecture builds for both AMD64 and ARM64:
 
 ```bash
 # Build for multiple architectures
-docker buildx build --platform linux/amd64,linux/arm64 -t paperless-ngx-ocr2:latest .
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t paperless-ngx-ocr2:latest .
 ```
 
 ## Configuration
