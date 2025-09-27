@@ -219,34 +219,6 @@ mod tests {
     #[test]
     fn test_fixture_access() {
         let fixture = sample_fixtures::sample_pdf();
-        if !fixture.exists() {
-            // Debug information for CI
-            let current_dir = std::env::current_dir().unwrap_or_default();
-            let fixture_path = fixture.path();
-            eprintln!("Current working directory: {:?}", current_dir);
-            eprintln!("Fixture path: {:?}", fixture_path);
-            eprintln!("Fixture exists: {}", fixture_path.exists());
-
-            // Check if the fixtures directory exists
-            let fixtures_dir = std::path::Path::new("tests/fixtures");
-            eprintln!("Fixtures directory exists: {}", fixtures_dir.exists());
-
-            // List contents of tests directory
-            if let Ok(entries) = std::fs::read_dir("tests") {
-                eprintln!("Contents of tests directory:");
-                for entry in entries.flatten() {
-                    eprintln!("  {:?}", entry.path());
-                }
-            }
-
-            // Check if tests/fixtures directory exists
-            if let Ok(entries) = std::fs::read_dir("tests/fixtures") {
-                eprintln!("Contents of tests/fixtures directory:");
-                for entry in entries.flatten() {
-                    eprintln!("  {:?}", entry.path());
-                }
-            }
-        }
         assert!(fixture.exists(), "Fixture should exist at {:?}", fixture.path());
     }
 
