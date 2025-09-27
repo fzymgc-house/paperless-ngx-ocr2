@@ -83,10 +83,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
-        run: cargo test --all-features --verbose
-
-      - name: Run integration tests
-        run: cargo test --test '*' --all-features --verbose
+        run: cargo test --all-features
 
   # Constitutional requirement: Build verification
   build:
@@ -231,7 +228,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: msrv-1.70-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: msrv-1.84-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check MSRV compatibility
         run: cargo check --all-features
