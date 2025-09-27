@@ -1,5 +1,5 @@
 //! Contract validation utilities
-//! 
+//!
 //! This module provides utilities for validating API contracts and CLI output
 //! against expected schemas and formats.
 
@@ -27,7 +27,8 @@ pub fn validate_cli_output_contract(json: &Value) -> Result<(), String> {
 
 /// Validates the success data structure
 fn validate_success_data(json: &Value) -> Result<(), String> {
-    let data = json.get("data")
+    let data = json
+        .get("data")
         .ok_or("Missing 'data' field for success response")?;
 
     if !data.is_object() {
@@ -37,7 +38,7 @@ fn validate_success_data(json: &Value) -> Result<(), String> {
     // Validate required fields
     let required_fields = ["extracted_text", "file_name", "file_size"];
     for field in &required_fields {
-        if !data.get(field).is_some() {
+        if data.get(field).is_none() {
             return Err(format!("Missing required field 'data.{}'", field));
         }
     }
@@ -67,7 +68,7 @@ fn validate_success_data(json: &Value) -> Result<(), String> {
             return Err("'data.confidence' must be a number".to_string());
         }
         let conf_value = confidence.as_f64().unwrap_or(0.0);
-        if conf_value < 0.0 || conf_value > 1.0 {
+        if !(0.0..=1.0).contains(&conf_value) {
             return Err("'data.confidence' must be between 0.0 and 1.0".to_string());
         }
     }
@@ -77,7 +78,8 @@ fn validate_success_data(json: &Value) -> Result<(), String> {
 
 /// Validates the error data structure
 fn validate_error_data(json: &Value) -> Result<(), String> {
-    let error = json.get("error")
+    let error = json
+        .get("error")
         .ok_or("Missing 'error' field for error response")?;
 
     if !error.is_object() {
@@ -87,16 +89,22 @@ fn validate_error_data(json: &Value) -> Result<(), String> {
     // Validate required fields
     let required_fields = ["type", "message"];
     for field in &required_fields {
-        if !error.get(field).is_some() {
+        if error.get(field).is_none() {
             return Err(format!("Missing required field 'error.{}'", field));
         }
     }
 
     // Validate error type enum
     let error_type = error.get("type").unwrap().as_str().unwrap_or("");
-    let valid_types: HashSet<&str> = ["validation", "network", "api", "file_io", "internal"].iter().cloned().collect();
+    let valid_types: HashSet<&str> = ["validation", "network", "api", "file_io", "internal"]
+        .iter()
+        .cloned()
+        .collect();
     if !valid_types.contains(error_type) {
-        return Err(format!("Invalid error type '{}'. Must be one of: {:?}", error_type, valid_types));
+        return Err(format!(
+            "Invalid error type '{}'. Must be one of: {:?}",
+            error_type, valid_types
+        ));
     }
 
     // Validate field types
@@ -121,7 +129,7 @@ fn validate_error_data(json: &Value) -> Result<(), String> {
 /// Validates API error response contract
 pub fn validate_api_error_contract(json: &Value) -> Result<(), String> {
     // Check required fields
-    if !json.get("error").is_some() {
+    if json.get("error").is_none() {
         return Err("Missing required 'error' field".to_string());
     }
 
@@ -151,7 +159,7 @@ pub fn validate_file_upload_request_contract(json: &Value) -> Result<(), String>
     // Check required fields
     let required_fields = ["file_data", "filename", "purpose"];
     for field in &required_fields {
-        if !json.get(field).is_some() {
+        if json.get(field).is_none() {
             return Err(format!("Missing required field '{}'", field));
         }
     }
@@ -183,7 +191,7 @@ pub fn validate_file_upload_response_contract(json: &Value) -> Result<(), String
     // Check required fields
     let required_fields = ["id", "object", "bytes", "created_at", "filename", "purpose"];
     for field in &required_fields {
-        if !json.get(field).is_some() {
+        if json.get(field).is_none() {
             return Err(format!("Missing required field '{}'", field));
         }
     }
@@ -231,9 +239,15 @@ pub fn validate_file_upload_response_contract(json: &Value) -> Result<(), String
             return Err("'status' field must be a string".to_string());
         }
         let status_value = status.as_str().unwrap_or("");
-        let valid_statuses: HashSet<&str> = ["uploaded", "processing", "processed", "error"].iter().cloned().collect();
+        let valid_statuses: HashSet<&str> = ["uploaded", "processing", "processed", "error"]
+            .iter()
+            .cloned()
+            .collect();
         if !valid_statuses.contains(status_value) {
-            return Err(format!("Invalid status '{}'. Must be one of: {:?}", status_value, valid_statuses));
+            return Err(format!(
+                "Invalid status '{}'. Must be one of: {:?}",
+                status_value, valid_statuses
+            ));
         }
     }
 
@@ -245,7 +259,7 @@ pub fn validate_ocr_request_contract(json: &Value) -> Result<(), String> {
     // Check required fields
     let required_fields = ["model", "document"];
     for field in &required_fields {
-        if !json.get(field).is_some() {
+        if json.get(field).is_none() {
             return Err(format!("Missing required field '{}'", field));
         }
     }
@@ -253,7 +267,10 @@ pub fn validate_ocr_request_contract(json: &Value) -> Result<(), String> {
     // Validate model field
     let model = json.get("model").unwrap().as_str().unwrap_or("");
     if model != "mistral-ocr-latest" {
-        return Err(format!("Invalid model '{}'. Must be 'mistral-ocr-latest'", model));
+        return Err(format!(
+            "Invalid model '{}'. Must be 'mistral-ocr-latest'",
+            model
+        ));
     }
 
     // Validate document structure
@@ -264,7 +281,7 @@ pub fn validate_ocr_request_contract(json: &Value) -> Result<(), String> {
 
     let doc_required_fields = ["type", "file_id"];
     for field in &doc_required_fields {
-        if !document.get(field).is_some() {
+        if document.get(field).is_none() {
             return Err(format!("Missing required field 'document.{}'", field));
         }
     }
@@ -272,7 +289,10 @@ pub fn validate_ocr_request_contract(json: &Value) -> Result<(), String> {
     // Validate document type
     let doc_type = document.get("type").unwrap().as_str().unwrap_or("");
     if doc_type != "file" {
-        return Err(format!("Invalid document type '{}'. Must be 'file'", doc_type));
+        return Err(format!(
+            "Invalid document type '{}'. Must be 'file'",
+            doc_type
+        ));
     }
 
     Ok(())
@@ -283,7 +303,7 @@ pub fn validate_ocr_response_contract(json: &Value) -> Result<(), String> {
     // Check required fields
     let required_fields = ["id", "object", "created", "model", "choices"];
     for field in &required_fields {
-        if !json.get(field).is_some() {
+        if json.get(field).is_none() {
             return Err(format!("Missing required field '{}'", field));
         }
     }
@@ -312,7 +332,10 @@ pub fn validate_ocr_response_contract(json: &Value) -> Result<(), String> {
     // Validate object enum
     let object = json.get("object").unwrap().as_str().unwrap_or("");
     if object != "chat.completion" {
-        return Err(format!("Invalid object '{}'. Must be 'chat.completion'", object));
+        return Err(format!(
+            "Invalid object '{}'. Must be 'chat.completion'",
+            object
+        ));
     }
 
     // Validate choices array
@@ -337,8 +360,11 @@ fn validate_choice_item(choice: &Value, index: usize) -> Result<(), String> {
     // Check required fields
     let required_fields = ["index", "message", "finish_reason"];
     for field in &required_fields {
-        if !choice.get(field).is_some() {
-            return Err(format!("Missing required field 'choices[{}].{}'", index, field));
+        if choice.get(field).is_none() {
+            return Err(format!(
+                "Missing required field 'choices[{}].{}'",
+                index, field
+            ));
         }
     }
 
@@ -350,22 +376,34 @@ fn validate_choice_item(choice: &Value, index: usize) -> Result<(), String> {
 
     let msg_required_fields = ["role", "content"];
     for field in &msg_required_fields {
-        if !message.get(field).is_some() {
-            return Err(format!("Missing required field 'choices[{}].message.{}'", index, field));
+        if message.get(field).is_none() {
+            return Err(format!(
+                "Missing required field 'choices[{}].message.{}'",
+                index, field
+            ));
         }
     }
 
     // Validate role
     let role = message.get("role").unwrap().as_str().unwrap_or("");
     if role != "assistant" {
-        return Err(format!("Invalid role '{}' in choice {}. Must be 'assistant'", role, index));
+        return Err(format!(
+            "Invalid role '{}' in choice {}. Must be 'assistant'",
+            role, index
+        ));
     }
 
     // Validate finish_reason
     let finish_reason = choice.get("finish_reason").unwrap().as_str().unwrap_or("");
-    let valid_reasons: HashSet<&str> = ["stop", "length", "content_filter"].iter().cloned().collect();
+    let valid_reasons: HashSet<&str> = ["stop", "length", "content_filter"]
+        .iter()
+        .cloned()
+        .collect();
     if !valid_reasons.contains(finish_reason) {
-        return Err(format!("Invalid finish_reason '{}' in choice {}. Must be one of: {:?}", finish_reason, index, valid_reasons));
+        return Err(format!(
+            "Invalid finish_reason '{}' in choice {}. Must be one of: {:?}",
+            finish_reason, index, valid_reasons
+        ));
     }
 
     Ok(())
@@ -373,8 +411,7 @@ fn validate_choice_item(choice: &Value, index: usize) -> Result<(), String> {
 
 /// Validates a JSON string against a contract
 pub fn validate_json_contract(json_str: &str, contract_type: ContractType) -> Result<(), String> {
-    let json: Value = serde_json::from_str(json_str)
-        .map_err(|e| format!("Invalid JSON: {}", e))?;
+    let json: Value = serde_json::from_str(json_str).map_err(|e| format!("Invalid JSON: {}", e))?;
 
     match contract_type {
         ContractType::CliOutput => validate_cli_output_contract(&json),

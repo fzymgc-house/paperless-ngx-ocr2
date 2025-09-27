@@ -1,5 +1,5 @@
 //! Test configuration utilities
-//! 
+//!
 //! This module provides utilities for managing test configurations,
 //! including API keys, endpoints, and other test-specific settings.
 
@@ -82,11 +82,16 @@ impl TestConfig {
 
     /// Applies this configuration to a CLI command
     pub fn apply_to_command(&self, cmd: &mut Command) {
-        cmd.arg("--api-key").arg(&self.api_key)
-           .arg("--api-base-url").arg(&self.api_base_url)
-           .env("PAPERLESS_OCR_TIMEOUT", self.timeout_seconds.to_string())
-           .env("PAPERLESS_OCR_MAX_FILE_SIZE", self.max_file_size_mb.to_string())
-           .env("PAPERLESS_OCR_LOG_LEVEL", &self.log_level);
+        cmd.arg("--api-key")
+            .arg(&self.api_key)
+            .arg("--api-base-url")
+            .arg(&self.api_base_url)
+            .env("PAPERLESS_OCR_TIMEOUT", self.timeout_seconds.to_string())
+            .env(
+                "PAPERLESS_OCR_MAX_FILE_SIZE",
+                self.max_file_size_mb.to_string(),
+            )
+            .env("PAPERLESS_OCR_LOG_LEVEL", &self.log_level);
 
         if self.json_output {
             cmd.arg("--json");
@@ -101,10 +106,22 @@ impl TestConfig {
     pub fn to_env_vars(&self) -> HashMap<String, String> {
         let mut vars = HashMap::new();
         vars.insert("PAPERLESS_OCR_API_KEY".to_string(), self.api_key.clone());
-        vars.insert("PAPERLESS_OCR_API_BASE_URL".to_string(), self.api_base_url.clone());
-        vars.insert("PAPERLESS_OCR_TIMEOUT".to_string(), self.timeout_seconds.to_string());
-        vars.insert("PAPERLESS_OCR_MAX_FILE_SIZE".to_string(), self.max_file_size_mb.to_string());
-        vars.insert("PAPERLESS_OCR_LOG_LEVEL".to_string(), self.log_level.clone());
+        vars.insert(
+            "PAPERLESS_OCR_API_BASE_URL".to_string(),
+            self.api_base_url.clone(),
+        );
+        vars.insert(
+            "PAPERLESS_OCR_TIMEOUT".to_string(),
+            self.timeout_seconds.to_string(),
+        );
+        vars.insert(
+            "PAPERLESS_OCR_MAX_FILE_SIZE".to_string(),
+            self.max_file_size_mb.to_string(),
+        );
+        vars.insert(
+            "PAPERLESS_OCR_LOG_LEVEL".to_string(),
+            self.log_level.clone(),
+        );
         vars
     }
 }
@@ -267,12 +284,16 @@ mod tests {
 
     #[test]
     fn test_env_vars() {
-        let config = TestConfig::new()
-            .with_api_key("test-key")
-            .with_timeout(45);
+        let config = TestConfig::new().with_api_key("test-key").with_timeout(45);
 
         let env_vars = config.to_env_vars();
-        assert_eq!(env_vars.get("PAPERLESS_OCR_API_KEY"), Some(&"test-key".to_string()));
-        assert_eq!(env_vars.get("PAPERLESS_OCR_TIMEOUT"), Some(&"45".to_string()));
+        assert_eq!(
+            env_vars.get("PAPERLESS_OCR_API_KEY"),
+            Some(&"test-key".to_string())
+        );
+        assert_eq!(
+            env_vars.get("PAPERLESS_OCR_TIMEOUT"),
+            Some(&"45".to_string())
+        );
     }
 }

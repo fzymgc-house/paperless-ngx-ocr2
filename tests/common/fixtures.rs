@@ -1,5 +1,5 @@
 //! Test fixture management utilities
-//! 
+//!
 //! This module provides utilities for creating and managing test files,
 //! both temporary and fixture-based.
 
@@ -148,7 +148,7 @@ pub fn get_fixture(name: &str) -> TestFile {
 }
 
 /// Available test fixtures
-pub mod fixtures {
+pub mod sample_fixtures {
     use super::get_fixture;
 
     /// Valid PDF fixture
@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_fixture_access() {
-        let fixture = fixtures::sample_pdf();
+        let fixture = sample_fixtures::sample_pdf();
         assert!(fixture.exists());
     }
 
@@ -211,7 +211,7 @@ mod tests {
             let test_file = create_test_pdf("Temp content");
             test_file.path().to_path_buf()
         }; // test_file goes out of scope here
-        
+
         // File should be cleaned up
         assert!(!temp_path.exists());
     }

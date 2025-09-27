@@ -1,27 +1,27 @@
 //! Common test utilities and helpers
-//! 
+//!
 //! This module provides reusable utilities for testing across different test types.
 //! It includes helpers for temporary file management, test configuration,
 //! contract validation, and performance testing.
 
-pub mod fixtures;
 pub mod config;
 pub mod contracts;
+pub mod fixtures;
 pub mod performance;
 
 // Re-export commonly used utilities
-pub use fixtures::{TestFile, create_test_pdf, create_test_png, create_large_test_pdf, create_invalid_file, create_corrupted_pdf};
-pub use config::{TestConfig, presets};
+pub use config::TestConfig;
 pub use contracts::{validate_json_contract, ContractType};
-pub use performance::{measure_performance, measure_performance_async, Benchmark, stress};
+pub use fixtures::{create_large_test_pdf, create_test_pdf, TestFile};
+pub use performance::measure_performance;
 
 /// Test utilities for temporary file management
 pub mod temp_files {
     use super::*;
-    use tempfile::{NamedTempFile, TempDir};
     use std::fs;
     use std::io::Write;
     use std::path::PathBuf;
+    use tempfile::{NamedTempFile, TempDir};
 
     /// Creates a temporary PDF file with the given content
     /// Automatically cleans up on drop
@@ -37,7 +37,9 @@ pub mod temp_files {
     pub fn create_temp_png() -> TestFile {
         let mut temp_file = NamedTempFile::new().unwrap();
         // Minimal PNG header
-        temp_file.write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
+        temp_file
+            .write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+            .unwrap();
         let path = temp_file.path().with_extension("png");
         fs::copy(temp_file.path(), &path).unwrap();
         TestFile::new(path)
@@ -52,8 +54,8 @@ pub mod temp_files {
 
 /// Test utilities for CLI command execution
 pub mod cli {
-    use assert_cmd::Command;
     use super::TestConfig;
+    use assert_cmd::Command;
 
     /// Creates a configured CLI command with default test settings
     pub fn create_test_command() -> Command {
@@ -70,8 +72,8 @@ pub mod cli {
 
 /// Test utilities for environment management
 pub mod env {
-    use std::env;
     use std::collections::HashMap;
+    use std::env;
 
     /// Manages environment variables during tests
     /// Automatically restores original values on drop

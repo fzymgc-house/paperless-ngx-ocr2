@@ -3,8 +3,9 @@
 
 mod common;
 
-use predicates::prelude::*;
 use common::*;
+use common::config::presets;
+use predicates::prelude::*;
 
 // ============================================================================
 // CLI ERROR EXIT CODES TESTS (T016)
@@ -32,7 +33,7 @@ async fn test_cli_exit_code_io_error() {
 
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
-    
+
     cmd.arg("--file")
         .arg("nonexistent_file.pdf")
         .assert()
@@ -55,7 +56,7 @@ async fn test_cli_exit_code_config_error() {
         .assert()
         .failure()
         .code(5); // Network error per constitution
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -72,7 +73,7 @@ async fn test_cli_exit_code_internal_error() {
         .assert()
         .failure()
         .code(5); // Network error per constitution
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -90,7 +91,7 @@ async fn test_cli_exit_code_success() {
         .assert()
         .failure()
         .code(5); // Network error with invalid key
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -109,5 +110,5 @@ async fn test_cli_exit_code_file_size_validation() {
         .assert()
         .failure()
         .code(5); // Network error per constitution
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }

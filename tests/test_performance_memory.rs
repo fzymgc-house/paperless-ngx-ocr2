@@ -2,8 +2,8 @@
 
 mod common;
 
-use paperless_ngx_ocr2::{api::files::FileUploadRequest, FileUpload};
 use common::*;
+use paperless_ngx_ocr2::{api::files::FileUploadRequest, FileUpload};
 use std::time::Duration;
 
 #[test]
@@ -38,21 +38,25 @@ fn test_file_upload_request_memory_usage() {
     let file_data = file_upload.read_file_data().expect("Should read file data");
 
     // Test FileUploadRequest creation with performance measurement
-    let upload_request = measure_performance("request_creation", Duration::from_millis(100), || {
-        FileUploadRequest::new(file_data.clone(), file_upload.get_filename())
-    });
+    let upload_request =
+        measure_performance("request_creation", Duration::from_millis(100), || {
+            FileUploadRequest::new(file_data.clone(), file_upload.get_filename())
+        });
 
     // Test validation with performance measurement
-    let validation_result = measure_performance("request_validation", Duration::from_millis(10), || {
-        upload_request.validate()
-    });
+    let validation_result =
+        measure_performance("request_validation", Duration::from_millis(10), || {
+            upload_request.validate()
+        });
 
     assert!(validation_result.is_ok());
 
     // Test multipart form creation with performance measurement
-    let form_result = measure_performance("multipart_form_creation", Duration::from_millis(200), || {
-        upload_request.to_multipart_form()
-    });
+    let form_result = measure_performance(
+        "multipart_form_creation",
+        Duration::from_millis(200),
+        || upload_request.to_multipart_form(),
+    );
 
     assert!(form_result.is_ok());
     // Automatic cleanup on drop
@@ -69,10 +73,15 @@ fn test_memory_usage_with_multiple_files() {
 
         // Test that each file is processed independently (no memory accumulation)
         let expected_max_ms = (size_mb * 100) + 1000; // ~100ms per MB + 1s overhead
-        measure_performance("file_processing", Duration::from_millis(expected_max_ms as u64), || {
-            let file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
-            let _file_data = file_upload.read_file_data().expect("Should read file data");
-        });
+        measure_performance(
+            "file_processing",
+            Duration::from_millis(expected_max_ms as u64),
+            || {
+                let file_upload =
+                    FileUpload::new(test_file.path()).expect("Should create FileUpload");
+                let _file_data = file_upload.read_file_data().expect("Should read file data");
+            },
+        );
 
         // Automatic cleanup on drop
     }
@@ -84,13 +93,14 @@ fn test_streaming_validation_efficiency() {
     let large_file = create_large_test_pdf(30); // 30MB - test with substantial file size
 
     // Measure validation time - should be constant regardless of file size
-    let file_upload = measure_performance("streaming_validation", Duration::from_millis(20), || {
-        FileUpload::new(large_file.path()).expect("Should validate large file")
-    });
+    let file_upload =
+        measure_performance("streaming_validation", Duration::from_millis(20), || {
+            FileUpload::new(large_file.path()).expect("Should validate large file")
+        });
 
     // Validation should be very fast because it only reads first 8 bytes
     assert!(file_upload.file_size > 25_000_000); // Should be > 25MB
-    // Automatic cleanup on drop
+                                                 // Automatic cleanup on drop
 }
 
 #[test]
@@ -151,7 +161,10 @@ fn test_large_file_size_calculation_accuracy() {
     };
 
     let result = max_size_upload.validate_file();
-    assert!(result.is_ok(), "Files at the maximum size limit should be valid");
+    assert!(
+        result.is_ok(),
+        "Files at the maximum size limit should be valid"
+    );
 
     // Automatic cleanup on drop
 }

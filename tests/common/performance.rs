@@ -1,5 +1,5 @@
 //! Performance testing utilities
-//! 
+//!
 //! This module provides utilities for measuring and validating performance
 //! in tests, including timing constraints and memory usage monitoring.
 
@@ -29,7 +29,9 @@ impl PerformanceTest {
         assert!(
             elapsed <= self.max_duration,
             "Performance test '{}' took {:?}, expected <= {:?}",
-            self.name, elapsed, self.max_duration
+            self.name,
+            elapsed,
+            self.max_duration
         );
     }
 
@@ -45,7 +47,7 @@ impl PerformanceTest {
 }
 
 /// Measures the performance of a function and asserts it completes within the time limit
-pub fn measure_performance<F, R>(name: &str, max_duration: Duration, f: F) -> R 
+pub fn measure_performance<F, R>(name: &str, max_duration: Duration, f: F) -> R
 where
     F: FnOnce() -> R,
 {
@@ -55,9 +57,8 @@ where
     result
 }
 
-
 /// Measures the performance of an async function and asserts it completes within the time limit
-pub async fn measure_performance_async<F, Fut, R>(name: &str, max_duration: Duration, f: F) -> R 
+pub async fn measure_performance_async<F, Fut, R>(name: &str, max_duration: Duration, f: F) -> R
 where
     F: FnOnce() -> Fut,
     Fut: std::future::Future<Output = R>,
@@ -151,7 +152,7 @@ impl Benchmark {
     /// Runs the benchmark and returns statistics
     pub fn run<F>(self, f: F) -> BenchmarkResults
     where
-        F: Fn() -> (),
+        F: Fn(),
     {
         let mut times = Vec::new();
 
@@ -188,14 +189,14 @@ pub struct BenchmarkResults {
 impl BenchmarkResults {
     fn new(name: String, mut times: Vec<Duration>) -> Self {
         times.sort();
-        
+
         let iterations = times.len();
         let min_time = times[0];
         let max_time = times[iterations - 1];
-        
+
         let total_time: Duration = times.iter().sum();
         let avg_time = total_time / iterations as u32;
-        
+
         let median_time = times[iterations / 2];
         let p95_time = times[(iterations * 95) / 100];
         let p99_time = times[(iterations * 99) / 100];
@@ -217,7 +218,9 @@ impl BenchmarkResults {
         assert!(
             self.avg_time <= threshold,
             "Benchmark '{}' average time {:?} exceeded threshold {:?}",
-            self.name, self.avg_time, threshold
+            self.name,
+            self.avg_time,
+            threshold
         );
     }
 
@@ -226,7 +229,9 @@ impl BenchmarkResults {
         assert!(
             self.p95_time <= threshold,
             "Benchmark '{}' 95th percentile time {:?} exceeded threshold {:?}",
-            self.name, self.p95_time, threshold
+            self.name,
+            self.p95_time,
+            threshold
         );
     }
 
@@ -235,7 +240,9 @@ impl BenchmarkResults {
         assert!(
             self.max_time <= threshold,
             "Benchmark '{}' maximum time {:?} exceeded threshold {:?}",
-            self.name, self.max_time, threshold
+            self.name,
+            self.max_time,
+            threshold
         );
     }
 
@@ -325,7 +332,8 @@ pub mod memory {
                 assert!(
                     memory_increase <= max_increase,
                     "Memory usage increased by {} bytes, expected <= {} bytes",
-                    memory_increase, max_increase
+                    memory_increase,
+                    max_increase
                 );
             }
         }
@@ -345,22 +353,27 @@ pub mod stress {
     /// Runs a function multiple times to stress test it
     pub fn stress_test<F>(name: &str, iterations: usize, f: F) -> StressTestResults
     where
-        F: Fn() -> (),
+        F: Fn(),
     {
         let mut results = StressTestResults::new(name.to_string());
-        
+
         for i in 0..iterations {
             let start = Instant::now();
             f();
             let elapsed = start.elapsed();
             results.add_result(elapsed);
-            
+
             // Print progress every 10% of iterations
             if (i + 1) % (iterations / 10).max(1) == 0 {
-                println!("Stress test '{}': {}/{} iterations completed", name, i + 1, iterations);
+                println!(
+                    "Stress test '{}': {}/{} iterations completed",
+                    name,
+                    i + 1,
+                    iterations
+                );
             }
         }
-        
+
         results
     }
 
@@ -397,7 +410,7 @@ pub mod stress {
             self.iterations += 1;
             self.successful_iterations += 1;
             self.total_time += elapsed;
-            
+
             if elapsed < self.min_time {
                 self.min_time = elapsed;
             }
@@ -418,7 +431,9 @@ pub mod stress {
             assert!(
                 self.error_rate <= max_error_rate,
                 "Stress test '{}' error rate {:.2}% exceeded threshold {:.2}%",
-                self.name, self.error_rate * 100.0, max_error_rate * 100.0
+                self.name,
+                self.error_rate * 100.0,
+                max_error_rate * 100.0
             );
         }
 
@@ -427,7 +442,9 @@ pub mod stress {
             assert!(
                 self.avg_time <= threshold,
                 "Stress test '{}' average time {:?} exceeded threshold {:?}",
-                self.name, self.avg_time, threshold
+                self.name,
+                self.avg_time,
+                threshold
             );
         }
 
@@ -475,7 +492,7 @@ mod tests {
             .run(|| {
                 thread::sleep(Duration::from_millis(1));
             });
-        
+
         assert_eq!(results.iterations, 10);
         results.assert_avg_time_less_than(Duration::from_millis(50));
     }
@@ -483,13 +500,13 @@ mod tests {
     #[test]
     fn test_memory_tracking() {
         use memory::*;
-        
+
         reset_memory_tracking();
         let test = MemoryTest::new();
-        
+
         // Allocate some memory
         let _vec: Vec<u8> = vec![0; 1000];
-        
+
         test.assert_memory_usage();
     }
 
@@ -498,7 +515,7 @@ mod tests {
         let results = stress::stress_test("test", 10, || {
             thread::sleep(Duration::from_millis(1));
         });
-        
+
         assert_eq!(results.iterations, 10);
         results.assert_error_rate_less_than(0.1);
     }

@@ -3,8 +3,9 @@
 
 mod common;
 
-use predicates::prelude::*;
 use common::*;
+use common::config::presets;
+use predicates::prelude::*;
 
 // ============================================================================
 // CLI JSON OUTPUT TESTS (T015)
@@ -31,7 +32,7 @@ async fn test_cli_json_output_flag() {
     if output.status.success() {
         // If successful, validate JSON structure
         let stdout = String::from_utf8(output.stdout).unwrap();
-        let json: serde_json::Value = serde_json::from_str(&stdout)
+        let _json: serde_json::Value = serde_json::from_str(&stdout)
             .expect("Output should be valid JSON when --json flag is used");
 
         // Use contract validation

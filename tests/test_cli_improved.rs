@@ -1,13 +1,15 @@
 //! CLI behavior tests - Improved version using test utilities
-//! 
+//!
 //! This file demonstrates improved CLI testing patterns using the common test utilities.
 //! It shows how to use TestConfig for consistent CLI setup, TestFile for automatic cleanup,
 //! and contract validation for output verification.
 
 mod common;
 
-use predicates::prelude::*;
 use common::*;
+use common::config::presets;
+use common::performance::{Benchmark, measure_performance_async, stress};
+use predicates::prelude::*;
 use std::time::Duration;
 
 // ============================================================================
@@ -46,11 +48,9 @@ async fn test_cli_smoke_version_command() {
 async fn test_cli_smoke_no_args_shows_help() {
     let mut cmd = cli::create_test_command();
 
-    cmd.assert()
-        .success()
-        .stdout(predicate::str::contains(
-            "OCR CLI tool that uploads PDF/image files",
-        ));
+    cmd.assert().success().stdout(predicate::str::contains(
+        "OCR CLI tool that uploads PDF/image files",
+    ));
 }
 
 // ============================================================================
@@ -99,7 +99,7 @@ async fn test_cli_file_argument_valid_pdf() {
         .assert()
         .failure()
         .code(5); // Should fail with network error (code 5)
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -114,7 +114,7 @@ async fn test_cli_file_argument_valid_image() {
         .assert()
         .failure()
         .code(5); // Should fail with network error (code 5)
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
 
 // ============================================================================
@@ -125,9 +125,8 @@ async fn test_cli_file_argument_valid_image() {
 async fn test_cli_json_output_flag() {
     // Use TestFile and JSON config preset
     let test_file = create_test_pdf("Sample PDF content");
-    let config = presets::json_output()
-        .with_api_key("test-api-key");
-    
+    let config = presets::json_output().with_api_key("test-api-key");
+
     let mut cmd = cli::create_configured_command(&config);
 
     // Test JSON output
@@ -140,7 +139,7 @@ async fn test_cli_json_output_flag() {
     if output.status.success() {
         // Validate JSON structure using contract validation
         let stdout = String::from_utf8(output.stdout).unwrap();
-        let json: serde_json::Value = serde_json::from_str(&stdout)
+        let _json: serde_json::Value = serde_json::from_str(&stdout)
             .expect("Output should be valid JSON when --json flag is used");
 
         // Use contract validation
@@ -163,9 +162,9 @@ async fn test_cli_json_output_error_format() {
         .stdout(predicate::function(|output: &str| {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
                 // Validate error JSON structure using contract validation
-                validate_json_contract(output, ContractType::CliOutput).is_ok() &&
-                !json.get("success").unwrap().as_bool().unwrap() &&
-                json.get("error").is_some()
+                validate_json_contract(output, ContractType::CliOutput).is_ok()
+                    && !json.get("success").unwrap().as_bool().unwrap()
+                    && json.get("error").is_some()
             } else {
                 false
             }
@@ -176,8 +175,7 @@ async fn test_cli_json_output_error_format() {
 async fn test_cli_json_vs_human_readable_output() {
     // Use TestFile for consistent test data
     let test_file = create_test_pdf("Test content");
-    let config = TestConfig::new()
-        .with_api_key("test-key");
+    let config = TestConfig::new().with_api_key("test-key");
 
     // Test human-readable output (default)
     let mut cmd_human = cli::create_configured_command(&config);
@@ -229,11 +227,9 @@ async fn test_cli_performance_with_large_file() {
     // Measure CLI performance
     measure_performance_async("cli_large_file", Duration::from_secs(5), || async {
         let mut cmd = cli::create_configured_command(&config);
-        let _output = cmd
-            .arg("--file")
-            .arg(large_file.path())
-            .output();
-    }).await;
+        let _output = cmd.arg("--file").arg(large_file.path()).output();
+    })
+    .await;
     // Automatic cleanup on drop
 }
 
@@ -248,10 +244,7 @@ async fn test_cli_benchmark() {
         .warmup_iterations(5)
         .run(|| {
             let mut cmd = cli::create_configured_command(&config);
-            let _output = cmd
-                .arg("--file")
-                .arg(test_file.path())
-                .output();
+            let _output = cmd.arg("--file").arg(test_file.path()).output();
         });
 
     // Assert performance requirements
@@ -285,7 +278,11 @@ async fn test_cli_with_different_configs() {
             .expect("Failed to execute command");
 
         // All should fail but with different error patterns
-        assert!(!output.status.success(), "Config '{}' should fail", config_name);
+        assert!(
+            !output.status.success(),
+            "Config '{}' should fail",
+            config_name
+        );
     }
     // Automatic cleanup on drop
 }
@@ -300,10 +297,7 @@ async fn test_cli_environment_variables() {
     let test_file = create_test_pdf("Env test content");
     let mut cmd = cli::create_test_command();
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure(); // Should fail due to invalid key, but env vars should be loaded
+    cmd.arg("--file").arg(test_file.path()).assert().failure(); // Should fail due to invalid key, but env vars should be loaded
 
     // Environment variables are automatically restored on drop
     // Automatic cleanup on drop
@@ -321,10 +315,7 @@ async fn test_cli_stress_test() {
     // Run stress test for CLI
     let results = stress::stress_test("cli_stress", 50, || {
         let mut cmd = cli::create_configured_command(&config);
-        let _output = cmd
-            .arg("--file")
-            .arg(test_file.path())
-            .output();
+        let _output = cmd.arg("--file").arg(test_file.path()).output();
     });
 
     // Assert stress test results

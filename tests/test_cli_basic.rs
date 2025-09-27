@@ -3,8 +3,9 @@
 
 mod common;
 
-use predicates::prelude::*;
 use common::*;
+use common::config::presets;
+use predicates::prelude::*;
 
 // ============================================================================
 // CLI SMOKE TESTS (T013)
@@ -83,7 +84,7 @@ async fn test_cli_file_argument_nonexistent_file() {
 
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
-    
+
     cmd.arg("--file")
         .arg("nonexistent_file.pdf")
         .assert()
@@ -126,7 +127,7 @@ async fn test_cli_file_argument_valid_pdf() {
         .assert()
         .failure()
         .code(5); // Should fail with network error, not validation error
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -144,5 +145,5 @@ async fn test_cli_file_argument_valid_image() {
         .assert()
         .failure()
         .code(5); // Should fail with network error, not validation error
-    // Automatic cleanup on drop
+                  // Automatic cleanup on drop
 }
