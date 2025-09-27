@@ -9,11 +9,9 @@
 use crate::api::MistralClient;
 use crate::error::{Error, Result};
 use crate::file::FileUpload;
-use crate::metrics::GLOBAL_METRICS;
 use chrono;
 use reqwest::multipart;
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
 use tokio::fs::File;
 
 /// File upload request structure
@@ -212,85 +210,13 @@ impl FilesClient {
         Self { client }
     }
 
-    /// Upload a file to Mistral AI Files API with streaming support for large files
+    /// Upload a file to Mistral AI Files API with streaming support for all files
     pub async fn upload_file(&self, file_upload: &FileUpload) -> Result<FileUploadResponse> {
-        let url = self.client.build_url("v1/files");
+        // Use streaming upload for all files to minimize memory usage
+        // This is more memory-efficient than loading entire files into memory
+        tracing::debug!("Using streaming upload for file: {} ({}MB)", file_upload.get_filename(), file_upload.file_size / (1024 * 1024));
 
-        self.client.log_request("POST", &url);
-
-        // Check if we should use streaming for large files
-        const STREAMING_THRESHOLD: u64 = 50 * 1024 * 1024; // 50MB
-
-        if file_upload.file_size > STREAMING_THRESHOLD {
-            tracing::info!("Large file detected ({}MB), using streaming upload", file_upload.file_size / (1024 * 1024));
-
-            // Use streaming upload for large files
-            return self.upload_file_streaming(&file_upload.file_path).await;
-        }
-
-        // Read file data for smaller files
-        let file_data = file_upload.read_file_data()?;
-
-        // Create upload request
-        let upload_request = FileUploadRequest::new(file_data.clone(), file_upload.get_filename());
-        upload_request.validate()?;
-
-        // Get authorization headers
-        let auth_headers = crate::api::auth::AuthHandler::new(crate::credentials::APICredentials::new(
-            self.client.credentials.api_key.clone(),
-            self.client.credentials.api_base_url.clone(),
-        )?)
-        .get_multipart_headers()?;
-
-        // Send request with retry logic and metrics
-        let start_time = Instant::now();
-        let response = self
-            .client
-            .execute_with_retry(|| {
-                let client = self.client.client().clone();
-                let url = url.clone();
-                let auth_headers = auth_headers.clone();
-                let file_data = file_data.clone();
-                let filename = file_upload.get_filename();
-                let _file_size = file_upload.file_size;
-
-                async move {
-                    // Recreate the form inside the closure
-                    let upload_request = FileUploadRequest::new(file_data, filename);
-                    let form = upload_request.to_multipart_form()?;
-
-                    let response = client.post(&url).headers(auth_headers).multipart(form).send().await.map_err(Error::Network)?;
-
-                    MistralClient::handle_response(response).await
-                }
-            })
-            .await;
-
-        // Record metrics
-        let duration = start_time.elapsed();
-        match &response {
-            Ok(_) => {
-                GLOBAL_METRICS.record_success(duration, file_upload.file_size, 0).await;
-            }
-            Err(_) => {
-                GLOBAL_METRICS.record_failure(duration).await;
-            }
-        }
-
-        let response = response?;
-
-        // Parse response
-        let status = response.status().as_u16();
-        let response_text = response.text().await.map_err(Error::Network)?;
-
-        self.client.log_response(status, Some(response_text.len()));
-
-        let upload_response: FileUploadResponse =
-            serde_json::from_str(&response_text).map_err(|e| Error::Api(format!("Failed to parse upload response: {}", e)))?;
-
-        upload_response.validate()?;
-
-        Ok(upload_response)
+        self.upload_file_streaming(&file_upload.file_path).await
     }
 
     /// Upload a file using streaming (memory-efficient for large files)
