@@ -6,9 +6,10 @@
 
 mod common;
 
-use common::*;
 use common::config::presets;
-use common::performance::{Benchmark, measure_performance_async, stress};
+use common::fixtures::{create_invalid_file, create_test_png};
+use common::performance::{measure_performance_async, stress, Benchmark};
+use common::*;
 use predicates::prelude::*;
 use std::time::Duration;
 

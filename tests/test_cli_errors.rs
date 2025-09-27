@@ -3,8 +3,8 @@
 
 mod common;
 
-use common::*;
 use common::config::presets;
+use common::*;
 use predicates::prelude::*;
 
 // ============================================================================

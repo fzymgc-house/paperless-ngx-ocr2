@@ -3,8 +3,9 @@
 
 mod common;
 
-use common::*;
 use common::config::presets;
+use common::fixtures::{create_invalid_file, create_test_png};
+use common::*;
 use predicates::prelude::*;
 
 // ============================================================================

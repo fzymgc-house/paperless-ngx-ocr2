@@ -5,9 +5,10 @@
 
 mod common;
 
-use common::*;
 use common::config::presets;
-use common::performance::{Benchmark, stress};
+use common::fixtures::create_test_png;
+use common::performance::{stress, Benchmark};
+use common::*;
 use std::time::Duration;
 
 /// Comprehensive test demonstrating all test utilities
