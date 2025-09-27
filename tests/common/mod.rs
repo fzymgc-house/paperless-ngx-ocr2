@@ -10,12 +10,14 @@
 pub mod config;
 pub mod contracts;
 pub mod fixtures;
+pub mod mock;
 pub mod performance;
 
 // Re-export commonly used utilities
 pub use config::{presets, TestConfig};
 pub use contracts::{validate_json_contract, ContractType};
 pub use fixtures::{create_corrupted_pdf, create_invalid_file, create_large_test_pdf, create_test_pdf, create_test_png, TestFile};
+pub use mock::MockApiServer;
 pub use performance::{measure_performance, measure_performance_async, stress, Benchmark};
 
 /// Test utilities for temporary file management

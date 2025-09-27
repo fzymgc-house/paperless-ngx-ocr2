@@ -1,6 +1,9 @@
 //! Network timeout and retry logic tests
 
+mod common;
+
 use assert_cmd::Command;
+use common::*;
 use predicates::prelude::*;
 use std::fs;
 use std::io::Write;
@@ -17,14 +20,19 @@ async fn test_network_timeout_handling() {
 
     let start = Instant::now();
 
+    // Start mock server with delay
+    let mut mock_server = MockApiServer::new();
+    mock_server.setup_timeout_mock(3000).await; // 3 second delay
+    let mock_url = mock_server.start().await.expect("Failed to start mock server");
+
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
     cmd.arg("--file")
         .arg(&temp_path)
         .arg("--api-key")
         .arg("test-key")
         .arg("--api-base-url")
-        .arg("https://httpbin.org/delay/10") // This will timeout
-        .env("PAPERLESS_OCR_TIMEOUT", "2") // 2 second timeout
+        .arg(&mock_url)
+        .env("PAPERLESS_OCR_TIMEOUT", "1") // 1 second timeout
         .assert()
         .failure()
         .stderr(
@@ -44,10 +52,11 @@ async fn test_network_timeout_handling() {
     let duration = start.elapsed();
 
     // Should timeout within reasonable time (not hang indefinitely)
-    assert!(duration.as_secs() < 10, "Command should timeout quickly: {:?}", duration);
+    assert!(duration.as_secs() < 5, "Command should timeout quickly: {:?}", duration);
 
     // Cleanup
     fs::remove_file(&temp_path).ok();
+    mock_server.stop().await.expect("Failed to stop mock server");
 }
 
 #[tokio::test]
@@ -87,7 +96,7 @@ async fn test_connection_refused_handling() {
         .arg("--api-key")
         .arg("test-key")
         .arg("--api-base-url")
-        .arg("https://localhost:9999") // Likely unused port
+        .arg("https://localhost:65535") // Invalid port that will refuse connections
         .assert()
         .failure()
         .stderr(predicate::str::contains("connect").or(predicate::str::contains("refused")));

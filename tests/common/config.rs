@@ -161,6 +161,11 @@ pub mod presets {
     pub fn localhost(port: u16) -> TestConfig {
         TestConfig::new().with_api_base_url(&format!("https://localhost:{}", port))
     }
+
+    /// Configuration for testing with mock API server
+    pub fn mock_api() -> TestConfig {
+        TestConfig::new().with_api_base_url("https://127.0.0.1:8000")
+    }
 }
 
 /// Test configuration builder for more complex scenarios
