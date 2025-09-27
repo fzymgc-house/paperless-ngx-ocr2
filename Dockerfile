@@ -21,7 +21,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
 # Build the application with static linking
-ENV RUSTFLAGS="-C target-feature=-crt-static"
+ENV RUSTFLAGS="-C target-feature=+crt-static"
 
 # Set target based on architecture
 ARG TARGETPLATFORM
