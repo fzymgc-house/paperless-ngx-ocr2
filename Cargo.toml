@@ -65,7 +65,7 @@ predicates = "3.0"
 # Test utilities
 tempfile = "3.0"
 wiremock = "0.5"
-warp = "0.3"
+httpmock = "0.7"
 
 # Documentation generation
 clap_mangen = "0.2"
