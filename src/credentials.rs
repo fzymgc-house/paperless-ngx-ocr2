@@ -19,11 +19,7 @@ pub struct APICredentials {
 impl APICredentials {
     /// Create new API credentials
     pub fn new(api_key: String, api_base_url: String) -> Result<Self> {
-        let mut credentials = Self {
-            api_key,
-            api_base_url,
-            is_valid: false,
-        };
+        let mut credentials = Self { api_key, api_base_url, is_valid: false };
 
         credentials.validate()?;
         credentials.is_valid = true;
@@ -39,14 +35,11 @@ impl APICredentials {
         }
 
         if self.api_key.contains(char::is_whitespace) {
-            return Err(Error::Config(
-                "API key must not contain whitespace".to_string(),
-            ));
+            return Err(Error::Config("API key must not contain whitespace".to_string()));
         }
 
         // Validate API base URL
-        let url = Url::parse(&self.api_base_url)
-            .map_err(|_| Error::Config("API base URL must be a valid URL".to_string()))?;
+        let url = Url::parse(&self.api_base_url).map_err(|_| Error::Config("API base URL must be a valid URL".to_string()))?;
 
         // Ensure it's HTTPS
         if url.scheme() != "https" {

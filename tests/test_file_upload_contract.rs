@@ -18,25 +18,12 @@ async fn test_file_upload_request_contract_structure() {
     let json = serde_json::to_value(&request).expect("Should serialize to JSON");
 
     // Validate required fields exist (FileUploadRequest serializes to these fields)
-    assert!(
-        json.get("file_data").is_some(),
-        "Request must have 'file_data' field"
-    );
-    assert!(
-        json.get("filename").is_some(),
-        "Request must have 'filename' field"
-    );
-    assert!(
-        json.get("purpose").is_some(),
-        "Request must have 'purpose' field"
-    );
+    assert!(json.get("file_data").is_some(), "Request must have 'file_data' field");
+    assert!(json.get("filename").is_some(), "Request must have 'filename' field");
+    assert!(json.get("purpose").is_some(), "Request must have 'purpose' field");
 
     // Validate purpose field value
-    assert_eq!(
-        json.get("purpose").unwrap().as_str().unwrap(),
-        "ocr",
-        "Purpose must be 'ocr'"
-    );
+    assert_eq!(json.get("purpose").unwrap().as_str().unwrap(), "ocr", "Purpose must be 'ocr'");
 }
 
 #[tokio::test]
@@ -55,11 +42,7 @@ async fn test_file_upload_request_contract_required_fields() {
     // Validate JSON schema compliance (FileUploadRequest structure)
     let schema_required_fields = vec!["file_data", "filename", "purpose"];
     for field in schema_required_fields {
-        assert!(
-            json.get(field).is_some(),
-            "Required field '{}' missing from request",
-            field
-        );
+        assert!(json.get(field).is_some(), "Required field '{}' missing from request", field);
     }
 }
 
@@ -86,26 +69,14 @@ async fn test_file_upload_request_contract_multipart_format() {
     // Test that the request can be converted to multipart/form-data format
     // This test MUST FAIL until FileUploadRequest multipart conversion is implemented
 
-    let request = FileUploadRequest {
-        file_data: b"Mock PDF content".to_vec(),
-        filename: "document.pdf".to_string(),
-        purpose: "ocr".to_string(),
-    };
+    let request = FileUploadRequest { file_data: b"Mock PDF content".to_vec(), filename: "document.pdf".to_string(), purpose: "ocr".to_string() };
 
     // Test conversion to multipart form
-    let _form = request
-        .to_multipart_form()
-        .expect("Should convert to multipart form");
+    let _form = request.to_multipart_form().expect("Should convert to multipart form");
 
     // Validate that multipart form contains expected parts
-    assert!(
-        request.has_file_part(),
-        "Multipart form must have file part"
-    );
-    assert!(
-        request.has_purpose_part(),
-        "Multipart form must have purpose part"
-    );
+    assert!(request.has_file_part(), "Multipart form must have file part");
+    assert!(request.has_purpose_part(), "Multipart form must have purpose part");
 }
 
 #[tokio::test]
@@ -114,28 +85,14 @@ async fn test_file_upload_request_contract_file_validation() {
     // This test MUST FAIL until FileUploadRequest validation is implemented
 
     // Test with empty file data (should be invalid)
-    let invalid_request = FileUploadRequest {
-        file_data: vec![],
-        filename: "empty.pdf".to_string(),
-        purpose: "ocr".to_string(),
-    };
+    let invalid_request = FileUploadRequest { file_data: vec![], filename: "empty.pdf".to_string(), purpose: "ocr".to_string() };
 
-    assert!(
-        invalid_request.validate().is_err(),
-        "Empty file data should be invalid"
-    );
+    assert!(invalid_request.validate().is_err(), "Empty file data should be invalid");
 
     // Test with valid file data
-    let valid_request = FileUploadRequest {
-        file_data: b"Valid file content".to_vec(),
-        filename: "valid.pdf".to_string(),
-        purpose: "ocr".to_string(),
-    };
+    let valid_request = FileUploadRequest { file_data: b"Valid file content".to_vec(), filename: "valid.pdf".to_string(), purpose: "ocr".to_string() };
 
-    assert!(
-        valid_request.validate().is_ok(),
-        "Valid file data should pass validation"
-    );
+    assert!(valid_request.validate().is_ok(), "Valid file data should pass validation");
 }
 
 #[tokio::test]
@@ -144,28 +101,14 @@ async fn test_file_upload_request_contract_filename_validation() {
     // This test MUST FAIL until FileUploadRequest filename validation is implemented
 
     // Test with empty filename (should be invalid)
-    let invalid_request = FileUploadRequest {
-        file_data: b"File content".to_vec(),
-        filename: "".to_string(),
-        purpose: "ocr".to_string(),
-    };
+    let invalid_request = FileUploadRequest { file_data: b"File content".to_vec(), filename: "".to_string(), purpose: "ocr".to_string() };
 
-    assert!(
-        invalid_request.validate().is_err(),
-        "Empty filename should be invalid"
-    );
+    assert!(invalid_request.validate().is_err(), "Empty filename should be invalid");
 
     // Test with valid filename
-    let valid_request = FileUploadRequest {
-        file_data: b"File content".to_vec(),
-        filename: "document.pdf".to_string(),
-        purpose: "ocr".to_string(),
-    };
+    let valid_request = FileUploadRequest { file_data: b"File content".to_vec(), filename: "document.pdf".to_string(), purpose: "ocr".to_string() };
 
-    assert!(
-        valid_request.validate().is_ok(),
-        "Valid filename should pass validation"
-    );
+    assert!(valid_request.validate().is_ok(), "Valid filename should pass validation");
 }
 
 // ============================================================================
@@ -187,21 +130,14 @@ async fn test_file_upload_response_contract_structure() {
         "status": "uploaded"
     }"#;
 
-    let response: FileUploadResponse =
-        serde_json::from_str(api_response_json).expect("Should deserialize from API JSON");
+    let response: FileUploadResponse = serde_json::from_str(api_response_json).expect("Should deserialize from API JSON");
 
     // Validate required fields
     assert_eq!(response.id, "file-abc123", "ID field must match");
     assert_eq!(response.object, "file", "Object field must be 'file'");
     assert_eq!(response.bytes, 12345, "Bytes field must match");
-    assert_eq!(
-        response.created_at, 1640995200,
-        "Created_at field must match"
-    );
-    assert_eq!(
-        response.filename, "document.pdf",
-        "Filename field must match"
-    );
+    assert_eq!(response.created_at, 1640995200, "Created_at field must match");
+    assert_eq!(response.filename, "document.pdf", "Filename field must match");
     assert_eq!(response.purpose, "ocr", "Purpose field must be 'ocr'");
 }
 
@@ -219,24 +155,14 @@ async fn test_file_upload_response_contract_required_fields() {
         "purpose": "ocr"
     }"#;
 
-    let response: FileUploadResponse =
-        serde_json::from_str(api_response_json).expect("Should deserialize from API JSON");
+    let response: FileUploadResponse = serde_json::from_str(api_response_json).expect("Should deserialize from API JSON");
 
     // Validate all required fields from schema
-    assert!(
-        !response.id.is_empty(),
-        "ID is required and must not be empty"
-    );
+    assert!(!response.id.is_empty(), "ID is required and must not be empty");
     assert_eq!(response.object, "file", "Object must be 'file'");
     assert!(response.bytes > 0, "Bytes must be positive");
-    assert!(
-        response.created_at > 0,
-        "Created_at must be positive timestamp"
-    );
-    assert!(
-        !response.filename.is_empty(),
-        "Filename is required and must not be empty"
-    );
+    assert!(response.created_at > 0, "Created_at must be positive timestamp");
+    assert!(!response.filename.is_empty(), "Filename is required and must not be empty");
     assert_eq!(response.purpose, "ocr", "Purpose must be 'ocr'");
 }
 
@@ -254,15 +180,10 @@ async fn test_file_upload_response_contract_object_enum() {
         "purpose": "ocr"
     }"#;
 
-    let response: FileUploadResponse =
-        serde_json::from_str(api_response_json).expect("Should deserialize from API JSON");
+    let response: FileUploadResponse = serde_json::from_str(api_response_json).expect("Should deserialize from API JSON");
 
     // Validate object enum constraint
-    assert_eq!(
-        response.object, "file",
-        "Object field must be 'file', got '{}'",
-        response.object
-    );
+    assert_eq!(response.object, "file", "Object field must be 'file', got '{}'", response.object);
 }
 
 #[tokio::test]
@@ -286,16 +207,9 @@ async fn test_file_upload_response_contract_status_enum() {
             status
         );
 
-        let response: FileUploadResponse =
-            serde_json::from_str(&api_response_json).expect("Should deserialize from API JSON");
+        let response: FileUploadResponse = serde_json::from_str(&api_response_json).expect("Should deserialize from API JSON");
 
-        assert_eq!(
-            response.status.as_ref().unwrap(),
-            status,
-            "Status should be '{}', got '{:?}'",
-            status,
-            response.status
-        );
+        assert_eq!(response.status.as_ref().unwrap(), status, "Status should be '{}', got '{:?}'", status, response.status);
     }
 }
 
@@ -314,13 +228,9 @@ async fn test_file_upload_response_contract_optional_fields() {
         "purpose": "ocr"
     }"#;
 
-    let response: FileUploadResponse =
-        serde_json::from_str(minimal_response_json).expect("Should deserialize minimal response");
+    let response: FileUploadResponse = serde_json::from_str(minimal_response_json).expect("Should deserialize minimal response");
 
-    assert!(
-        response.status.is_none(),
-        "Status should be None when not provided"
-    );
+    assert!(response.status.is_none(), "Status should be None when not provided");
 
     // Test with optional status field
     let full_response_json = r#"{
@@ -333,14 +243,9 @@ async fn test_file_upload_response_contract_optional_fields() {
         "status": "uploaded"
     }"#;
 
-    let response: FileUploadResponse =
-        serde_json::from_str(full_response_json).expect("Should deserialize full response");
+    let response: FileUploadResponse = serde_json::from_str(full_response_json).expect("Should deserialize full response");
 
-    assert_eq!(
-        response.status.unwrap(),
-        "uploaded",
-        "Status should be 'uploaded' when provided"
-    );
+    assert_eq!(response.status.unwrap(), "uploaded", "Status should be 'uploaded' when provided");
 }
 
 #[tokio::test]
@@ -358,10 +263,7 @@ async fn test_file_upload_response_contract_validation() {
         status: Some("uploaded".to_string()),
     };
 
-    assert!(
-        valid_response.validate().is_ok(),
-        "Valid response should pass validation"
-    );
+    assert!(valid_response.validate().is_ok(), "Valid response should pass validation");
 
     // Test invalid response (empty ID)
     let invalid_response = FileUploadResponse {
@@ -374,8 +276,5 @@ async fn test_file_upload_response_contract_validation() {
         status: Some("uploaded".to_string()),
     };
 
-    assert!(
-        invalid_response.validate().is_err(),
-        "Invalid response (empty ID) should fail validation"
-    );
+    assert!(invalid_response.validate().is_err(), "Invalid response (empty ID) should fail validation");
 }

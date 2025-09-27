@@ -1,17 +1,26 @@
 # paperless-ngx-ocr2
 
-A command-line tool for extracting text from PDF and image files using Mistral AI's OCR capabilities. Supports TOML configuration, 12-factor app principles, and provides both human-readable and JSON output formats.
+A command-line tool for extracting text from PDF and image files using
+Mistral AI's OCR capabilities. Supports TOML configuration, 12-factor app
+principles, and provides both human-readable and JSON output formats.
 
 ## Features
 
 - **Multi-format Support**: Process PDF, PNG, JPEG, and JPG files
-- **Mistral AI Integration**: Leverages Mistral AI's advanced OCR capabilities
-- **Flexible Configuration**: TOML config files, environment variables, and CLI arguments
-- **12-Factor App**: Follows 12-factor app principles for configuration management
-- **Multiple Output Formats**: Human-readable text or structured JSON output
-- **Robust Error Handling**: Comprehensive error handling with constitutional exit codes
-- **Retry Logic**: Automatic retry with exponential backoff for rate limits
-- **Security Features**: Password-protected PDF detection and API key redaction
+- **Mistral AI Integration**: Leverages Mistral AI's advanced OCR
+  capabilities
+- **Flexible Configuration**: TOML config files, environment variables,
+  and CLI arguments
+- **12-Factor App**: Follows 12-factor app principles for
+  configuration management
+- **Multiple Output Formats**: Human-readable text or structured
+  JSON output
+- **Robust Error Handling**: Comprehensive error handling with
+  constitutional exit codes
+- **Retry Logic**: Automatic retry with exponential backoff for
+  rate limits
+- **Security Features**: Password-protected PDF detection and API
+  key redaction
 - **Cross-Platform**: Works on macOS and Linux
 - **Containerized**: Docker support with multi-architecture builds
 
@@ -24,13 +33,21 @@ A command-line tool for extracting text from PDF and image files using Mistral A
    - Git
 
 2. **Clone and Build**:
+
    ```bash
    git clone https://github.com/fzymgc-house/paperless-ngx-ocr2.git
    cd paperless-ngx-ocr2
    cargo build --release
    ```
 
-3. **Install** (optional):
+3. **Setup Pre-commit Hooks** (recommended):
+
+   ```bash
+   ./scripts/setup-pre-commit.sh
+   ```
+
+4. **Install** (optional):
+
    ```bash
    cargo install --path .
    ```
@@ -38,13 +55,17 @@ A command-line tool for extracting text from PDF and image files using Mistral A
 ### Using Docker
 
 1. **Pull the image**:
+
    ```bash
    docker pull ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest
    ```
 
 2. **Run with Docker**:
+
    ```bash
-   docker run --rm -v $(pwd):/workspace ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest --file /workspace/document.pdf --api-key YOUR_API_KEY
+   docker run --rm -v $(pwd):/workspace \
+     ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest \
+     --file /workspace/document.pdf --api-key YOUR_API_KEY
    ```
 
 ### Pre-built Binaries
@@ -56,11 +77,13 @@ Download the latest release from the [Releases page](https://github.com/fzymgc-h
 1. **Get a Mistral AI API key** from [Mistral AI](https://console.mistral.ai/)
 
 2. **Process a file**:
+
    ```bash
    paperless-ngx-ocr2 --file document.pdf --api-key YOUR_API_KEY
    ```
 
 3. **Get JSON output**:
+
    ```bash
    paperless-ngx-ocr2 --file document.pdf --api-key YOUR_API_KEY --json
    ```
@@ -93,7 +116,8 @@ log_level = "info"
 
 ### Configuration Priority
 
-The tool loads configuration in the following order (later values override earlier ones):
+The tool loads configuration in the following order (later values
+override earlier ones):
 
 1. Default values
 2. TOML configuration file
@@ -137,7 +161,7 @@ paperless-ngx-ocr2 --generate-completions bash > paperless-ngx-ocr2.bash
 
 ### Command Line Options
 
-```
+```text
 USAGE:
     paperless-ngx-ocr2 [OPTIONS] --file <FILE>
 
@@ -201,6 +225,62 @@ paperless-ngx-ocr2 --generate-completions powershell > paperless-ngx-ocr2.ps1
 source paperless-ngx-ocr2.bash  # For bash
 source paperless-ngx-ocr2.zsh   # For zsh
 source paperless-ngx-ocr2.fish  # For fish
+```bash
+
+## Development
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality and
+consistency. The hooks automatically run:
+
+- **Rust formatting** (`rustfmt`)
+- **Rust linting** (`clippy`)
+- **Rust tests** (`cargo test`)
+- **Security audit** (`cargo audit`)
+- **File quality checks** (trailing whitespace, end-of-file, etc.)
+- **YAML/JSON/TOML syntax validation**
+- **Large file detection**
+- **Docker linting** (`hadolint`)
+- **Shell script linting** (`shellcheck`)
+- **Markdown linting** (`markdownlint`)
+
+#### Setup
+
+```bash
+# Install pre-commit hooks
+./scripts/setup-pre-commit.sh
+
+# Or manually:
+pip install pre-commit  # or brew install pre-commit
+pre-commit install
+pre-commit autoupdate
+```
+
+### Running Pre-commit Hooks
+
+```bash
+# Run hooks on all files
+pre-commit run --all-files
+
+# Run hooks on staged files only
+pre-commit run
+
+# Skip hooks for a commit (not recommended)
+git commit --no-verify
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test
+cargo test --test test_cli_basic
+
+# Run with output
+cargo test -- --nocapture
 ```
 
 ## Examples
@@ -231,16 +311,17 @@ $ paperless-ngx-ocr2 --file sample.pdf --api-key sk-... --json
 }
 ```
 
-### Error Handling
+### Error Examples
 
 ```bash
 $ paperless-ngx-ocr2 --file password-protected.pdf --api-key sk-...
-Error: Validation error: Password-protected PDF detected. Please provide an unprotected PDF file.
+Error: Validation error: Password-protected PDF detected. Please
+provide an unprotected PDF file.
 ```
 
-## Development
+## Building from Source
 
-### Building from Source
+### Source Code Setup
 
 ```bash
 git clone https://github.com/fzymgc-house/paperless-ngx-ocr2.git
@@ -248,7 +329,7 @@ cd paperless-ngx-ocr2
 cargo build
 ```
 
-### Running Tests
+### Test Commands
 
 ```bash
 # Run all tests
@@ -311,7 +392,8 @@ services:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE)
+file for details.
 
 ## Acknowledgments
 

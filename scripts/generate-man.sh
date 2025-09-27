@@ -33,13 +33,13 @@ GENERATE_MAN=1 cargo build --release
 # Check if man page was generated
 if [[ -f "paperless-ngx-ocr2.1" ]]; then
     print_success "Man page generated: paperless-ngx-ocr2.1"
-    
+
     # Show man page info
     print_status "Man page info:"
     echo "  File: paperless-ngx-ocr2.1"
     echo "  Size: $(wc -c < paperless-ngx-ocr2.1) bytes"
     echo "  Lines: $(wc -l < paperless-ngx-ocr2.1)"
-    
+
     # Install man page (optional)
     if [[ "$1" == "--install" ]]; then
         print_status "Installing man page..."

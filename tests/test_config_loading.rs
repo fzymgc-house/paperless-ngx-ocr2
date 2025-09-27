@@ -31,9 +31,7 @@ fn test_env_file_loading() {
         .assert();
 
     // Should fail with network error (not config error) because env vars were loaded
-    assert
-        .failure()
-        .stderr(predicate::str::contains("Network error"));
+    assert.failure().stderr(predicate::str::contains("Network error"));
 }
 
 #[test]
@@ -77,9 +75,7 @@ api_base_url = "https://home.api.com"
     let assert = cmd.arg("--file").arg(pdf_file.to_str().unwrap()).assert();
 
     // Should fail with API error (not config error) because current dir config was loaded
-    assert
-        .failure()
-        .stderr(predicate::str::contains("Client error"));
+    assert.failure().stderr(predicate::str::contains("Client error"));
 }
 
 #[test]
@@ -116,9 +112,7 @@ api_base_url = "https://custom.api.com"
         .assert();
 
     // Should fail with API error (not config error) because custom config was loaded
-    assert
-        .failure()
-        .stderr(predicate::str::contains("Client error"));
+    assert.failure().stderr(predicate::str::contains("Client error"));
 }
 
 #[test]
@@ -135,15 +129,8 @@ fn test_config_file_not_found() {
 
     // Run the command with non-existent config file
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
-    let assert = cmd
-        .arg("--file")
-        .arg(pdf_file.to_str().unwrap())
-        .arg("--config")
-        .arg("nonexistent_config.toml")
-        .assert();
+    let assert = cmd.arg("--file").arg(pdf_file.to_str().unwrap()).arg("--config").arg("nonexistent_config.toml").assert();
 
     // Should fail with config error
-    assert
-        .failure()
-        .stderr(predicate::str::contains("Config file not found"));
+    assert.failure().stderr(predicate::str::contains("Config file not found"));
 }

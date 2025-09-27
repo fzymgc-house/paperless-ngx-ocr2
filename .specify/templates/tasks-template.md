@@ -4,6 +4,7 @@
 **Prerequisites**: plan.md (required), research.md, data-model.md, contracts/
 
 ## Execution Flow (main)
+
 ```
 1. Load plan.md from feature directory
    → If not found: ERROR "No implementation plan found"
@@ -33,28 +34,34 @@
 ```
 
 ## Format: `[ID] [P?] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - Include exact file paths in descriptions
 
 ## Path Conventions
+
 - **Single project**: `src/`, `tests/` at repository root (Rust: `tests/` for integration tests)
 - **Web app**: `backend/src/`, `frontend/src/`
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Paths shown below assume single project - adjust based on plan.md structure
 
 ## Phase 3.1: Setup
+
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize Rust project with Cargo and core deps (clap, serde, anyhow)
 - [ ] T003 [P] Configure rustfmt and clippy (CI `-D warnings`)
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
+
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
+
 - [ ] T004 [P] CLI smoke test using assert_cmd: `mycli --help`
 - [ ] T005 [P] CLI JSON output contract test with assert_cmd + predicates
 - [ ] T006 [P] Unit tests for core parsing/validation in `src/`
 - [ ] T007 [P] Integration test in `tests/cli.rs` for error codes
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
+
 - [ ] T008 [P] Implement CLI with clap in `src/main.rs`
 - [ ] T009 [P] Implement core library in `src/lib.rs`
 - [ ] T010 [P] Add `--json` flag and structured output
@@ -63,12 +70,14 @@
 - [ ] T013 Exit codes per constitution
 
 ## Phase 3.4: Integration
+
 - [ ] T015 Wire library into CLI flows
 - [ ] T016 File I/O and path handling with validation
 - [ ] T017 Performance checks on large inputs
 - [ ] T018 Package metadata and `--version` correctness
 
 ## Phase 3.5: Polish
+
 - [ ] T019 [P] Unit tests for validation edge cases
 - [ ] T020 Performance tests (<200ms) where applicable
 - [ ] T021 [P] Update README quickstart and `--help`
@@ -76,12 +85,14 @@
 - [ ] T023 Manual test script for CLI scenarios
 
 ## Dependencies
+
 - Tests (T004-T007) before implementation (T008-T014)
 - T008 blocks T009, T015
 - T016 blocks T018
 - Implementation before polish (T019-T023)
 
 ## Parallel Example
+
 ```
 # Launch T004-T007 together:
 Task: "Contract test POST /api/users in tests/contract/test_users_post.py"
@@ -91,22 +102,24 @@ Task: "Integration test auth in tests/integration/test_auth.py"
 ```
 
 ## Notes
+
 - [P] tasks = different files, no dependencies
 - Verify tests fail before implementing
 - Commit after each task
 - Avoid: vague tasks, same file conflicts
 
 ## Task Generation Rules
+
 *Applied during main() execution*
 
 1. **From Contracts**:
    - Each contract file → contract test task [P]
    - Each endpoint → implementation task
-   
+
 2. **From Data Model**:
    - Each entity → model creation task [P]
    - Relationships → service layer tasks
-   
+
 3. **From User Stories**:
    - Each story → integration test [P]
    - Quickstart scenarios → validation tasks
@@ -116,6 +129,7 @@ Task: "Integration test auth in tests/integration/test_auth.py"
    - Dependencies block parallel execution
 
 ## Validation Checklist
+
 *GATE: Checked by main() before returning*
 
 - [ ] All contracts have corresponding tests

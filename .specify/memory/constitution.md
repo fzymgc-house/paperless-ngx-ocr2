@@ -17,7 +17,9 @@ Sync Impact Report
 ## Core Principles
 
 ### I. CLI Contract (Non-Negotiable)
+
 All functionality MUST be invocable via a stable CLI with text I/O contracts:
+
 - Inputs: command-line flags/args and optional stdin
 - Outputs: human-readable stdout by default; JSON via `--json` flag
 - Errors: strictly to stderr with non-zero exit codes
@@ -25,28 +27,36 @@ All functionality MUST be invocable via a stable CLI with text I/O contracts:
 Rationale: Ensures composability in shells and predictable behavior in automation.
 
 ### II. Safety & Reliability
+
 The codebase MUST compile warning-free with `rustc` stable and enforce:
+
 - `rustfmt` formatting; `clippy` with `-D warnings` in CI
 - No `unwrap`/`expect` in user-facing CLI paths (use `anyhow`/`thiserror`)
 - Prefer `Result`-based flows; avoid `unsafe` unless justified in review
 Rationale: Rust’s guarantees only hold when we treat warnings as errors and model failures explicitly.
 
 ### III. Test-First Discipline
+
 Tests MUST precede implementation for new features and bug fixes:
+
 - Unit tests in `src/` modules; integration tests in `tests/`
 - CLI behavior tests using `assert_cmd` and `predicates`
 - Golden-output tests for `--json` schema and human output where stable
 Rationale: Locks in behavior and prevents regressions on the CLI contract.
 
 ### IV. Observability & Logging
+
 Provide structured, level-based logging:
+
 - Default human-readable logs; JSON logs via `RUST_LOG_FORMAT=json` or `--log-json`
 - Respect `RUST_LOG` levels; no logs on stdout (stdout reserved for program output)
 - Include error contexts and actionable messages
 Rationale: Debuggability without polluting program output.
 
 ### V. Versioning & Compatibility
+
 Adopt Semantic Versioning for both crate and CLI surface:
+
 - Breaking CLI flag/arg changes or JSON schema changes require MAJOR bump
 - Additive flags/fields are MINOR; bugfixes and non-semantic copy changes are PATCH
 - Deprecations announced one MINOR before removal when feasible
@@ -77,6 +87,7 @@ Rationale: Predictable upgrades for users and automation.
 - Compliance review: CI enforces fmt, clippy, tests; reviewers enforce principles.
 
 **Version**: 1.0.0 | **Ratified**: 2025-09-23 | **Last Amended**: 2025-09-23
+
 # [PROJECT_NAME] Constitution
 <!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 

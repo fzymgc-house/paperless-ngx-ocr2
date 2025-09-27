@@ -25,7 +25,7 @@ pub struct CLISuccessData {
     pub confidence: Option<f64>,
 }
 
-/// Error data structure for CLI JSON output  
+/// Error data structure for CLI JSON output
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CLIErrorData {
     #[serde(rename = "type")]
@@ -41,9 +41,7 @@ impl CLIOutput {
         match (self.success, &self.data, &self.error) {
             (true, Some(_), None) => Ok(()),
             (false, None, Some(_)) => Ok(()),
-            _ => Err(Error::Validation(
-                "CLI output must have either data (success=true) or error (success=false), not both".to_string()
-            ))
+            _ => Err(Error::Validation("CLI output must have either data (success=true) or error (success=false), not both".to_string())),
         }
     }
 }
@@ -58,39 +56,19 @@ impl CLIOutput {
 )]
 pub struct Cli {
     /// File to process for OCR
-    #[arg(
-        short,
-        long,
-        help = "Path to the PDF or image file to process",
-        value_name = "FILE"
-    )]
+    #[arg(short, long, help = "Path to the PDF or image file to process", value_name = "FILE")]
     pub file: Option<String>,
 
     /// API key for Mistral AI
-    #[arg(
-        short,
-        long,
-        env = "PAPERLESS_OCR_API_KEY",
-        help = "Mistral AI API key (can also be set via environment variable)",
-        value_name = "KEY"
-    )]
+    #[arg(short, long, env = "PAPERLESS_OCR_API_KEY", help = "Mistral AI API key (can also be set via environment variable)", value_name = "KEY")]
     pub api_key: Option<String>,
 
     /// API base URL
-    #[arg(
-        long,
-        env = "PAPERLESS_OCR_API_BASE_URL",
-        help = "Mistral AI API base URL",
-        value_name = "URL",
-        default_value = "https://api.mistral.ai"
-    )]
+    #[arg(long, env = "PAPERLESS_OCR_API_BASE_URL", help = "Mistral AI API base URL", value_name = "URL", default_value = "https://api.mistral.ai")]
     pub api_base_url: Option<String>,
 
     /// Output format as JSON
-    #[arg(
-        long,
-        help = "Output result in JSON format instead of human-readable text"
-    )]
+    #[arg(long, help = "Output result in JSON format instead of human-readable text")]
     pub json: bool,
 
     /// Verbose output
@@ -102,11 +80,7 @@ pub struct Cli {
     pub config: Option<String>,
 
     /// Generate shell completion scripts
-    #[arg(
-        long,
-        help = "Generate shell completion scripts for the specified shell",
-        value_name = "SHELL"
-    )]
+    #[arg(long, help = "Generate shell completion scripts for the specified shell", value_name = "SHELL")]
     pub completions: Option<String>,
 }
 
@@ -124,19 +98,10 @@ impl Cli {
         // Initialize logging
         crate::init_logging(self.verbose)?;
 
-        tracing::debug!(
-            "CLI arguments parsed: file={:?}, json={}, verbose={}",
-            self.file,
-            self.json,
-            self.verbose
-        );
+        tracing::debug!("CLI arguments parsed: file={:?}, json={}, verbose={}", self.file, self.json, self.verbose);
 
         // Load configuration - use custom path if provided, otherwise use default search
-        let mut config = if let Some(ref config_path) = self.config {
-            Config::load_from_path(config_path)?
-        } else {
-            Config::load_without_validation()?
-        };
+        let mut config = if let Some(ref config_path) = self.config { Config::load_from_path(config_path)? } else { Config::load_without_validation()? };
 
         // Override config with CLI arguments
         if let Some(ref api_key) = self.api_key {
@@ -153,9 +118,7 @@ impl Cli {
         tracing::debug!("Configuration loaded and validated");
 
         // Check if file is provided
-        let file = self.file.as_ref().ok_or_else(|| {
-            Error::Validation("File path is required for OCR processing".to_string())
-        })?;
+        let file = self.file.as_ref().ok_or_else(|| Error::Validation("File path is required for OCR processing".to_string()))?;
 
         // Process the file using commands module
         match commands::process_ocr_command(file, &config, self.json, self.verbose).await {
@@ -171,17 +134,9 @@ impl Cli {
                     let json_error = CLIOutput {
                         success: false,
                         data: None,
-                        error: Some(CLIErrorData {
-                            error_type: e.error_type().to_string(),
-                            message: e.user_message(),
-                            details: Some(e.to_string()),
-                        }),
+                        error: Some(CLIErrorData { error_type: e.error_type().to_string(), message: e.user_message(), details: Some(e.to_string()) }),
                     };
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&json_error)
-                            .unwrap_or_else(|_| "{}".to_string())
-                    );
+                    println!("{}", serde_json::to_string_pretty(&json_error).unwrap_or_else(|_| "{}".to_string()));
                 } else {
                     // Human-readable error output goes to stderr
                     eprintln!("Error: {}", e.user_message());
@@ -202,9 +157,7 @@ impl Cli {
 
         // For OCR processing, file is required
         if self.file.is_none() {
-            return Err(Error::Validation(
-                "File path is required for OCR processing".to_string(),
-            ));
+            return Err(Error::Validation("File path is required for OCR processing".to_string()));
         }
 
         // Validate file argument if provided
@@ -240,10 +193,7 @@ impl Cli {
             "zsh" => self.generate_zsh_completion(bin_name),
             "fish" => self.generate_fish_completion(bin_name),
             "powershell" | "ps1" => self.generate_powershell_completion(bin_name),
-            _ => Err(Error::Config(format!(
-                "Unsupported shell: {}. Supported shells: bash, zsh, fish, powershell",
-                shell
-            ))),
+            _ => Err(Error::Config(format!("Unsupported shell: {}. Supported shells: bash, zsh, fish, powershell", shell))),
         }
     }
 
@@ -251,16 +201,16 @@ impl Cli {
     fn generate_bash_completion(&self, bin_name: &str) -> Result<()> {
         println!(
             r#"# Bash completion for {}
-complete -F _paperless_ngx_ocr2_completion {} 
+complete -F _paperless_ngx_ocr2_completion {}
 
 _paperless_ngx_ocr2_completion() {{
     local cur prev opts
     COMPREPLY=()
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
-    
+
     opts="-f --file -a --api-key --api-base-url --config --json -v --verbose -h --help -V --version --completions"
-    
+
     case "${{prev}}" in
         -f|--file)
             COMPREPLY=( $(compgen -f -- "$cur") )
@@ -281,7 +231,7 @@ _paperless_ngx_ocr2_completion() {{
             return 0
             ;;
     esac
-    
+
     if [[ $cur == -* ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return 0
@@ -327,16 +277,7 @@ complete -c {} -s v -l verbose -d "Enable verbose logging output"
 complete -c {} -l completions -d "Generate shell completion scripts for the specified shell" -x -a "bash zsh fish powershell"
 complete -c {} -s h -l help -d "Print help"
 complete -c {} -s V -l version -d "Print version""#,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name,
-            bin_name
+            bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name, bin_name
         );
         Ok(())
     }
@@ -347,9 +288,9 @@ complete -c {} -s V -l version -d "Print version""#,
             r#"# PowerShell completion for {}
 Register-ArgumentCompleter -CommandName {} -ScriptBlock {{
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-    
+
     $completions = @()
-    
+
     switch ($parameterName) {{
         'File' {{
             $completions = Get-ChildItem -Path . -Name | Where-Object {{ $_ -like "$wordToComplete*" }}
@@ -364,7 +305,7 @@ Register-ArgumentCompleter -CommandName {} -ScriptBlock {{
             $completions = @('-f', '--file', '-a', '--api-key', '--api-base-url', '--config', '--json', '-v', '--verbose', '--completions', '-h', '--help', '-V', '--version') | Where-Object {{ $_ -like "$wordToComplete*" }}
         }}
     }}
-    
+
     return $completions
 }}"#,
             bin_name, bin_name

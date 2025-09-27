@@ -1,7 +1,10 @@
 //! Error handling integration tests
 //! These tests validate that error scenarios are handled correctly end-to-end
 
+mod common;
+
 use assert_cmd::Command;
+use common::MockApiServer;
 use predicates::prelude::*;
 use std::io::Write;
 use tempfile::NamedTempFile;
@@ -48,9 +51,7 @@ async fn test_error_handling_file_too_large() {
 
     // Create a small file but configure very small size limit to trigger error
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nThis file will be considered too large")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nThis file will be considered too large").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -80,9 +81,7 @@ async fn test_error_handling_invalid_api_key() {
     // This test MUST FAIL until API authentication error handling is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTest content for auth error")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content for auth error").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -112,21 +111,24 @@ async fn test_error_handling_network_timeout() {
     // This test MUST FAIL until network timeout handling is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTest content for timeout")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content for timeout").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
-    // Use an invalid URL to trigger network error
+    // Start mock server with long delay to simulate timeout
+    let mut mock_server = MockApiServer::new();
+    mock_server.setup_timeout_mock(5000).await; // 5 second delay
+    let mock_url = mock_server.start().await.expect("Failed to start mock server");
+
+    // Use mock server with very short timeout to trigger timeout error
     cmd.arg("--file")
         .arg(&temp_path)
         .arg("--api-key")
         .arg("test-key")
         .arg("--api-base-url")
-        .arg("https://definitely-does-not-exist-timeout-test.invalid")
+        .arg(&mock_url)
         .env("PAPERLESS_OCR_TIMEOUT", "1") // Very short timeout
         .assert()
         .failure()
@@ -140,6 +142,7 @@ async fn test_error_handling_network_timeout() {
 
     // Cleanup
     std::fs::remove_file(&temp_path).ok();
+    mock_server.stop().await.expect("Failed to stop mock server");
 }
 
 #[tokio::test]
@@ -148,9 +151,7 @@ async fn test_error_handling_empty_api_key() {
     // This test MUST FAIL until API key validation is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTest content for empty key")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content for empty key").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -176,9 +177,7 @@ async fn test_error_handling_malformed_pdf() {
 
     // Create a file with PDF extension but invalid content
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"This is not a valid PDF file at all")
-        .unwrap();
+    temp_file.write_all(b"This is not a valid PDF file at all").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -209,24 +208,17 @@ async fn test_error_handling_with_json_output() {
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
-    cmd.arg("--file")
-        .arg("nonexistent.pdf")
-        .arg("--api-key")
-        .arg("test-key")
-        .arg("--json")
-        .assert()
-        .failure()
-        .stdout(predicate::function(|output: &str| {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
-                // Validate error JSON structure
-                !json.get("success").unwrap().as_bool().unwrap()
-                    && json.get("error").is_some()
-                    && json.get("error").unwrap().get("type").is_some()
-                    && json.get("error").unwrap().get("message").is_some()
-            } else {
-                false
-            }
-        }));
+    cmd.arg("--file").arg("nonexistent.pdf").arg("--api-key").arg("test-key").arg("--json").assert().failure().stdout(predicate::function(|output: &str| {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
+            // Validate error JSON structure
+            !json.get("success").unwrap().as_bool().unwrap()
+                && json.get("error").is_some()
+                && json.get("error").unwrap().get("type").is_some()
+                && json.get("error").unwrap().get("message").is_some()
+        } else {
+            false
+        }
+    }));
 }
 
 #[tokio::test]
@@ -253,9 +245,7 @@ async fn test_error_handling_api_rate_limit() {
     // This test MUST FAIL until rate limit error handling is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nRate limit test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nRate limit test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 

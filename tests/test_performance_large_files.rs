@@ -27,11 +27,7 @@ fn test_large_file_validation_performance() {
     let duration = start.elapsed();
 
     // Should complete quickly (under 100ms for 1MB file)
-    assert!(
-        duration.as_millis() < 100,
-        "File validation took too long: {:?}",
-        duration
-    );
+    assert!(duration.as_millis() < 100, "File validation took too long: {:?}", duration);
     assert!(result.is_ok(), "Large file validation should succeed");
 
     let file_upload = result.unwrap();
@@ -98,11 +94,7 @@ fn test_file_size_boundary_conditions() {
     let result = file_upload_over.validate_file();
     assert!(result.is_err(), "File over 100MB should fail validation");
     if let Err(e) = result {
-        assert!(
-            e.to_string().contains("exceeds maximum"),
-            "Error should mention size limit, got: {}",
-            e
-        );
+        assert!(e.to_string().contains("exceeds maximum"), "Error should mention size limit, got: {}", e);
     }
 
     // Cleanup
@@ -129,11 +121,7 @@ fn test_magic_bytes_validation_performance() {
     let duration = start.elapsed();
 
     // Should complete 100 validations quickly (under 1 second)
-    assert!(
-        duration.as_millis() < 1000,
-        "Magic byte validation too slow: {:?}",
-        duration
-    );
+    assert!(duration.as_millis() < 1000, "Magic byte validation too slow: {:?}", duration);
 }
 
 #[test]
@@ -157,11 +145,7 @@ fn test_file_read_performance() {
     let duration = start.elapsed();
 
     // Should read 10MB quickly (under 500ms)
-    assert!(
-        duration.as_millis() < 500,
-        "File read took too long: {:?}",
-        duration
-    );
+    assert!(duration.as_millis() < 500, "File read took too long: {:?}", duration);
     assert!(file_data.len() > 10_000_000); // Should be > 10MB
     assert!(file_data.starts_with(b"%PDF"));
 
@@ -179,9 +163,7 @@ fn test_concurrent_file_validation() {
         .map(|i| {
             thread::spawn(move || {
                 let mut temp_file = NamedTempFile::new().unwrap();
-                temp_file
-                    .write_all(format!("%PDF-1.4\nConcurrent test {}", i).as_bytes())
-                    .unwrap();
+                temp_file.write_all(format!("%PDF-1.4\nConcurrent test {}", i).as_bytes()).unwrap();
                 let temp_path = temp_file.path().with_extension("pdf");
                 fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -200,9 +182,6 @@ fn test_concurrent_file_validation() {
     for handle in handles {
         let (success, duration) = handle.join().unwrap();
         assert!(success, "Concurrent file validation should succeed");
-        assert!(
-            duration.as_millis() < 50,
-            "Concurrent validation should be fast"
-        );
+        assert!(duration.as_millis() < 50, "Concurrent validation should be fast");
     }
 }

@@ -18,20 +18,12 @@ async fn test_api_error_response_contract_structure() {
         "details": "Invalid API key provided"
     }"#;
 
-    let error_response: APIErrorResponse =
-        serde_json::from_str(api_error_json).expect("Should deserialize from API error JSON");
+    let error_response: APIErrorResponse = serde_json::from_str(api_error_json).expect("Should deserialize from API error JSON");
 
     // Validate required fields
-    assert_eq!(
-        error_response.error, "Authentication failed",
-        "Error field must match"
-    );
+    assert_eq!(error_response.error, "Authentication failed", "Error field must match");
     assert_eq!(error_response.code, Some(401), "Code field must match");
-    assert_eq!(
-        error_response.details,
-        Some("Invalid API key provided".to_string()),
-        "Details field must match"
-    );
+    assert_eq!(error_response.details, Some("Invalid API key provided".to_string()), "Details field must match");
 }
 
 #[tokio::test]
@@ -43,28 +35,15 @@ async fn test_api_error_response_contract_required_fields() {
         "error": "File not found"
     }"#;
 
-    let error_response: APIErrorResponse = serde_json::from_str(minimal_error_json)
-        .expect("Should deserialize minimal error response");
+    let error_response: APIErrorResponse = serde_json::from_str(minimal_error_json).expect("Should deserialize minimal error response");
 
     // Validate required field
-    assert!(
-        !error_response.error.is_empty(),
-        "Error message is required and must not be empty"
-    );
-    assert_eq!(
-        error_response.error, "File not found",
-        "Error message must match"
-    );
+    assert!(!error_response.error.is_empty(), "Error message is required and must not be empty");
+    assert_eq!(error_response.error, "File not found", "Error message must match");
 
     // Validate optional fields are None when not provided
-    assert!(
-        error_response.code.is_none(),
-        "Code should be None when not provided"
-    );
-    assert!(
-        error_response.details.is_none(),
-        "Details should be None when not provided"
-    );
+    assert!(error_response.code.is_none(), "Code should be None when not provided");
+    assert!(error_response.details.is_none(), "Details should be None when not provided");
 }
 
 #[tokio::test]
@@ -79,23 +58,18 @@ async fn test_api_error_response_contract_optional_fields() {
         "details": "You have exceeded the rate limit. Please try again later."
     }"#;
 
-    let error_response: APIErrorResponse =
-        serde_json::from_str(full_error_json).expect("Should deserialize full error response");
+    let error_response: APIErrorResponse = serde_json::from_str(full_error_json).expect("Should deserialize full error response");
 
     assert_eq!(error_response.error, "Rate limit exceeded");
     assert_eq!(error_response.code.unwrap(), 429);
-    assert_eq!(
-        error_response.details.unwrap(),
-        "You have exceeded the rate limit. Please try again later."
-    );
+    assert_eq!(error_response.details.unwrap(), "You have exceeded the rate limit. Please try again later.");
 
     // Test with only error field
     let minimal_error_json = r#"{
         "error": "Internal server error"
     }"#;
 
-    let error_response: APIErrorResponse = serde_json::from_str(minimal_error_json)
-        .expect("Should deserialize minimal error response");
+    let error_response: APIErrorResponse = serde_json::from_str(minimal_error_json).expect("Should deserialize minimal error response");
 
     assert_eq!(error_response.error, "Internal server error");
     assert!(error_response.code.is_none());
@@ -113,18 +87,14 @@ async fn test_api_error_conversion_to_cli_error() {
         "details": "Only PDF, PNG, and JPEG files are supported"
     }"#;
 
-    let api_error: APIErrorResponse =
-        serde_json::from_str(api_error_json).expect("Should deserialize API error");
+    let api_error: APIErrorResponse = serde_json::from_str(api_error_json).expect("Should deserialize API error");
 
     // Test conversion to internal error type
     let internal_error: APIError = api_error.into();
 
     assert_eq!(internal_error.message(), "Invalid file format");
     assert_eq!(internal_error.error_code(), Some(400));
-    assert_eq!(
-        internal_error.details(),
-        Some("Only PDF, PNG, and JPEG files are supported")
-    );
+    assert_eq!(internal_error.details(), Some("Only PDF, PNG, and JPEG files are supported"));
 }
 
 #[tokio::test]
@@ -152,18 +122,11 @@ async fn test_api_error_contract_http_status_mapping() {
             error_message, status_code
         );
 
-        let api_error: APIErrorResponse =
-            serde_json::from_str(&api_error_json).expect("Should deserialize API error");
+        let api_error: APIErrorResponse = serde_json::from_str(&api_error_json).expect("Should deserialize API error");
 
         let internal_error: APIError = api_error.into();
 
-        assert_eq!(
-            internal_error.error_type(),
-            expected_type,
-            "Status code {} should map to error type '{}'",
-            status_code,
-            expected_type
-        );
+        assert_eq!(internal_error.error_type(), expected_type, "Status code {} should map to error type '{}'", status_code, expected_type);
     }
 }
 
@@ -181,19 +144,9 @@ async fn test_api_error_contract_exit_code_mapping() {
     ];
 
     for (error_type, expected_exit_code) in error_types_and_codes {
-        let api_error = APIError::new(
-            error_type.to_string(),
-            format!("Test {} error", error_type),
-            None,
-        );
+        let api_error = APIError::new(error_type.to_string(), format!("Test {} error", error_type), None);
 
-        assert_eq!(
-            api_error.exit_code(),
-            expected_exit_code,
-            "Error type '{}' should map to exit code {}",
-            error_type,
-            expected_exit_code
-        );
+        assert_eq!(api_error.exit_code(), expected_exit_code, "Error type '{}' should map to exit code {}", error_type, expected_exit_code);
     }
 }
 
@@ -203,28 +156,14 @@ async fn test_api_error_contract_validation() {
     // This test MUST FAIL until validation methods are implemented
 
     // Test valid API error response
-    let valid_error = APIErrorResponse {
-        error: "Valid error message".to_string(),
-        code: Some(400),
-        details: Some("Valid error details".to_string()),
-    };
+    let valid_error = APIErrorResponse { error: "Valid error message".to_string(), code: Some(400), details: Some("Valid error details".to_string()) };
 
-    assert!(
-        valid_error.validate().is_ok(),
-        "Valid error response should pass validation"
-    );
+    assert!(valid_error.validate().is_ok(), "Valid error response should pass validation");
 
     // Test invalid error response (empty error message)
-    let invalid_error = APIErrorResponse {
-        error: "".to_string(),
-        code: Some(400),
-        details: None,
-    };
+    let invalid_error = APIErrorResponse { error: "".to_string(), code: Some(400), details: None };
 
-    assert!(
-        invalid_error.validate().is_err(),
-        "Invalid error response (empty message) should fail validation"
-    );
+    assert!(invalid_error.validate().is_err(), "Invalid error response (empty message) should fail validation");
 }
 
 #[tokio::test]
@@ -232,27 +171,14 @@ async fn test_api_error_contract_logging_format() {
     // Test that API errors can be formatted for logging without exposing sensitive data
     // This test MUST FAIL until logging format is implemented
 
-    let api_error = APIError::new(
-        "api".to_string(),
-        "Authentication failed".to_string(),
-        Some("Invalid API key: sk-***redacted***".to_string()),
-    );
+    let api_error = APIError::new("api".to_string(), "Authentication failed".to_string(), Some("Invalid API key: sk-***redacted***".to_string()));
 
     // Test that API keys are redacted in log output
     let log_output = api_error.to_log_string();
-    assert!(
-        !log_output.contains("sk-"),
-        "API keys should be redacted in log output"
-    );
-    assert!(
-        log_output.contains("Authentication failed"),
-        "Error message should be present in log output"
-    );
+    assert!(!log_output.contains("sk-"), "API keys should be redacted in log output");
+    assert!(log_output.contains("Authentication failed"), "Error message should be present in log output");
 
     // Test user-facing error message doesn't contain sensitive details
     let user_message = api_error.to_user_string();
-    assert!(
-        !user_message.contains("sk-"),
-        "User message should not contain API key details"
-    );
+    assert!(!user_message.contains("sk-"), "User message should not contain API key details");
 }

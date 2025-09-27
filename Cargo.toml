@@ -2,6 +2,7 @@
 name = "paperless-ngx-ocr2"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.84"
 authors = ["Sean Brandt <seanb4t@fzymgc.dev>"]
 description = "OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction"
 repository = "https://github.com/fzymgc-house/paperless-ngx-ocr2"
@@ -64,6 +65,7 @@ predicates = "3.0"
 # Test utilities
 tempfile = "3.0"
 wiremock = "0.5"
+httpmock = "0.7"
 
 # Documentation generation
 clap_mangen = "0.2"

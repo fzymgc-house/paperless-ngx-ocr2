@@ -124,11 +124,11 @@ for file in "$INPUT_DIR"/*; do
         # Get file extension
         extension="${file##*.}"
         extension="${extension,,}"  # Convert to lowercase
-        
+
         # Check if file extension is supported
-        if [[ " ${SUPPORTED_EXTENSIONS[*]} " =~ " ${extension} " ]]; then
+        if [[ " ${SUPPORTED_EXTENSIONS[*]} " =~ ${extension} ]]; then
             echo "Processing: $(basename "$file")"
-            
+
             # Build output file path if output directory is specified
             if [[ -n "$OUTPUT_DIR" ]]; then
                 base_name=$(basename "$file" ".$extension")
@@ -140,7 +140,7 @@ for file in "$INPUT_DIR"/*; do
             else
                 output_file="/dev/stdout"
             fi
-            
+
             # Run the OCR tool
             if paperless-ngx-ocr2 --file "$file" "${CMD_ARGS[@]}" > "$output_file" 2>/dev/null; then
                 echo "  ✓ Success"

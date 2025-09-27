@@ -19,11 +19,7 @@ impl<T> CacheEntry<T> {
     /// Create a new cache entry
     pub fn new(data: T, ttl: Duration) -> Self {
         let now = Instant::now();
-        Self {
-            data,
-            created_at: now,
-            expires_at: now + ttl,
-        }
+        Self { data, created_at: now, expires_at: now + ttl }
     }
 
     /// Check if the entry is expired
@@ -75,11 +71,7 @@ where
 {
     /// Create a new cache with default TTL and max entries
     pub fn new(default_ttl: Duration, max_entries: usize) -> Self {
-        Self {
-            entries: Arc::new(RwLock::new(HashMap::new())),
-            default_ttl,
-            max_entries,
-        }
+        Self { entries: Arc::new(RwLock::new(HashMap::new())), default_ttl, max_entries }
     }
 
     /// Get an entry from the cache
@@ -184,10 +176,7 @@ where
 
     /// Find the oldest entry (least recently created)
     async fn find_oldest_entry(&self, entries: &HashMap<K, CacheEntry<V>>) -> Option<K> {
-        entries
-            .iter()
-            .min_by_key(|(_, entry)| entry.created_at)
-            .map(|(key, _)| key.clone())
+        entries.iter().min_by_key(|(_, entry)| entry.created_at).map(|(key, _)| key.clone())
     }
 }
 
@@ -225,7 +214,7 @@ impl CacheManager {
     pub fn new() -> Self {
         Self {
             file_upload_cache: FileUploadCache::new(Duration::from_secs(3600), 100), // 1 hour TTL, 100 entries
-            ocr_result_cache: OCRResultCache::new(Duration::from_secs(7200), 200), // 2 hours TTL, 200 entries
+            ocr_result_cache: OCRResultCache::new(Duration::from_secs(7200), 200),   // 2 hours TTL, 200 entries
         }
     }
 
@@ -238,8 +227,7 @@ impl CacheManager {
             file_upload_cache: file_stats.clone(),
             ocr_result_cache: ocr_stats.clone(),
             total_active_entries: file_stats.active_entries + ocr_stats.active_entries,
-            total_estimated_size_bytes: file_stats.estimated_size_bytes
-                + ocr_stats.estimated_size_bytes,
+            total_estimated_size_bytes: file_stats.estimated_size_bytes + ocr_stats.estimated_size_bytes,
         }
     }
 
@@ -282,14 +270,8 @@ mod tests {
         let cache: Cache<String, String> = Cache::new(Duration::from_secs(1), 10);
 
         // Test put and get
-        cache
-            .put("key1".to_string(), "value1".to_string())
-            .await
-            .unwrap();
-        assert_eq!(
-            cache.get(&"key1".to_string()).await,
-            Some("value1".to_string())
-        );
+        cache.put("key1".to_string(), "value1".to_string()).await.unwrap();
+        assert_eq!(cache.get(&"key1".to_string()).await, Some("value1".to_string()));
 
         // Test expiration
         tokio::time::sleep(Duration::from_millis(1100)).await;
@@ -300,42 +282,21 @@ mod tests {
     async fn test_cache_max_entries() {
         let cache: Cache<String, String> = Cache::new(Duration::from_secs(10), 2);
 
-        cache
-            .put("key1".to_string(), "value1".to_string())
-            .await
-            .unwrap();
-        cache
-            .put("key2".to_string(), "value2".to_string())
-            .await
-            .unwrap();
-        cache
-            .put("key3".to_string(), "value3".to_string())
-            .await
-            .unwrap(); // Should evict key1
+        cache.put("key1".to_string(), "value1".to_string()).await.unwrap();
+        cache.put("key2".to_string(), "value2".to_string()).await.unwrap();
+        cache.put("key3".to_string(), "value3".to_string()).await.unwrap(); // Should evict key1
 
         assert_eq!(cache.get(&"key1".to_string()).await, None);
-        assert_eq!(
-            cache.get(&"key2".to_string()).await,
-            Some("value2".to_string())
-        );
-        assert_eq!(
-            cache.get(&"key3".to_string()).await,
-            Some("value3".to_string())
-        );
+        assert_eq!(cache.get(&"key2".to_string()).await, Some("value2".to_string()));
+        assert_eq!(cache.get(&"key3".to_string()).await, Some("value3".to_string()));
     }
 
     #[tokio::test]
     async fn test_cache_stats() {
         let cache: Cache<String, String> = Cache::new(Duration::from_secs(1), 10);
 
-        cache
-            .put("key1".to_string(), "value1".to_string())
-            .await
-            .unwrap();
-        cache
-            .put("key2".to_string(), "value2".to_string())
-            .await
-            .unwrap();
+        cache.put("key1".to_string(), "value1".to_string()).await.unwrap();
+        cache.put("key2".to_string(), "value2".to_string()).await.unwrap();
 
         let stats = cache.stats().await;
         assert_eq!(stats.active_entries, 2);
@@ -364,15 +325,9 @@ mod tests {
     async fn test_cache_manager() {
         let manager = CacheManager::new();
 
-        let file_key = FileCacheKey {
-            file_hash: "test_hash".to_string(),
-            purpose: "ocr".to_string(),
-        };
+        let file_key = FileCacheKey { file_hash: "test_hash".to_string(), purpose: "ocr".to_string() };
 
-        let ocr_key = OCRCacheKey {
-            file_id: "test_file_id".to_string(),
-            model: "mistral-large".to_string(),
-        };
+        let ocr_key = OCRCacheKey { file_id: "test_file_id".to_string(), model: "mistral-large".to_string() };
 
         // Test file upload cache
         let upload_response = crate::api::files::FileUploadResponse {
@@ -385,29 +340,18 @@ mod tests {
             status: None,
         };
 
-        manager
-            .file_upload_cache
-            .put(file_key.clone(), upload_response.clone())
-            .await
-            .unwrap();
+        manager.file_upload_cache.put(file_key.clone(), upload_response.clone()).await.unwrap();
         assert!(manager.file_upload_cache.get(&file_key).await.is_some());
 
         // Test OCR result cache
         let ocr_response = crate::api::ocr::OCRResponse {
             model: "mistral-large".to_string(),
             pages: vec![],
-            usage_info: crate::api::ocr::UsageInfo {
-                pages_processed: 1,
-                doc_size_bytes: 1024,
-            },
+            usage_info: crate::api::ocr::UsageInfo { pages_processed: 1, doc_size_bytes: 1024 },
             document_annotation: None,
         };
 
-        manager
-            .ocr_result_cache
-            .put(ocr_key.clone(), ocr_response.clone())
-            .await
-            .unwrap();
+        manager.ocr_result_cache.put(ocr_key.clone(), ocr_response.clone()).await.unwrap();
         assert!(manager.ocr_result_cache.get(&ocr_key).await.is_some());
 
         // Test combined stats

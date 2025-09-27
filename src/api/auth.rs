@@ -27,8 +27,7 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
 
         // Add authorization header
-        let auth_value = HeaderValue::from_str(&self.credentials.get_auth_header())
-            .map_err(|e| Error::Config(format!("Invalid API key format: {}", e)))?;
+        let auth_value = HeaderValue::from_str(&self.credentials.get_auth_header()).map_err(|e| Error::Config(format!("Invalid API key format: {}", e)))?;
 
         headers.insert(AUTHORIZATION, auth_value);
 
@@ -36,10 +35,7 @@ impl AuthHandler {
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
         // Add compression support headers
-        headers.insert(
-            ACCEPT_ENCODING,
-            HeaderValue::from_static("gzip, deflate, br"),
-        );
+        headers.insert(ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
 
         Ok(headers)
     }
@@ -49,16 +45,12 @@ impl AuthHandler {
         let mut headers = HeaderMap::new();
 
         // Add authorization header
-        let auth_value = HeaderValue::from_str(&self.credentials.get_auth_header())
-            .map_err(|e| Error::Config(format!("Invalid API key format: {}", e)))?;
+        let auth_value = HeaderValue::from_str(&self.credentials.get_auth_header()).map_err(|e| Error::Config(format!("Invalid API key format: {}", e)))?;
 
         headers.insert(AUTHORIZATION, auth_value);
 
         // Add compression support headers
-        headers.insert(
-            ACCEPT_ENCODING,
-            HeaderValue::from_static("gzip, deflate, br"),
-        );
+        headers.insert(ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
 
         // Note: Content-Type for multipart is set automatically by reqwest
 

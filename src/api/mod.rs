@@ -40,11 +40,7 @@ impl MistralClient {
             .build()
             .map_err(|e| Error::Internal(format!("Failed to create HTTP client: {}", e)))?;
 
-        Ok(Self {
-            client,
-            base_url: credentials.api_base_url.clone(),
-            credentials,
-        })
+        Ok(Self { client, base_url: credentials.api_base_url.clone(), credentials })
     }
 
     /// Get the HTTP client
@@ -64,11 +60,7 @@ impl MistralClient {
 
     /// Build a full URL for an endpoint
     pub fn build_url(&self, endpoint: &str) -> String {
-        format!(
-            "{}/{}",
-            self.base_url.trim_end_matches('/'),
-            endpoint.trim_start_matches('/')
-        )
+        format!("{}/{}", self.base_url.trim_end_matches('/'), endpoint.trim_start_matches('/'))
     }
 
     /// Handle API response and convert errors
@@ -79,10 +71,7 @@ impl MistralClient {
             Ok(response)
         } else {
             let status_code = status.as_u16();
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".to_string());
+            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
 
             // Try to parse as JSON error response
             if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_text) {
@@ -99,12 +88,7 @@ impl MistralClient {
 
     /// Log API request details (for debugging)
     pub fn log_request(&self, method: &str, url: &str) {
-        tracing::debug!(
-            "API Request: {} {} (auth: {})",
-            method,
-            url,
-            self.credentials.redacted_key()
-        );
+        tracing::debug!("API Request: {} {} (auth: {})", method, url, self.credentials.redacted_key());
     }
 
     /// Log API response details (for debugging)
@@ -117,20 +101,10 @@ impl MistralClient {
     }
 
     /// Log API response details with compression info
-    pub fn log_response_with_compression(
-        &self,
-        status: u16,
-        response_size: Option<usize>,
-        content_encoding: Option<&str>,
-    ) {
+    pub fn log_response_with_compression(&self, status: u16, response_size: Option<usize>, content_encoding: Option<&str>) {
         if let Some(size) = response_size {
             if let Some(encoding) = content_encoding {
-                tracing::debug!(
-                    "API Response: {} ({} bytes, compressed with {})",
-                    status,
-                    size,
-                    encoding
-                );
+                tracing::debug!("API Response: {} ({} bytes, compressed with {})", status, size, encoding);
             } else {
                 tracing::debug!("API Response: {} ({} bytes, uncompressed)", status, size);
             }
@@ -157,19 +131,11 @@ impl MistralClient {
                     if status == 429 {
                         if attempt < MAX_RETRIES {
                             let delay_ms = BASE_DELAY_MS * 2_u64.pow(attempt); // Exponential backoff
-                            tracing::warn!(
-                                "Rate limit hit (HTTP 429), retrying in {}ms (attempt {}/{})",
-                                delay_ms,
-                                attempt + 1,
-                                MAX_RETRIES
-                            );
+                            tracing::warn!("Rate limit hit (HTTP 429), retrying in {}ms (attempt {}/{})", delay_ms, attempt + 1, MAX_RETRIES);
                             sleep(Duration::from_millis(delay_ms)).await;
                             continue;
                         } else {
-                            return Err(Error::from_http_status(
-                                429,
-                                "Rate limit exceeded after 3 retries".to_string(),
-                            ));
+                            return Err(Error::from_http_status(429, "Rate limit exceeded after 3 retries".to_string()));
                         }
                     }
 
@@ -178,16 +144,9 @@ impl MistralClient {
                 Err(e) => {
                     // Check if it's a rate limit error by checking the error message
                     if let Error::Api(ref api_error) = e {
-                        if (api_error.contains("429") || api_error.contains("rate limit"))
-                            && attempt < MAX_RETRIES
-                        {
+                        if (api_error.contains("429") || api_error.contains("rate limit")) && attempt < MAX_RETRIES {
                             let delay_ms = BASE_DELAY_MS * 2_u64.pow(attempt);
-                            tracing::warn!(
-                                "Rate limit hit (HTTP 429), retrying in {}ms (attempt {}/{})",
-                                delay_ms,
-                                attempt + 1,
-                                MAX_RETRIES
-                            );
+                            tracing::warn!("Rate limit hit (HTTP 429), retrying in {}ms (attempt {}/{})", delay_ms, attempt + 1, MAX_RETRIES);
                             sleep(Duration::from_millis(delay_ms)).await;
                             continue;
                         }

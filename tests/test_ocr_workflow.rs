@@ -1,10 +1,13 @@
 //! OCR workflow integration tests
 //! These tests validate the complete end-to-end OCR workflow
 
+mod common;
+
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::io::Write;
 use tempfile::NamedTempFile;
+use common::MockApiServer;
 // use paperless_ngx_ocr2::Config; // Will be used when config loading is implemented
 
 // ============================================================================
@@ -81,27 +84,17 @@ async fn test_pdf_workflow_with_json_output() {
     // This test MUST FAIL until JSON output and workflow are implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nSimple PDF with text content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nSimple PDF with text content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
-    let output = cmd
-        .arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("sk-test-valid-api-key")
-        .arg("--json")
-        .output()
-        .expect("Failed to execute command");
+    let output = cmd.arg("--file").arg(&temp_path).arg("--api-key").arg("sk-test-valid-api-key").arg("--json").output().expect("Failed to execute command");
 
     if output.status.success() {
         let stdout = String::from_utf8(output.stdout).unwrap();
-        let json: serde_json::Value =
-            serde_json::from_str(&stdout).expect("JSON output should be valid JSON");
+        let json: serde_json::Value = serde_json::from_str(&stdout).expect("JSON output should be valid JSON");
 
         // Validate JSON structure matches contract (should be error response)
         assert!(!json.get("success").unwrap().as_bool().unwrap());
@@ -135,9 +128,7 @@ log_level = "info"
 
     // Create test PDF
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nConfig test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nConfig test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -160,23 +151,27 @@ async fn test_workflow_with_environment_variables() {
     // This test MUST FAIL until environment variable support is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nEnvironment test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nEnvironment test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
+
+    // Start mock server to simulate authentication failure
+    let mut mock_server = MockApiServer::new();
+    mock_server.setup_error_mock(401).await; // 401 Unauthorized for invalid API key
+    let mock_url = mock_server.start().await.expect("Failed to start mock server");
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
     cmd.arg("--file")
         .arg(&temp_path)
         .env("PAPERLESS_OCR_API_KEY", "sk-env-test-key") // Test key - will fail with auth error
-        .env("PAPERLESS_OCR_API_BASE_URL", "https://api.mistral.ai")
+        .env("PAPERLESS_OCR_API_BASE_URL", &mock_url)
         .env("PAPERLESS_OCR_TIMEOUT", "30")
         .assert()
         .failure() // Expected to fail due to invalid API key
-        .stderr(predicate::str::contains("Client error")); // Should show proper error handling
+        .stderr(predicate::str::contains("Network error")); // Should show proper error handling
 
     // Cleanup
     std::fs::remove_file(&temp_path).ok();
+    mock_server.stop().await.expect("Failed to stop mock server");
 }

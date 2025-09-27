@@ -26,10 +26,7 @@ pub use ocr::OCRResult;
 pub fn init_app() -> Result<()> {
     // Initialize tracing subscriber
     tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "paperless_ngx_ocr2=info".into()),
-        )
+        .with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "paperless_ngx_ocr2=info".into()))
         .with_target(false)
         .with_thread_ids(false)
         .with_thread_names(false)
@@ -44,19 +41,12 @@ pub fn init_app() -> Result<()> {
 
 /// Initialize logging configuration
 pub fn init_logging(verbose: bool) -> Result<()> {
-    let log_level = if verbose {
-        "paperless_ngx_ocr2=debug"
-    } else {
-        "paperless_ngx_ocr2=info"
-    };
+    let log_level = if verbose { "paperless_ngx_ocr2=debug" } else { "paperless_ngx_ocr2=info" };
 
     let log_format = std::env::var("RUST_LOG_FORMAT").unwrap_or_else(|_| "pretty".to_string());
 
     let subscriber = tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| log_level.into()),
-        )
+        .with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| log_level.into()))
         .with_target(false)
         .with_thread_ids(false)
         .with_thread_names(false)

@@ -31,13 +31,7 @@ pub struct DocumentChunk {
 impl OCRRequest {
     /// Create a new OCR request
     pub fn new(file_id: String) -> Self {
-        Self {
-            model: "mistral-ocr-latest".to_string(),
-            document: DocumentChunk {
-                chunk_type: "file".to_string(),
-                file_id,
-            },
-        }
+        Self { model: "mistral-ocr-latest".to_string(), document: DocumentChunk { chunk_type: "file".to_string(), file_id } }
     }
 
     /// Validate the OCR request
@@ -47,15 +41,11 @@ impl OCRRequest {
         }
 
         if self.model != "mistral-ocr-latest" {
-            return Err(Error::Validation(
-                "Invalid model for OCR processing".to_string(),
-            ));
+            return Err(Error::Validation("Invalid model for OCR processing".to_string()));
         }
 
         if self.document.chunk_type != "file" {
-            return Err(Error::Validation(
-                "Invalid document type for OCR processing".to_string(),
-            ));
+            return Err(Error::Validation("Invalid document type for OCR processing".to_string()));
         }
 
         Ok(())
@@ -110,44 +100,30 @@ pub struct OCRResponse {
 impl OCRResponse {
     /// Get extracted text from the response
     pub fn get_extracted_text(&self) -> String {
-        self.pages
-            .iter()
-            .map(|page| page.markdown.clone())
-            .collect::<Vec<String>>()
-            .join("\n\n")
+        self.pages.iter().map(|page| page.markdown.clone()).collect::<Vec<String>>().join("\n\n")
     }
 
     /// Validate the OCR response
     pub fn validate(&self) -> Result<()> {
         // Validate model field
         if self.model.is_empty() {
-            return Err(Error::Validation(
-                "Response model cannot be empty".to_string(),
-            ));
+            return Err(Error::Validation("Response model cannot be empty".to_string()));
         }
 
         // Validate model name format
         if !self.model.starts_with("mistral-") {
-            return Err(Error::Validation(format!(
-                "Invalid model name format: expected 'mistral-*', got '{}'",
-                self.model
-            )));
+            return Err(Error::Validation(format!("Invalid model name format: expected 'mistral-*', got '{}'", self.model)));
         }
 
         // Validate pages array
         if self.pages.is_empty() {
-            return Err(Error::Validation(
-                "Response must contain at least one page".to_string(),
-            ));
+            return Err(Error::Validation("Response must contain at least one page".to_string()));
         }
 
         // Validate each page structure and content
         for (i, page) in self.pages.iter().enumerate() {
             if page.index != i as i32 {
-                return Err(Error::Validation(format!(
-                    "Page index mismatch: expected {}, got {}",
-                    i, page.index
-                )));
+                return Err(Error::Validation(format!("Page index mismatch: expected {}, got {}", i, page.index)));
             }
 
             // Validate page content
@@ -157,10 +133,7 @@ impl OCRResponse {
 
             // Validate dimensions if present
             if page.dimensions.width <= 0 || page.dimensions.height <= 0 {
-                return Err(Error::Validation(format!(
-                    "Invalid page dimensions: width={}, height={}",
-                    page.dimensions.width, page.dimensions.height
-                )));
+                return Err(Error::Validation(format!("Invalid page dimensions: width={}, height={}", page.dimensions.width, page.dimensions.height)));
             }
 
             // Validate DPI is reasonable
@@ -179,10 +152,7 @@ impl OCRResponse {
         }
 
         if self.usage_info.doc_size_bytes <= 0 {
-            return Err(Error::Validation(format!(
-                "Invalid document size in usage info: {} bytes",
-                self.usage_info.doc_size_bytes
-            )));
+            return Err(Error::Validation(format!("Invalid document size in usage info: {} bytes", self.usage_info.doc_size_bytes)));
         }
 
         Ok(())
@@ -211,12 +181,11 @@ impl OCRClient {
         ocr_request.validate()?;
 
         // Get authorization headers
-        let auth_headers =
-            crate::api::auth::AuthHandler::new(crate::credentials::APICredentials::new(
-                self.client.credentials.api_key.clone(),
-                self.client.credentials.api_base_url.clone(),
-            )?)
-            .get_auth_headers()?;
+        let auth_headers = crate::api::auth::AuthHandler::new(crate::credentials::APICredentials::new(
+            self.client.credentials.api_key.clone(),
+            self.client.credentials.api_base_url.clone(),
+        )?)
+        .get_auth_headers()?;
 
         // Send request with retry logic and metrics
         let start_time = Instant::now();
@@ -229,13 +198,7 @@ impl OCRClient {
                 let ocr_request = ocr_request.clone();
 
                 async move {
-                    let response = client
-                        .post(&url)
-                        .headers(auth_headers)
-                        .json(&ocr_request)
-                        .send()
-                        .await
-                        .map_err(Error::Network)?;
+                    let response = client.post(&url).headers(auth_headers).json(&ocr_request).send().await.map_err(Error::Network)?;
 
                     MistralClient::handle_response(response).await
                 }
@@ -264,8 +227,7 @@ impl OCRClient {
         // Debug: Log the raw response for troubleshooting
         tracing::debug!("Raw OCR response: {}", response_text);
 
-        let ocr_response: OCRResponse = serde_json::from_str(&response_text)
-            .map_err(|e| Error::Api(format!("Failed to parse OCR response: {}", e)))?;
+        let ocr_response: OCRResponse = serde_json::from_str(&response_text).map_err(|e| Error::Api(format!("Failed to parse OCR response: {}", e)))?;
 
         ocr_response.validate()?;
 
