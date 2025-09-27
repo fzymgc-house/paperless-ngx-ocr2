@@ -160,30 +160,30 @@ pub fn get_fixture(name: &str) -> TestFile {
 
 /// Available test fixtures
 pub mod sample_fixtures {
-    use super::get_fixture;
+    use super::{get_fixture, TestFile};
 
     /// Valid PDF fixture
-    pub fn sample_pdf() -> crate::TestFile {
+    pub fn sample_pdf() -> TestFile {
         get_fixture("sample.pdf")
     }
 
     /// Valid PNG fixture
-    pub fn sample_png() -> crate::TestFile {
+    pub fn sample_png() -> TestFile {
         get_fixture("sample.png")
     }
 
     /// Corrupted PDF fixture
-    pub fn corrupted_pdf() -> crate::TestFile {
+    pub fn corrupted_pdf() -> TestFile {
         get_fixture("corrupted.pdf")
     }
 
     /// Invalid text file fixture
-    pub fn invalid_txt() -> crate::TestFile {
+    pub fn invalid_txt() -> TestFile {
         get_fixture("invalid.txt")
     }
 
     /// Test itinerary PDF fixture
-    pub fn test_itinerary_pdf() -> crate::TestFile {
+    pub fn test_itinerary_pdf() -> TestFile {
         get_fixture("test-itinerary.pdf")
     }
 }

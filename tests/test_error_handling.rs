@@ -1,7 +1,10 @@
 //! Error handling integration tests
 //! These tests validate that error scenarios are handled correctly end-to-end
 
+mod common;
+
 use assert_cmd::Command;
+use common::MockApiServer;
 use predicates::prelude::*;
 use std::io::Write;
 use tempfile::NamedTempFile;
@@ -114,13 +117,18 @@ async fn test_error_handling_network_timeout() {
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
-    // Use an invalid URL to trigger network error
+    // Start mock server with long delay to simulate timeout
+    let mut mock_server = MockApiServer::new();
+    mock_server.setup_timeout_mock(5000).await; // 5 second delay
+    let mock_url = mock_server.start().await.expect("Failed to start mock server");
+
+    // Use mock server with very short timeout to trigger timeout error
     cmd.arg("--file")
         .arg(&temp_path)
         .arg("--api-key")
         .arg("test-key")
         .arg("--api-base-url")
-        .arg("https://definitely-does-not-exist-timeout-test.invalid")
+        .arg(&mock_url)
         .env("PAPERLESS_OCR_TIMEOUT", "1") // Very short timeout
         .assert()
         .failure()
@@ -134,6 +142,7 @@ async fn test_error_handling_network_timeout() {
 
     // Cleanup
     std::fs::remove_file(&temp_path).ok();
+    mock_server.stop().await.expect("Failed to stop mock server");
 }
 
 #[tokio::test]
