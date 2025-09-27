@@ -25,7 +25,7 @@ fn test_env_file_loading() {
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
     let assert = cmd
         .arg("--file")
-        .arg("test.pdf")
+        .arg(pdf_file.to_str().unwrap())
         .env("PAPERLESS_OCR_API_KEY", "test_key_from_env")
         .env("PAPERLESS_OCR_API_BASE_URL", "https://test.api.com")
         .assert();
@@ -74,7 +74,7 @@ api_base_url = "https://home.api.com"
 
     // Run the command - should use current directory config (priority)
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
-    let assert = cmd.arg("--file").arg("test.pdf").assert();
+    let assert = cmd.arg("--file").arg(pdf_file.to_str().unwrap()).assert();
 
     // Should fail with API error (not config error) because current dir config was loaded
     assert
@@ -109,7 +109,7 @@ api_base_url = "https://custom.api.com"
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
     let assert = cmd
         .arg("--file")
-        .arg("test.pdf")
+        .arg(pdf_file.to_str().unwrap())
         .arg("--config")
         .arg(custom_config.to_str().unwrap())
         .env("PAPERLESS_OCR_API_KEY", "custom_config_key")
@@ -137,7 +137,7 @@ fn test_config_file_not_found() {
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
     let assert = cmd
         .arg("--file")
-        .arg("test.pdf")
+        .arg(pdf_file.to_str().unwrap())
         .arg("--config")
         .arg("nonexistent_config.toml")
         .assert();
