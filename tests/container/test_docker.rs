@@ -1,5 +1,7 @@
-use assert_cmd::prelude::*;
+mod common;
+
 use predicates::prelude::*;
+use common::*;
 use std::process::Command;
 use std::time::Duration;
 use tempfile::TempDir;
@@ -133,10 +135,11 @@ fn test_docker_container_with_api_key() {
         return;
     }
     
-    // Create a temporary test file
+    // Create a temporary test file using fixture
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
-    let test_file = temp_dir.path().join("test.txt");
-    std::fs::write(&test_file, "Test content for OCR").expect("Failed to write test file");
+    let test_file = create_test_pdf("Test content for OCR");
+    let test_file_path = temp_dir.path().join("test.pdf");
+    std::fs::copy(test_file.path(), &test_file_path).expect("Failed to copy test file");
     
     let mut cmd = Command::new("docker");
     cmd.args(&[
@@ -145,10 +148,10 @@ fn test_docker_container_with_api_key() {
         "-e",
         &format!("PAPERLESS_OCR_API_KEY={}", std::env::var("PAPERLESS_OCR_API_KEY").unwrap()),
         "-v",
-        &format!("{}:/test.txt:ro", test_file.display()),
+        &format!("{}:/test.pdf:ro", test_file_path.display()),
         "paperless-ngx-ocr2:test",
         "--file",
-        "/test.txt"
+        "/test.pdf"
     ]);
     
     let output = cmd.output().expect("Failed to execute docker run");

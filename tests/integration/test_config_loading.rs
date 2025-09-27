@@ -1,7 +1,9 @@
 //! Integration tests for configuration loading
 
-use assert_cmd::Command;
+mod common;
+
 use predicates::prelude::*;
+use common::*;
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -15,15 +17,16 @@ fn test_env_file_loading() {
     // Create .env file with test values
     fs::write(&env_file, "PAPERLESS_OCR_API_KEY=test_key_from_env\nPAPERLESS_OCR_API_BASE_URL=https://test.api.com\n").unwrap();
     
-    // Create a test PDF file
+    // Create a test PDF file using fixture
+    let test_file = create_test_pdf("Test content for env loading");
     let pdf_file = temp_dir.path().join("test.pdf");
-    fs::write(&pdf_file, b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF").unwrap();
+    fs::copy(test_file.path(), &pdf_file).unwrap();
     
     // Change to temp directory
     std::env::set_current_dir(temp_dir.path()).unwrap();
     
     // Run the command - it should fail with Validation error but show env vars were loaded
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let mut cmd = cli::create_test_command();
     let assert = cmd
         .arg("--file")
         .arg("test.pdf")
@@ -54,15 +57,16 @@ api_key = "home_config_key"
 api_base_url = "https://home.api.com"
 "#).unwrap();
     
-    // Create a test PDF file
+    // Create a test PDF file using fixture
+    let test_file = create_test_pdf("Test content for config search");
     let pdf_file = temp_dir.path().join("test.pdf");
-    fs::write(&pdf_file, b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF").unwrap();
+    fs::copy(test_file.path(), &pdf_file).unwrap();
     
     // Change to temp directory
     std::env::set_current_dir(temp_dir.path()).unwrap();
     
     // Run the command - should use current directory config (priority)
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let mut cmd = cli::create_test_command();
     let assert = cmd
         .arg("--file")
         .arg("test.pdf")
@@ -84,15 +88,16 @@ api_key = "custom_config_key"
 api_base_url = "https://custom.api.com"
 "#).unwrap();
     
-    // Create a test PDF file
+    // Create a test PDF file using fixture
+    let test_file = create_test_pdf("Test content for config flag");
     let pdf_file = temp_dir.path().join("test.pdf");
-    fs::write(&pdf_file, b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF").unwrap();
+    fs::copy(test_file.path(), &pdf_file).unwrap();
     
     // Change to temp directory
     std::env::set_current_dir(temp_dir.path()).unwrap();
     
     // Run the command with --config flag
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let mut cmd = cli::create_test_command();
     let assert = cmd
         .arg("--file")
         .arg("test.pdf")
@@ -109,15 +114,16 @@ fn test_config_file_not_found() {
     // Create a temporary directory
     let temp_dir = TempDir::new().unwrap();
     
-    // Create a test PDF file
+    // Create a test PDF file using fixture
+    let test_file = create_test_pdf("Test content for config not found");
     let pdf_file = temp_dir.path().join("test.pdf");
-    fs::write(&pdf_file, b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF").unwrap();
+    fs::copy(test_file.path(), &pdf_file).unwrap();
     
     // Change to temp directory
     std::env::set_current_dir(temp_dir.path()).unwrap();
     
     // Run the command with non-existent config file
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let mut cmd = cli::create_test_command();
     let assert = cmd
         .arg("--file")
         .arg("test.pdf")

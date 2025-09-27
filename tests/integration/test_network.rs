@@ -1,170 +1,135 @@
 //! Network timeout and retry logic tests
 
-use assert_cmd::Command;
+mod common;
+
 use predicates::prelude::*;
-use std::time::Instant;
-use tempfile::NamedTempFile;
-use std::io::Write;
-use std::fs;
+use common::*;
+use std::time::Duration;
 
 #[tokio::test]
 async fn test_network_timeout_handling() {
     // Test that network timeouts are handled properly
-    let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file.write_all(b"%PDF-1.4\nTimeout test content").unwrap();
-    let temp_path = temp_file.path().with_extension("pdf");
-    fs::copy(temp_file.path(), &temp_path).unwrap();
+    let test_file = create_test_pdf("Timeout test content");
     
-    let start = Instant::now();
+    let config = TestConfig::new()
+        .api_key("test-key")
+        .api_base_url("https://httpbin.org/delay/10") // This will timeout
+        .timeout(2); // 2 second timeout
     
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
-    cmd.arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("test-key")
-        .arg("--api-base-url")
-        .arg("https://httpbin.org/delay/10") // This will timeout
-        .env("PAPERLESS_OCR_TIMEOUT", "2") // 2 second timeout
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("timeout").or(predicate::str::contains("network")).or(predicate::str::contains("operation timed out")).or(predicate::str::contains("Server error")).or(predicate::str::contains("503")).or(predicate::str::contains("Error:")).or(predicate::str::contains("error sending request")).or(predicate::str::contains("timed out")).or(predicate::str::contains("unavailable")));
-    
-    let duration = start.elapsed();
+    let duration = measure_performance("network_timeout", Duration::from_secs(10), || {
+        let mut cmd = cli::create_configured_command(&config);
+        cmd.arg("--file")
+            .arg(test_file.path())
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("timeout").or(predicate::str::contains("network")).or(predicate::str::contains("operation timed out")).or(predicate::str::contains("Server error")).or(predicate::str::contains("503")).or(predicate::str::contains("Error:")).or(predicate::str::contains("error sending request")).or(predicate::str::contains("timed out")).or(predicate::str::contains("unavailable")));
+    });
     
     // Should timeout within reasonable time (not hang indefinitely)
     assert!(duration.as_secs() < 10, "Command should timeout quickly: {:?}", duration);
-    
-    // Cleanup
-    fs::remove_file(&temp_path).ok();
+    // Automatic cleanup on drop
 }
 
 #[tokio::test]
 async fn test_invalid_hostname_handling() {
     // Test handling of invalid hostnames
-    let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file.write_all(b"%PDF-1.4\nInvalid host test").unwrap();
-    let temp_path = temp_file.path().with_extension("pdf");
-    fs::copy(temp_file.path(), &temp_path).unwrap();
+    let test_file = create_test_pdf("Invalid host test");
     
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let config = TestConfig::new()
+        .api_key("test-key")
+        .api_base_url("https://definitely-does-not-exist-invalid-hostname.invalid");
+    
+    let mut cmd = cli::create_configured_command(&config);
     cmd.arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("test-key")
-        .arg("--api-base-url")
-        .arg("https://definitely-does-not-exist-invalid-hostname.invalid")
+        .arg(test_file.path())
         .assert()
         .failure()
         .stderr(predicate::str::contains("network").or(predicate::str::contains("connect")));
     
-    // Cleanup
-    fs::remove_file(&temp_path).ok();
+    // Automatic cleanup on drop
 }
 
 #[tokio::test]
 async fn test_connection_refused_handling() {
     // Test handling of connection refused (using localhost on unused port)
-    let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file.write_all(b"%PDF-1.4\nConnection refused test").unwrap();
-    let temp_path = temp_file.path().with_extension("pdf");
-    fs::copy(temp_file.path(), &temp_path).unwrap();
+    let test_file = create_test_pdf("Connection refused test");
     
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let config = TestConfig::new()
+        .api_key("test-key")
+        .api_base_url("https://localhost:9999"); // Likely unused port
+    
+    let mut cmd = cli::create_configured_command(&config);
     cmd.arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("test-key")
-        .arg("--api-base-url")
-        .arg("https://localhost:9999") // Likely unused port
+        .arg(test_file.path())
         .assert()
         .failure()
         .stderr(predicate::str::contains("connect").or(predicate::str::contains("refused")));
     
-    // Cleanup
-    fs::remove_file(&temp_path).ok();
+    // Automatic cleanup on drop
 }
 
 #[tokio::test]
 async fn test_network_error_json_output() {
     // Test that network errors are properly formatted in JSON output
-    let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file.write_all(b"%PDF-1.4\nJSON network error test").unwrap();
-    let temp_path = temp_file.path().with_extension("pdf");
-    fs::copy(temp_file.path(), &temp_path).unwrap();
+    let test_file = create_test_pdf("JSON network error test");
     
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let config = TestConfig::new()
+        .api_key("test-key")
+        .api_base_url("https://invalid-network-test.invalid")
+        .json_output();
+    
+    let mut cmd = cli::create_configured_command(&config);
     cmd.arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("test-key")
-        .arg("--api-base-url")
-        .arg("https://invalid-network-test.invalid")
-        .arg("--json")
+        .arg(test_file.path())
         .assert()
         .failure()
         .stdout(predicate::function(|output: &str| {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
-                json.get("success").unwrap().as_bool().unwrap() == false &&
-                json.get("error").is_some() &&
-                json.get("error").unwrap().get("type").is_some()
-            } else {
-                false
-            }
+            validate_json_contract(output, ContractType::CliOutput)
         }));
     
-    // Cleanup
-    fs::remove_file(&temp_path).ok();
+    // Automatic cleanup on drop
 }
 
 #[tokio::test]
 async fn test_api_response_timeout() {
     // Test timeout behavior with actual API endpoint
-    let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file.write_all(b"%PDF-1.4\nAPI timeout test").unwrap();
-    let temp_path = temp_file.path().with_extension("pdf");
-    fs::copy(temp_file.path(), &temp_path).unwrap();
+    let test_file = create_test_pdf("API timeout test");
     
-    let start = Instant::now();
+    let config = TestConfig::new()
+        .api_key("invalid-key-for-timeout-test")
+        .timeout(1); // Very short timeout
     
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
-    cmd.arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("invalid-key-for-timeout-test")
-        .env("PAPERLESS_OCR_TIMEOUT", "1") // Very short timeout
-        .assert()
-        .failure(); // Should fail due to timeout or auth error
-    
-    let duration = start.elapsed();
+    let duration = measure_performance("api_timeout", Duration::from_secs(5), || {
+        let mut cmd = cli::create_configured_command(&config);
+        cmd.arg("--file")
+            .arg(test_file.path())
+            .assert()
+            .failure(); // Should fail due to timeout or auth error
+    });
     
     // Should respect timeout setting (fail within ~1-3 seconds)
     assert!(duration.as_secs() < 5, "Should respect timeout setting: {:?}", duration);
-    
-    // Cleanup
-    fs::remove_file(&temp_path).ok();
+    // Automatic cleanup on drop
 }
 
 #[tokio::test]
 async fn test_verbose_network_logging() {
     // Test that verbose mode shows network request details
-    let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file.write_all(b"%PDF-1.4\nVerbose network test").unwrap();
-    let temp_path = temp_file.path().with_extension("pdf");
-    fs::copy(temp_file.path(), &temp_path).unwrap();
+    let test_file = create_test_pdf("Verbose network test");
     
-    let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+    let config = TestConfig::new()
+        .api_key("test-key-for-verbose-test")
+        .verbose();
+    
+    let mut cmd = cli::create_configured_command(&config);
     cmd.arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("test-key-for-verbose-test")
-        .arg("--verbose")
+        .arg(test_file.path())
         .assert()
         .failure() // Will fail due to invalid key, but should show verbose output
         .stderr(predicate::str::contains("API Request"))
         .stderr(predicate::str::contains("POST"));
     
-    // Cleanup
-    fs::remove_file(&temp_path).ok();
+    // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -178,20 +143,17 @@ async fn test_network_error_categorization() {
     ];
     
     for (url, expected_error_type) in test_cases {
-        let mut temp_file = NamedTempFile::new().unwrap();
-        temp_file.write_all(b"%PDF-1.4\nError categorization test").unwrap();
-        let temp_path = temp_file.path().with_extension("pdf");
-        fs::copy(temp_file.path(), &temp_path).unwrap();
+        let test_file = create_test_pdf("Error categorization test");
         
-        let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
+        let config = TestConfig::new()
+            .api_key("test-key")
+            .api_base_url(url)
+            .json_output();
+        
+        let mut cmd = cli::create_configured_command(&config);
         let output = cmd
             .arg("--file")
-            .arg(&temp_path)
-            .arg("--api-key")
-            .arg("test-key")
-            .arg("--api-base-url")
-            .arg(url)
-            .arg("--json")
+            .arg(test_file.path())
             .output()
             .expect("Should execute command");
         
@@ -210,8 +172,7 @@ async fn test_network_error_categorization() {
             }
         }
         
-        // Cleanup
-        fs::remove_file(&temp_path).ok();
+        // Automatic cleanup on drop
     }
 }
 

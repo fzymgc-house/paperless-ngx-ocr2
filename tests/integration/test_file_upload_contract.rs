@@ -1,9 +1,10 @@
 //! Contract tests for Mistral AI file upload API
 //! These tests validate that our file upload requests conform to the expected contract
 
+mod common;
+
 use paperless_ngx_ocr2::api::files::FileUploadRequest;
-use serde_json;
-use std::collections::HashMap;
+use common::*;
 
 #[tokio::test]
 async fn test_file_upload_request_contract_structure() {
@@ -18,6 +19,9 @@ async fn test_file_upload_request_contract_structure() {
     
     // Serialize to JSON to validate structure
     let json = serde_json::to_value(&request).expect("Should serialize to JSON");
+    
+    // Use contract validation for structure
+    validate_json_contract(&json.to_string(), ContractType::ApiRequest);
     
     // Validate required fields exist
     assert!(json.get("file").is_some(), "Request must have 'file' field");
@@ -44,6 +48,9 @@ async fn test_file_upload_request_contract_required_fields() {
     
     let json = serde_json::to_value(&request).expect("Should serialize to JSON");
     
+    // Use contract validation for schema compliance
+    validate_json_contract(&json.to_string(), ContractType::ApiRequest);
+    
     // Validate JSON schema compliance
     let schema_required_fields = vec!["file"];
     for field in schema_required_fields {
@@ -67,6 +74,9 @@ async fn test_file_upload_request_contract_purpose_enum() {
     };
     
     let json = serde_json::to_value(&request).expect("Should serialize to JSON");
+    
+    // Use contract validation for enum constraints
+    validate_json_contract(&json.to_string(), ContractType::ApiRequest);
     
     // Validate purpose enum constraint
     let purpose = json.get("purpose").unwrap().as_str().unwrap();

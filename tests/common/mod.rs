@@ -13,7 +13,7 @@ pub mod performance;
 pub use fixtures::{TestFile, create_test_pdf, create_test_png, create_large_test_pdf, create_invalid_file, create_corrupted_pdf};
 pub use config::{TestConfig, presets};
 pub use contracts::{validate_json_contract, ContractType};
-pub use performance::{measure_performance_async, Benchmark, stress};
+pub use performance::{measure_performance, measure_performance_async, Benchmark, stress};
 
 /// Test utilities for temporary file management
 pub mod temp_files {
