@@ -76,7 +76,7 @@ fn test_with_custom_config() {
         .timeout(60)
         .json_output(true)
         .build();
-    
+
     let mut cmd = create_configured_command(&config);
 }
 
@@ -168,20 +168,20 @@ fn test_benchmark() {
         .run(|| {
             process_file("test.pdf");
         });
-    
+
     results.assert_avg_time_less_than(Duration::from_millis(50));
 }
 
 #[test]
 fn test_memory_usage() {
     use performance::memory::*;
-    
+
     let test = MemoryTest::new()
         .with_max_increase(1024 * 1024); // 1MB max increase
-    
+
     // Perform operations
     process_large_file();
-    
+
     test.assert_memory_usage();
 }
 
@@ -190,7 +190,7 @@ fn test_stress_test() {
     let results = stress::stress_test("api_calls", 1000, || {
         make_api_call();
     });
-    
+
     results.assert_error_rate_less_than(0.01); // < 1% error rate
 }
 ```
@@ -228,6 +228,7 @@ fn test_stress_test() {
 ### From Manual Cleanup to TestFile
 
 **Before:**
+
 ```rust
 #[test]
 fn test_manual_cleanup() {
@@ -235,14 +236,15 @@ fn test_manual_cleanup() {
     temp_file.write_all(b"content").unwrap();
     let path = temp_file.path().with_extension("pdf");
     fs::copy(temp_file.path(), &path).unwrap();
-    
+
     // Test logic...
-    
+
     fs::remove_file(&path).ok(); // Manual cleanup
 }
 ```
 
 **After:**
+
 ```rust
 #[test]
 fn test_auto_cleanup() {
@@ -255,6 +257,7 @@ fn test_auto_cleanup() {
 ### From Manual Config to TestConfig
 
 **Before:**
+
 ```rust
 #[test]
 fn test_manual_config() {
@@ -266,6 +269,7 @@ fn test_manual_config() {
 ```
 
 **After:**
+
 ```rust
 #[test]
 fn test_config_helper() {
@@ -273,7 +277,7 @@ fn test_config_helper() {
         .with_api_key("test-key")
         .with_api_base_url("https://api.test.com")
         .with_timeout(30);
-    
+
     let mut cmd = create_configured_command(&config);
 }
 ```

@@ -5,12 +5,14 @@ This directory contains example test input files for both happy path and failure
 ## Happy Path Files
 
 ### `sample.pdf`
+
 - Valid PDF file with simple text content: "Hello World Sample Text"
 - Small size (~300 bytes) for fast testing
 - Contains proper PDF structure and text objects
 - Use for testing successful OCR workflows
 
 ### `sample.png`
+
 - Valid PNG file (1x1 pixel minimal image)
 - Proper PNG signature and structure
 - Small size for fast testing
@@ -19,11 +21,13 @@ This directory contains example test input files for both happy path and failure
 ## Failure Path Files
 
 ### `invalid.txt`
+
 - Plain text file with .txt extension
 - Should be rejected due to unsupported file format
 - Use for testing file format validation
 
 ### `corrupted.pdf`
+
 - File with .pdf extension but invalid PDF content
 - Should be rejected by magic byte validation
 - Use for testing file content validation
@@ -37,7 +41,7 @@ use std::path::Path;
 let pdf_path = Path::new("tests/fixtures/sample.pdf");
 let png_path = Path::new("tests/fixtures/sample.png");
 
-// Error path testing  
+// Error path testing
 let invalid_path = Path::new("tests/fixtures/invalid.txt");
 let corrupted_path = Path::new("tests/fixtures/corrupted.pdf");
 ```

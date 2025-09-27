@@ -24,13 +24,21 @@ A command-line tool for extracting text from PDF and image files using Mistral A
    - Git
 
 2. **Clone and Build**:
+
    ```bash
    git clone https://github.com/fzymgc-house/paperless-ngx-ocr2.git
    cd paperless-ngx-ocr2
    cargo build --release
    ```
 
-3. **Install** (optional):
+3. **Setup Pre-commit Hooks** (recommended):
+
+   ```bash
+   ./scripts/setup-pre-commit.sh
+   ```
+
+4. **Install** (optional):
+
    ```bash
    cargo install --path .
    ```
@@ -38,11 +46,13 @@ A command-line tool for extracting text from PDF and image files using Mistral A
 ### Using Docker
 
 1. **Pull the image**:
+
    ```bash
    docker pull ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest
    ```
 
 2. **Run with Docker**:
+
    ```bash
    docker run --rm -v $(pwd):/workspace ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest --file /workspace/document.pdf --api-key YOUR_API_KEY
    ```
@@ -56,11 +66,13 @@ Download the latest release from the [Releases page](https://github.com/fzymgc-h
 1. **Get a Mistral AI API key** from [Mistral AI](https://console.mistral.ai/)
 
 2. **Process a file**:
+
    ```bash
    paperless-ngx-ocr2 --file document.pdf --api-key YOUR_API_KEY
    ```
 
 3. **Get JSON output**:
+
    ```bash
    paperless-ngx-ocr2 --file document.pdf --api-key YOUR_API_KEY --json
    ```
@@ -201,6 +213,61 @@ paperless-ngx-ocr2 --generate-completions powershell > paperless-ngx-ocr2.ps1
 source paperless-ngx-ocr2.bash  # For bash
 source paperless-ngx-ocr2.zsh   # For zsh
 source paperless-ngx-ocr2.fish  # For fish
+```
+
+## Development
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality and consistency. The hooks automatically run:
+
+- **Rust formatting** (`rustfmt`)
+- **Rust linting** (`clippy`)
+- **Rust tests** (`cargo test`)
+- **Security audit** (`cargo audit`)
+- **File quality checks** (trailing whitespace, end-of-file, etc.)
+- **YAML/JSON/TOML syntax validation**
+- **Large file detection**
+- **Docker linting** (`hadolint`)
+- **Shell script linting** (`shellcheck`)
+- **Markdown linting** (`markdownlint`)
+
+#### Setup
+
+```bash
+# Install pre-commit hooks
+./scripts/setup-pre-commit.sh
+
+# Or manually:
+pip install pre-commit  # or brew install pre-commit
+pre-commit install
+pre-commit autoupdate
+```
+
+#### Usage
+
+```bash
+# Run hooks on all files
+pre-commit run --all-files
+
+# Run hooks on staged files only
+pre-commit run
+
+# Skip hooks for a commit (not recommended)
+git commit --no-verify
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test
+cargo test --test test_cli_basic
+
+# Run with output
+cargo test -- --nocapture
 ```
 
 ## Examples

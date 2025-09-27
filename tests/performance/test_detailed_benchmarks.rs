@@ -118,7 +118,7 @@ impl BenchmarkRunner {
 
         let average_duration = if !durations.is_empty() {
             Duration::from_nanos(
-                durations.iter().map(|d| d.as_nanos() as u64).sum::<u64>() / durations.len() as u64
+                durations.iter().map(|d| d.as_nanos() as u64).sum::<u64>() / durations.len() as u64,
             )
         } else {
             Duration::ZERO
@@ -126,11 +126,11 @@ impl BenchmarkRunner {
 
         let min_duration = durations.first().copied().unwrap_or(Duration::ZERO);
         let max_duration = durations.last().copied().unwrap_or(Duration::ZERO);
-        
+
         let p50_idx = (durations.len() as f64 * 0.5) as usize;
         let p95_idx = (durations.len() as f64 * 0.95) as usize;
         let p99_idx = (durations.len() as f64 * 0.99) as usize;
-        
+
         let p50_duration = durations.get(p50_idx).copied().unwrap_or(Duration::ZERO);
         let p95_duration = durations.get(p95_idx).copied().unwrap_or(Duration::ZERO);
         let p99_duration = durations.get(p99_idx).copied().unwrap_or(Duration::ZERO);
@@ -179,25 +179,31 @@ impl BenchmarkRunner {
 /// Create a test file with specified size
 fn create_test_file(size_bytes: usize) -> Result<NamedTempFile> {
     let mut temp_file = NamedTempFile::new().map_err(|e| Error::Io(e))?;
-    
+
     // Write header
-    temp_file.write_all(b"%PDF-1.4\n").map_err(|e| Error::Io(e))?;
-    
+    temp_file
+        .write_all(b"%PDF-1.4\n")
+        .map_err(|e| Error::Io(e))?;
+
     // Fill with test content
     let content = "Benchmark test content for performance measurement.\n";
     let content_bytes = content.as_bytes();
     let repetitions = size_bytes / content_bytes.len();
-    
+
     for _ in 0..repetitions {
-        temp_file.write_all(content_bytes).map_err(|e| Error::Io(e))?;
+        temp_file
+            .write_all(content_bytes)
+            .map_err(|e| Error::Io(e))?;
     }
-    
+
     // Fill remaining bytes
     let remaining = size_bytes % content_bytes.len();
     if remaining > 0 {
-        temp_file.write_all(&content_bytes[..remaining]).map_err(|e| Error::Io(e))?;
+        temp_file
+            .write_all(&content_bytes[..remaining])
+            .map_err(|e| Error::Io(e))?;
     }
-    
+
     Ok(temp_file)
 }
 
@@ -209,25 +215,36 @@ async fn test_file_validation_benchmark() {
         file_sizes: vec![1024, 10240, 102400],
         concurrent_requests: 1,
     };
-    
+
     let runner = BenchmarkRunner::new(config);
-    
+
     // Test file validation performance
-    let results = runner.run_benchmark("file_validation", || async {
-        let temp_file = create_test_file(10240)?;
-        let file_path = temp_file.path().to_str().unwrap();
-        let _file_upload = FileUpload::new(file_path)?;
-        Ok::<(), Error>(())
-    }).await;
-    
+    let results = runner
+        .run_benchmark("file_validation", || async {
+            let temp_file = create_test_file(10240)?;
+            let file_path = temp_file.path().to_str().unwrap();
+            let _file_upload = FileUpload::new(file_path)?;
+            Ok::<(), Error>(())
+        })
+        .await;
+
     println!("{}", results.to_report());
-    
+
     // Assertions for performance expectations
-    assert!(results.average_duration < Duration::from_millis(100), 
-            "File validation should be fast: {:?}", results.average_duration);
-    assert_eq!(results.error_rate, 0.0, "File validation should not have errors");
-    assert!(results.throughput_per_second > 10.0, 
-            "File validation throughput should be > 10 ops/sec: {:.2}", results.throughput_per_second);
+    assert!(
+        results.average_duration < Duration::from_millis(100),
+        "File validation should be fast: {:?}",
+        results.average_duration
+    );
+    assert_eq!(
+        results.error_rate, 0.0,
+        "File validation should not have errors"
+    );
+    assert!(
+        results.throughput_per_second > 10.0,
+        "File validation throughput should be > 10 ops/sec: {:.2}",
+        results.throughput_per_second
+    );
 }
 
 #[tokio::test]
@@ -238,25 +255,30 @@ async fn test_file_size_scaling_benchmark() {
         file_sizes: vec![1024, 10240, 102400, 1024000, 10240000], // 1KB to 10MB
         concurrent_requests: 1,
     };
-    
+
     let runner = BenchmarkRunner::new(config);
-    
+
     // Test how performance scales with file size
     for &file_size in &config.file_sizes {
-        let results = runner.run_benchmark(&format!("file_validation_{}bytes", file_size), || async {
-            let temp_file = create_test_file(file_size)?;
-            let file_path = temp_file.path().to_str().unwrap();
-            let _file_upload = FileUpload::new(file_path)?;
-            Ok::<(), Error>(())
-        }).await;
-        
+        let results = runner
+            .run_benchmark(&format!("file_validation_{}bytes", file_size), || async {
+                let temp_file = create_test_file(file_size)?;
+                let file_path = temp_file.path().to_str().unwrap();
+                let _file_upload = FileUpload::new(file_path)?;
+                Ok::<(), Error>(())
+            })
+            .await;
+
         println!("File size {} bytes: {}", file_size, results.to_report());
-        
+
         // Performance should degrade gracefully with file size
         let expected_max_duration = Duration::from_millis(1000 + (file_size / 1024) as u64);
-        assert!(results.average_duration < expected_max_duration,
-                "Performance should scale gracefully with file size {}: {:?}", 
-                file_size, results.average_duration);
+        assert!(
+            results.average_duration < expected_max_duration,
+            "Performance should scale gracefully with file size {}: {:?}",
+            file_size,
+            results.average_duration
+        );
     }
 }
 
@@ -268,25 +290,34 @@ async fn test_memory_usage_benchmark() {
         file_sizes: vec![1024000, 10240000, 102400000], // 1MB to 100MB
         concurrent_requests: 1,
     };
-    
+
     let runner = BenchmarkRunner::new(config);
-    
+
     // Test memory usage with different file sizes
     for &file_size in &config.file_sizes {
-        let results = runner.run_benchmark(&format!("memory_usage_{}bytes", file_size), || async {
-            let temp_file = create_test_file(file_size)?;
-            let file_path = temp_file.path().to_str().unwrap();
-            let _file_upload = FileUpload::new(file_path)?;
-            Ok::<(), Error>(())
-        }).await;
-        
-        println!("Memory usage for {} bytes: {}", file_size, results.to_report());
-        
+        let results = runner
+            .run_benchmark(&format!("memory_usage_{}bytes", file_size), || async {
+                let temp_file = create_test_file(file_size)?;
+                let file_path = temp_file.path().to_str().unwrap();
+                let _file_upload = FileUpload::new(file_path)?;
+                Ok::<(), Error>(())
+            })
+            .await;
+
+        println!(
+            "Memory usage for {} bytes: {}",
+            file_size,
+            results.to_report()
+        );
+
         // Memory usage should be reasonable
         let max_memory_mb = 200.0 + (file_size as f64 / (1024.0 * 1024.0)) * 2.0;
-        assert!(results.memory_usage_mb < max_memory_mb,
-                "Memory usage should be reasonable for file size {}: {:.2} MB", 
-                file_size, results.memory_usage_mb);
+        assert!(
+            results.memory_usage_mb < max_memory_mb,
+            "Memory usage should be reasonable for file size {}: {:.2} MB",
+            file_size,
+            results.memory_usage_mb
+        );
     }
 }
 
@@ -298,32 +329,41 @@ async fn test_concurrent_operations_benchmark() {
         file_sizes: vec![10240],
         concurrent_requests: 5,
     };
-    
+
     let runner = BenchmarkRunner::new(config);
-    
+
     // Test concurrent operations
-    let results = runner.run_benchmark("concurrent_file_validation", || async {
-        let handles: Vec<_> = (0..config.concurrent_requests).map(|_| {
-            tokio::spawn(async {
-                let temp_file = create_test_file(10240)?;
-                let file_path = temp_file.path().to_str().unwrap();
-                let _file_upload = FileUpload::new(file_path)?;
-                Ok::<(), Error>(())
-            })
-        }).collect();
-        
-        // Wait for all operations to complete
-        for handle in handles {
-            let _ = handle.await.map_err(|e| Error::Internal(format!("Task failed: {}", e)))?;
-        }
-        
-        Ok::<(), Error>(())
-    }).await;
-    
+    let results = runner
+        .run_benchmark("concurrent_file_validation", || async {
+            let handles: Vec<_> = (0..config.concurrent_requests)
+                .map(|_| {
+                    tokio::spawn(async {
+                        let temp_file = create_test_file(10240)?;
+                        let file_path = temp_file.path().to_str().unwrap();
+                        let _file_upload = FileUpload::new(file_path)?;
+                        Ok::<(), Error>(())
+                    })
+                })
+                .collect();
+
+            // Wait for all operations to complete
+            for handle in handles {
+                let _ = handle
+                    .await
+                    .map_err(|e| Error::Internal(format!("Task failed: {}", e)))?;
+            }
+
+            Ok::<(), Error>(())
+        })
+        .await;
+
     println!("Concurrent operations: {}", results.to_report());
-    
+
     // Concurrent operations should complete successfully
-    assert_eq!(results.error_rate, 0.0, "Concurrent operations should not have errors");
+    assert_eq!(
+        results.error_rate, 0.0,
+        "Concurrent operations should not have errors"
+    );
 }
 
 #[tokio::test]
@@ -334,30 +374,40 @@ async fn test_performance_consistency_benchmark() {
         file_sizes: vec![10240],
         concurrent_requests: 1,
     };
-    
+
     let runner = BenchmarkRunner::new(config);
-    
+
     // Test performance consistency over many iterations
-    let results = runner.run_benchmark("performance_consistency", || async {
-        let temp_file = create_test_file(10240)?;
-        let file_path = temp_file.path().to_str().unwrap();
-        let _file_upload = FileUpload::new(file_path)?;
-        Ok::<(), Error>(())
-    }).await;
-    
+    let results = runner
+        .run_benchmark("performance_consistency", || async {
+            let temp_file = create_test_file(10240)?;
+            let file_path = temp_file.path().to_str().unwrap();
+            let _file_upload = FileUpload::new(file_path)?;
+            Ok::<(), Error>(())
+        })
+        .await;
+
     println!("Performance consistency: {}", results.to_report());
-    
+
     // Performance should be consistent (low variance)
-    let variance = (results.max_duration.as_nanos() as f64 - results.min_duration.as_nanos() as f64) / 
-                   results.average_duration.as_nanos() as f64;
-    
-    assert!(variance < 2.0, 
-            "Performance should be consistent (variance: {:.2})", variance);
-    
+    let variance = (results.max_duration.as_nanos() as f64
+        - results.min_duration.as_nanos() as f64)
+        / results.average_duration.as_nanos() as f64;
+
+    assert!(
+        variance < 2.0,
+        "Performance should be consistent (variance: {:.2})",
+        variance
+    );
+
     // P99 should not be too much worse than average
-    let p99_ratio = results.p99_duration.as_nanos() as f64 / results.average_duration.as_nanos() as f64;
-    assert!(p99_ratio < 3.0, 
-            "P99 should not be too much worse than average (ratio: {:.2})", p99_ratio);
+    let p99_ratio =
+        results.p99_duration.as_nanos() as f64 / results.average_duration.as_nanos() as f64;
+    assert!(
+        p99_ratio < 3.0,
+        "P99 should not be too much worse than average (ratio: {:.2})",
+        p99_ratio
+    );
 }
 
 #[tokio::test]
@@ -368,30 +418,38 @@ async fn test_error_handling_performance() {
         file_sizes: vec![10240],
         concurrent_requests: 1,
     };
-    
+
     let runner = BenchmarkRunner::new(config);
-    
+
     // Test performance of error handling (non-existent file)
-    let results = runner.run_benchmark("error_handling_performance", || async {
-        let _file_upload = FileUpload::new("nonexistent_file.pdf")?;
-        Ok::<(), Error>(())
-    }).await;
-    
+    let results = runner
+        .run_benchmark("error_handling_performance", || async {
+            let _file_upload = FileUpload::new("nonexistent_file.pdf")?;
+            Ok::<(), Error>(())
+        })
+        .await;
+
     println!("Error handling performance: {}", results.to_report());
-    
+
     // Error handling should be fast
-    assert!(results.average_duration < Duration::from_millis(10), 
-            "Error handling should be fast: {:?}", results.average_duration);
-    
+    assert!(
+        results.average_duration < Duration::from_millis(10),
+        "Error handling should be fast: {:?}",
+        results.average_duration
+    );
+
     // Should have 100% error rate (expected)
-    assert_eq!(results.error_rate, 100.0, "Should have 100% error rate for nonexistent files");
+    assert_eq!(
+        results.error_rate, 100.0,
+        "Should have 100% error rate for nonexistent files"
+    );
 }
 
 /// Comprehensive benchmark suite
 #[tokio::test]
 async fn test_comprehensive_benchmark_suite() {
     println!("Running comprehensive benchmark suite...");
-    
+
     let configs = vec![
         BenchmarkConfig {
             iterations: 10,
@@ -412,25 +470,35 @@ async fn test_comprehensive_benchmark_suite() {
             concurrent_requests: 1,
         },
     ];
-    
+
     for (i, config) in configs.iter().enumerate() {
         let runner = BenchmarkRunner::new(config.clone());
-        
-        let results = runner.run_benchmark(&format!("comprehensive_test_{}", i), || async {
-            let file_size = config.file_sizes[0];
-            let temp_file = create_test_file(file_size)?;
-            let file_path = temp_file.path().to_str().unwrap();
-            let _file_upload = FileUpload::new(file_path)?;
-            Ok::<(), Error>(())
-        }).await;
-        
+
+        let results = runner
+            .run_benchmark(&format!("comprehensive_test_{}", i), || async {
+                let file_size = config.file_sizes[0];
+                let temp_file = create_test_file(file_size)?;
+                let file_path = temp_file.path().to_str().unwrap();
+                let _file_upload = FileUpload::new(file_path)?;
+                Ok::<(), Error>(())
+            })
+            .await;
+
         println!("Benchmark {}: {}", i, results.to_report());
-        
+
         // Each benchmark should complete successfully
-        assert_eq!(results.error_rate, 0.0, "Benchmark {} should not have errors", i);
-        assert!(results.average_duration < Duration::from_millis(500), 
-                "Benchmark {} should be reasonably fast: {:?}", i, results.average_duration);
+        assert_eq!(
+            results.error_rate, 0.0,
+            "Benchmark {} should not have errors",
+            i
+        );
+        assert!(
+            results.average_duration < Duration::from_millis(500),
+            "Benchmark {} should be reasonably fast: {:?}",
+            i,
+            results.average_duration
+        );
     }
-    
+
     println!("Comprehensive benchmark suite completed successfully!");
 }

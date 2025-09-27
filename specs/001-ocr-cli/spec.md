@@ -1,11 +1,12 @@
 # Feature Specification: OCR CLI Tool
 
-**Feature Branch**: `001-ocr-cli`  
-**Created**: 2025-01-23  
-**Status**: Draft  
+**Feature Branch**: `001-ocr-cli`
+**Created**: 2025-01-23
+**Status**: Draft
 **Input**: User description: "I am building a cli tool that will use rest API to upload a pdf or image file and have that file OCRd. This tool should be configured in a 12factor fashion that is fully compatible with a toml based configuration. It should take a few arguments: the file to upload, the api key to use, and the endpoint to connect to. The tool should work against the mistral AI apis, and most specifically against it's file and ocr apis"
 
 ## Execution Flow (main)
+
 ```
 1. Parse user description from Input
    → If empty: ERROR "No feature description provided"
@@ -28,23 +29,27 @@
 ---
 
 ## ⚡ Quick Guidelines
+
 - ✅ Focus on WHAT users need and WHY
 - ❌ Avoid HOW to implement (no tech stack, APIs, code structure)
 - 👥 Written for business stakeholders, not developers
 
 ### Section Requirements
+
 - **Mandatory sections**: Must be completed for every feature
 - **Optional sections**: Include only when relevant to the feature
 - When a section doesn't apply, remove it entirely (don't leave as "N/A")
 
 ### For AI Generation
+
 When creating this spec from a user prompt:
+
 1. **Mark all ambiguities**: Use [NEEDS CLARIFICATION: specific question] for any assumption you'd need to make
 2. **Don't guess**: If the prompt doesn't specify something (e.g., "login system" without auth method), mark it
 3. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
 4. **Common underspecified areas**:
    - User types and permissions
-   - Data retention/deletion policies  
+   - Data retention/deletion policies
    - Performance targets and scale
    - Error handling behaviors
    - Integration requirements
@@ -55,9 +60,11 @@ When creating this spec from a user prompt:
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
+
 A user wants to extract text from a PDF or image file using OCR technology. They have a Mistral AI API key and want to upload their file to get the extracted text back through a simple command-line interface.
 
 ### Acceptance Scenarios
+
 1. **Given** a valid PDF file and API credentials, **When** the user runs the CLI with the file path, **Then** the tool uploads the file and returns the extracted text
 2. **Given** a valid image file (PNG/JPG) and API credentials, **When** the user runs the CLI with the file path, **Then** the tool uploads the file and returns the extracted text
 3. **Given** invalid file format, **When** the user runs the CLI, **Then** the tool shows a clear error message and exits with non-zero code
@@ -67,6 +74,7 @@ A user wants to extract text from a PDF or image file using OCR technology. They
 7. **Given** a user specifies an unsupported shell, **When** they run the CLI with --completions <unsupported>, **Then** the tool shows an error message listing supported shells
 
 ### Edge Cases
+
 - What happens when the file is too large for the API? (Files up to 100MB are supported)
 - How does the tool handle files with no extractable text? (Returns warning message with success exit code)
 - What happens when the API rate limit is exceeded? (Retry with exponential backoff, 3 attempts max, then fail)
@@ -77,6 +85,7 @@ A user wants to extract text from a PDF or image file using OCR technology. They
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
+
 - **FR-001**: System MUST accept file path as command-line argument
 - **FR-002**: System MUST accept API key as command-line argument or environment variable
 - **FR-003**: System MUST accept API endpoint as command-line argument or configuration
@@ -105,6 +114,7 @@ A user wants to extract text from a PDF or image file using OCR technology. They
 - **FR-026**: System MUST output completion scripts to stdout for easy redirection to files
 
 ### Key Entities *(include if feature involves data)*
+
 - **Configuration**: TOML file containing default API endpoint, optional API key, and other settings
 - **File Upload**: The PDF or image file to be processed for OCR
 - **OCR Result**: Extracted text content from the uploaded file
@@ -113,6 +123,7 @@ A user wants to extract text from a PDF or image file using OCR technology. They
 ## Clarifications
 
 ### Session 2025-01-23
+
 - Q: Configuration loading priority order for CLI args, environment variables, .env file, TOML config, and defaults? → A: CLI args → Environment variables → .env file → TOML config → defaults
 - Q: How should the tool behave when OCR returns empty or no text? → A: Return warning message with success exit code (0)
 - Q: How should the tool handle Mistral AI rate limit responses (HTTP 429)? → A: Retry with exponential backoff (3 attempts max) then fail
@@ -124,17 +135,20 @@ A user wants to extract text from a PDF or image file using OCR technology. They
 ---
 
 ## Review & Acceptance Checklist
+
 *GATE: Automated checks run during main() execution*
 
 ### Content Quality
+
 - [ ] No implementation details (languages, frameworks, APIs)
 - [ ] Focused on user value and business needs
 - [ ] Written for non-technical stakeholders
 - [ ] All mandatory sections completed
 
 ### Requirement Completeness
+
 - [ ] No [NEEDS CLARIFICATION] markers remain
-- [ ] Requirements are testable and unambiguous  
+- [ ] Requirements are testable and unambiguous
 - [ ] Success criteria are measurable
 - [ ] Scope is clearly bounded
 - [ ] Dependencies and assumptions identified
@@ -142,6 +156,7 @@ A user wants to extract text from a PDF or image file using OCR technology. They
 ---
 
 ## Execution Status
+
 *Updated by main() during processing*
 
 - [ ] User description parsed

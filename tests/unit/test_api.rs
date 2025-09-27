@@ -2,22 +2,21 @@
 
 use paperless_ngx_ocr2::{
     api::{
-        MistralClient,
-        files::{FileUploadRequest, FileUploadResponse, FilesClient},
-        ocr::{OCRRequest, OCRResponse, Page, Dimensions, UsageInfo, OCRClient},
         auth::AuthHandler,
+        files::{FileUploadRequest, FileUploadResponse, FilesClient},
+        ocr::{Dimensions, OCRClient, OCRRequest, OCRResponse, Page, UsageInfo},
+        MistralClient,
     },
-    APICredentials,
-    Error,
+    APICredentials, Error,
 };
 
 #[test]
 fn test_file_upload_request_new() {
     let file_data = b"Test file content".to_vec();
     let filename = "test.pdf".to_string();
-    
+
     let request = FileUploadRequest::new(file_data.clone(), filename.clone());
-    
+
     assert_eq!(request.file_data, file_data);
     assert_eq!(request.filename, filename);
     assert_eq!(request.purpose, "ocr");
@@ -32,7 +31,7 @@ fn test_file_upload_request_validation() {
         purpose: "ocr".to_string(),
     };
     assert!(valid_request.validate().is_ok());
-    
+
     // Empty file data
     let empty_data_request = FileUploadRequest {
         file_data: vec![],
@@ -40,7 +39,7 @@ fn test_file_upload_request_validation() {
         purpose: "ocr".to_string(),
     };
     assert!(empty_data_request.validate().is_err());
-    
+
     // Empty filename
     let empty_filename_request = FileUploadRequest {
         file_data: b"Valid data".to_vec(),
@@ -48,7 +47,7 @@ fn test_file_upload_request_validation() {
         purpose: "ocr".to_string(),
     };
     assert!(empty_filename_request.validate().is_err());
-    
+
     // Invalid purpose
     let invalid_purpose_request = FileUploadRequest {
         file_data: b"Valid data".to_vec(),
@@ -65,9 +64,11 @@ fn test_file_upload_request_multipart_form() {
         filename: "test.pdf".to_string(),
         purpose: "ocr".to_string(),
     };
-    
-    let form = request.to_multipart_form().expect("Should create multipart form");
-    
+
+    let form = request
+        .to_multipart_form()
+        .expect("Should create multipart form");
+
     // Test helper methods
     assert!(request.has_file_part());
     assert!(request.has_purpose_part());
@@ -86,7 +87,7 @@ fn test_file_upload_response_validation() {
         status: Some("uploaded".to_string()),
     };
     assert!(valid_response.validate().is_ok());
-    
+
     // Empty ID
     let empty_id_response = FileUploadResponse {
         id: "".to_string(),
@@ -98,7 +99,7 @@ fn test_file_upload_response_validation() {
         status: None,
     };
     assert!(empty_id_response.validate().is_err());
-    
+
     // Invalid object type
     let invalid_object_response = FileUploadResponse {
         id: "file-123".to_string(),
@@ -117,7 +118,7 @@ fn test_ocr_request_validation() {
     // Valid request
     let valid_request = OCRRequest::new("file-123".to_string());
     assert!(valid_request.validate().is_ok());
-    
+
     // Empty file ID
     let empty_request = OCRRequest::new("".to_string());
     assert!(empty_request.validate().is_err());
@@ -143,7 +144,7 @@ fn test_ocr_response_get_extracted_text() {
             doc_size_bytes: 469,
         },
     };
-    
+
     assert_eq!(response.get_extracted_text(), "Extracted text content");
 }
 
@@ -169,7 +170,7 @@ fn test_ocr_response_validation() {
         },
     };
     assert!(valid_response.validate().is_ok());
-    
+
     // Empty pages
     let empty_pages_response = OCRResponse {
         pages: vec![],
@@ -181,7 +182,7 @@ fn test_ocr_response_validation() {
         },
     };
     assert!(empty_pages_response.validate().is_err());
-    
+
     // Invalid page index
     let invalid_index_response = OCRResponse {
         pages: vec![Page {
@@ -209,11 +210,14 @@ fn test_auth_handler_get_auth_headers() {
     let credentials = APICredentials::new(
         "sk-test123".to_string(),
         "https://api.mistral.ai".to_string(),
-    ).expect("Should create credentials");
-    
+    )
+    .expect("Should create credentials");
+
     let auth_handler = AuthHandler::new(credentials);
-    let headers = auth_handler.get_auth_headers().expect("Should get auth headers");
-    
+    let headers = auth_handler
+        .get_auth_headers()
+        .expect("Should get auth headers");
+
     assert!(headers.contains_key("authorization"));
     assert!(headers.contains_key("content-type"));
 }
@@ -223,11 +227,12 @@ fn test_auth_handler_redacted_key() {
     let credentials = APICredentials::new(
         "sk-test123456789".to_string(),
         "https://api.mistral.ai".to_string(),
-    ).expect("Should create credentials");
-    
+    )
+    .expect("Should create credentials");
+
     let auth_handler = AuthHandler::new(credentials);
     let redacted = auth_handler.redacted_key();
-    
+
     assert!(redacted.contains("sk-t***"));
     assert!(!redacted.contains("123456789"));
 }
@@ -237,10 +242,11 @@ async fn test_mistral_client_creation() {
     let credentials = APICredentials::new(
         "sk-test123".to_string(),
         "https://api.mistral.ai".to_string(),
-    ).expect("Should create credentials");
-    
+    )
+    .expect("Should create credentials");
+
     let client = MistralClient::new(credentials, 30).expect("Should create MistralClient");
-    
+
     assert_eq!(client.base_url(), "https://api.mistral.ai");
     assert!(client.auth_header().starts_with("Bearer "));
 }
@@ -250,10 +256,14 @@ fn test_mistral_client_build_url() {
     let credentials = APICredentials::new(
         "sk-test123".to_string(),
         "https://api.mistral.ai".to_string(),
-    ).expect("Should create credentials");
-    
+    )
+    .expect("Should create credentials");
+
     let client = MistralClient::new(credentials, 30).expect("Should create MistralClient");
-    
-    assert_eq!(client.build_url("v1/files"), "https://api.mistral.ai/v1/files");
+
+    assert_eq!(
+        client.build_url("v1/files"),
+        "https://api.mistral.ai/v1/files"
+    );
     assert_eq!(client.build_url("/v1/ocr"), "https://api.mistral.ai/v1/ocr");
 }

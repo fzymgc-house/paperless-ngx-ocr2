@@ -1,0 +1,125 @@
+# Pre-commit hooks configuration for paperless-ngx-ocr2
+# Install with: pip install pre-commit && pre-commit install
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Basic file checks
+      - id: trailing-whitespace
+        description: Remove trailing whitespace
+      - id: end-of-file-fixer
+        description: Ensure files end with a newline
+      - id: check-yaml
+        description: Check YAML files for syntax errors
+      - id: check-json
+        description: Check JSON files for syntax errors
+      - id: check-toml
+        description: Check TOML files for syntax errors
+      - id: check-added-large-files
+        description: Prevent large files from being committed
+        args: ['--maxkb=1000']  # 1MB limit for source files
+      - id: check-merge-conflict
+        description: Check for merge conflict markers
+      - id: check-case-conflict
+        description: Check for files that would conflict in case-insensitive filesystems
+      - id: check-docstring-first
+        description: Ensure docstrings appear before code
+        language: python
+        exclude: ^tests/
+      - id: mixed-line-ending
+        description: Ensure consistent line endings
+        args: ['--fix=lf']  # Use LF line endings
+
+  # Rust-specific hooks using local commands
+  - repo: local
+    hooks:
+      # Format Rust code
+      - id: rustfmt
+        name: rustfmt
+        entry: rustfmt
+        language: system
+        types: [rust]
+        pass_filenames: true
+        args: [--edition, "2021"]
+        description: Format Rust code with rustfmt
+
+      # Check for common Rust issues
+      - id: clippy
+        name: clippy
+        entry: cargo clippy
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [--all-targets, --all-features, --, -D, warnings]
+        description: Run clippy linter
+
+      # Run tests
+      - id: cargo-test
+        name: cargo test
+        entry: cargo test
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [--all-features]
+        description: Run Rust tests
+
+      # Check for security vulnerabilities (optional - requires cargo-audit)
+      - id: cargo-audit
+        name: cargo audit
+        entry: bash -c 'if command -v cargo-audit >/dev/null 2>&1; then cargo audit --deny warnings; else echo "cargo-audit not installed, skipping security audit"; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+        description: Check for known security vulnerabilities
+
+      # Custom hook to run cargo check
+      - id: cargo-check
+        name: cargo check
+        entry: cargo check --all-targets --all-features
+        language: system
+        pass_filenames: false
+        always_run: true
+        description: Run cargo check to verify compilation
+
+  # Docker and container checks
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
+    hooks:
+      - id: hadolint-docker
+        description: Lint Dockerfile
+        files: \.dockerfile$|^Dockerfile.*$
+        args: [--ignore, DL3008, --ignore, DL3009]
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        description: Lint shell scripts
+        args: [--severity=warning]
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint
+        description: Lint Markdown files
+        args: [--fix]
+
+# Configuration
+default_stages: [pre-commit]
+fail_fast: false
+minimum_pre_commit_version: '3.0.0'
+
+# Exclude patterns for certain hooks
+exclude: |
+  (?x)^(
+    target/.*|
+    \.git/.*|
+    \.cargo/.*|
+    Cargo\.lock|
+    .*\.min\.js|
+    .*\.min\.css
+  )$

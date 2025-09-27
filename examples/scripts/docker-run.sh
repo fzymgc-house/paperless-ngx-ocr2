@@ -114,12 +114,12 @@ if [[ -n "$CONFIG_FILE" ]]; then
         echo "Error: Config file '$CONFIG_FILE' does not exist"
         exit 1
     fi
-    
+
     # Get absolute path of config file
     CONFIG_FILE_ABS=$(realpath "$CONFIG_FILE")
     CONFIG_DIR=$(dirname "$CONFIG_FILE_ABS")
     CONFIG_FILENAME=$(basename "$CONFIG_FILE_ABS")
-    
+
     # Mount config file
     DOCKER_CMD="$DOCKER_CMD -v \"$CONFIG_DIR:/config\""
     TOOL_ARGS="$TOOL_ARGS --config /config/$CONFIG_FILENAME"

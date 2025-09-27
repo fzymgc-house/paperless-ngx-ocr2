@@ -11,9 +11,9 @@ use tempfile::TempDir;
 fn test_docker_build() {
     let mut cmd = Command::new("docker");
     cmd.args(&["build", "-t", "paperless-ngx-ocr2:test", "."]);
-    
+
     let output = cmd.output().expect("Failed to execute docker build");
-    
+
     assert!(
         output.status.success(),
         "Docker build failed: {}",
@@ -29,9 +29,9 @@ fn test_docker_container_help() {
         .args(&["build", "-t", "paperless-ngx-ocr2:test", "."])
         .output()
         .expect("Failed to execute docker build");
-    
+
     assert!(build_cmd.status.success(), "Docker build failed");
-    
+
     // Then run the container with --help
     let mut cmd = Command::new("docker");
     cmd.args(&[
@@ -40,15 +40,15 @@ fn test_docker_container_help() {
         "paperless-ngx-ocr2:test",
         "--help"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container help failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("paperless-ngx-ocr2"));
     assert!(stdout.contains("OCR CLI tool"));
@@ -66,15 +66,15 @@ fn test_docker_container_version() {
         "paperless-ngx-ocr2:test",
         "--version"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container version failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("paperless-ngx-ocr2"));
     assert!(stdout.contains(env!("CARGO_PKG_VERSION")));
@@ -91,15 +91,15 @@ fn test_docker_container_completions() {
         "--completions",
         "bash"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container completions failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("complete -F _paperless_ngx_ocr2_completion"));
     assert!(stdout.contains("paperless-ngx-ocr2"));
@@ -116,12 +116,12 @@ fn test_docker_container_missing_api_key() {
         "--file",
         "/dev/null"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     // Should fail with configuration error
     assert!(!output.status.success());
-    
+
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("Configuration error") || stderr.contains("API key"));
 }
@@ -134,13 +134,13 @@ fn test_docker_container_with_api_key() {
         println!("Skipping test_docker_container_with_api_key: No API key provided");
         return;
     }
-    
+
     // Create a temporary test file using fixture
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
     let test_file = create_test_pdf("Test content for OCR");
     let test_file_path = temp_dir.path().join("test.pdf");
     std::fs::copy(test_file.path(), &test_file_path).expect("Failed to copy test file");
-    
+
     let mut cmd = Command::new("docker");
     cmd.args(&[
         "run",
@@ -153,14 +153,14 @@ fn test_docker_container_with_api_key() {
         "--file",
         "/test.pdf"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     // This might succeed or fail depending on API availability
     // We just want to ensure the container can run with the API key
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    
+
     // Should not crash with configuration error
     assert!(
         !stderr.contains("Configuration error") && !stderr.contains("API key must not be empty"),
@@ -179,15 +179,15 @@ fn test_docker_compose_help() {
         "paperless-ngx-ocr2",
         "--help"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker-compose run");
-    
+
     assert!(
         output.status.success(),
         "Docker Compose help failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("paperless-ngx-ocr2"));
     assert!(stdout.contains("OCR CLI tool"));
@@ -205,9 +205,9 @@ fn test_docker_compose_with_env() {
         "paperless-ngx-ocr2",
         "--version"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker-compose run");
-    
+
     assert!(
         output.status.success(),
         "Docker Compose with env failed: {}",
@@ -226,15 +226,15 @@ fn test_docker_container_architecture() {
         "uname",
         "-m"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container architecture check failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout).trim();
     // Should be x86_64 or aarch64
     assert!(
@@ -256,9 +256,9 @@ fn test_docker_container_resources() {
         "paperless-ngx-ocr2:test",
         "--help"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run with resource limits");
-    
+
     assert!(
         output.status.success(),
         "Docker container with resource limits failed: {}",
@@ -276,15 +276,15 @@ fn test_docker_container_security() {
         "paperless-ngx-ocr2:test",
         "id"
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container security check failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     // Should not be running as root (uid=0)
     assert!(

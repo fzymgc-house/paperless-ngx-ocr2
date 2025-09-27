@@ -25,7 +25,7 @@ pub struct CLISuccessData {
     pub confidence: Option<f64>,
 }
 
-/// Error data structure for CLI JSON output  
+/// Error data structure for CLI JSON output
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CLIErrorData {
     #[serde(rename = "type")]
@@ -251,16 +251,16 @@ impl Cli {
     fn generate_bash_completion(&self, bin_name: &str) -> Result<()> {
         println!(
             r#"# Bash completion for {}
-complete -F _paperless_ngx_ocr2_completion {} 
+complete -F _paperless_ngx_ocr2_completion {}
 
 _paperless_ngx_ocr2_completion() {{
     local cur prev opts
     COMPREPLY=()
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
-    
+
     opts="-f --file -a --api-key --api-base-url --config --json -v --verbose -h --help -V --version --completions"
-    
+
     case "${{prev}}" in
         -f|--file)
             COMPREPLY=( $(compgen -f -- "$cur") )
@@ -281,7 +281,7 @@ _paperless_ngx_ocr2_completion() {{
             return 0
             ;;
     esac
-    
+
     if [[ $cur == -* ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return 0
@@ -347,9 +347,9 @@ complete -c {} -s V -l version -d "Print version""#,
             r#"# PowerShell completion for {}
 Register-ArgumentCompleter -CommandName {} -ScriptBlock {{
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-    
+
     $completions = @()
-    
+
     switch ($parameterName) {{
         'File' {{
             $completions = Get-ChildItem -Path . -Name | Where-Object {{ $_ -like "$wordToComplete*" }}
@@ -364,7 +364,7 @@ Register-ArgumentCompleter -CommandName {} -ScriptBlock {{
             $completions = @('-f', '--file', '-a', '--api-key', '--api-base-url', '--config', '--json', '-v', '--verbose', '--completions', '-h', '--help', '-V', '--version') | Where-Object {{ $_ -like "$wordToComplete*" }}
         }}
     }}
-    
+
     return $completions
 }}"#,
             bin_name, bin_name
