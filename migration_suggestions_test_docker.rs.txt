@@ -1,8 +1,0 @@
-Migration suggestions for tests/container/test_docker.rs
-=================================
-
-📚 ADD THESE IMPORTS TO THE TOP OF YOUR TEST FILE:
-   mod common;
-   use common::*;
-
-📖 For more information, see tests/common/README.md
