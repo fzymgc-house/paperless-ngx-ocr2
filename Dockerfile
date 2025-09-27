@@ -80,5 +80,5 @@ CMD ["--help"]
 LABEL org.opencontainers.image.title="paperless-ngx-ocr2"
 LABEL org.opencontainers.image.description="OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction"
 LABEL org.opencontainers.image.vendor="fzymgc-house"
-LABEL org.opencontainers.image.licenses="MIT OR Apache-2.0"
+LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/fzymgc-house/paperless-ngx-ocr2"
