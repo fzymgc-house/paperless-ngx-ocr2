@@ -4,6 +4,7 @@
 **Prerequisites**: plan.md (required), research.md, data-model.md, contracts/
 
 ## Execution Flow (main)
+
 ```
 1. Load plan.md from feature directory
    → If not found: ERROR "No implementation plan found"
@@ -33,13 +34,16 @@
 ```
 
 ## Format: `[ID] [P?] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - Include exact file paths in descriptions
 
 ## Path Conventions
+
 - **Single project**: `src/`, `tests/` at repository root (Rust: `tests/` for integration tests)
 
 ## Phase 3.1: Setup
+
 - [x] T001 Create Rust project structure with Cargo.toml and basic directories
 - [x] T002 Initialize Cargo.toml with dependencies: clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml, dotenv, clap_complete
 - [x] T003 [P] Configure rustfmt.toml and clippy configuration files
@@ -48,9 +52,11 @@
 - [x] T006 [P] Create a renovate.json file for auto-updating dependencies
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
+
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests
+
 - [x] T007 [P] Contract test for file upload request in `tests/integration/test_file_upload_contract.rs`
 - [x] T008 [P] Contract test for file upload response in `tests/integration/test_file_upload_contract.rs`
 - [x] T009 [P] Contract test for OCR API request in `tests/integration/test_ocr_api_contract.rs`
@@ -59,6 +65,7 @@
 - [x] T012 [P] Contract test for API error handling in `tests/integration/test_api_error_contract.rs`
 
 ### CLI Behavior Tests
+
 - [x] T013 [P] CLI smoke test using assert_cmd: `paperless-ngx-ocr2 --help` in `tests/integration/test_cli_basic.rs`
 - [x] T014 [P] CLI file argument test with assert_cmd in `tests/integration/test_cli_basic.rs`
 - [x] T015 [P] CLI JSON output test with assert_cmd + predicates in `tests/integration/test_cli_json.rs`
@@ -66,6 +73,7 @@
 - [x] T017 [P] CLI verbose logging test in `tests/integration/test_cli_logging.rs`
 
 ### Integration Tests
+
 - [x] T018 [P] Create example test input files for happy and failure paths in `tests/fixtures/`
 - [x] T019 [P] Happy path integration test: PDF upload and OCR in `tests/integration/test_ocr_workflow.rs`
 - [x] T020 [P] Happy path integration test: Image upload and OCR in `tests/integration/test_ocr_workflow.rs`
@@ -88,6 +96,7 @@
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Entity Models
+
 - [x] T036 [P] Implement Configuration entity in `src/config.rs`
 - [x] T037 [P] Implement FileUpload entity in `src/file.rs`
 - [x] T038 [P] Implement OCRResult entity in `src/ocr.rs`
@@ -95,17 +104,20 @@
 - [x] T040 [P] Implement Error entity with thiserror in `src/error.rs`
 
 ### Core Library
+
 - [x] T041 [P] Implement main library entry point in `src/lib.rs`
 - [x] T042 [P] Implement CLI argument parsing with clap in `src/cli/mod.rs`
 - [x] T043 [P] Implement CLI commands in `src/cli/commands.rs`
 
 ### API Client
+
 - [x] T044 [P] Implement Mistral AI Files API client in `src/api/files.rs`
 - [x] T045 [P] Implement Mistral AI OCR API client in `src/api/ocr.rs`
 - [x] T046 [P] Implement API client base with reqwest in `src/api/mod.rs`
 - [x] T047 [P] Implement authentication handling in `src/api/auth.rs`
 
 ### Main Application
+
 - [x] T048 Implement main.rs with CLI entry point and error handling
 - [x] T049 Wire configuration loading into main flow
 - [x] T050 Wire file validation into main flow
@@ -114,6 +126,7 @@
 ## Phase 3.4: Integration
 
 ### Configuration and Logging
+
 - [x] T052 Implement TOML configuration file loading with 12-factor support
 - [x] T053 Implement environment variable override handling
 - [x] T054 Implement .env file loading with dotenv
@@ -123,6 +136,7 @@
 - [x] T058 Add verbose logging support with --verbose flag
 
 ### File Processing
+
 - [x] T059 Implement file validation (size, format, readability)
 - [x] T060 Implement password-protected PDF detection and rejection
 - [x] T061 Implement file upload to Mistral AI Files API
@@ -131,16 +145,19 @@
 - [x] T064 Implement empty text warning handling (exit code 0)
 
 ### Error Handling and Resilience
+
 - [x] T065 Implement retry logic with exponential backoff for rate limits (3 attempts max)
 - [x] T066 Implement API error response parsing and handling
 - [x] T067 Implement network timeout handling
 
 ### Output Formatting
+
 - [x] T068 Implement human-readable output formatting
 - [x] T069 Implement JSON output formatting with --json flag
 - [x] T070 Implement proper exit codes per constitution
 
 ### Shell Completion
+
 - [x] T071 Implement --completions flag for shell completion generation
 - [x] T072 Implement bash completion script generation
 - [x] T073 Implement zsh completion script generation
@@ -151,6 +168,7 @@
 ## Phase 3.5: Polish
 
 ### Unit Tests
+
 - [x] T077 [P] Unit tests for configuration validation in `tests/unit/test_config.rs`
 - [x] T078 [P] Unit tests for file validation in `tests/unit/test_file.rs`
 - [x] T079 [P] Unit tests for API client methods in `tests/unit/test_api.rs`
@@ -158,23 +176,27 @@
 - [x] T081 [P] Unit tests for CLI argument parsing in `tests/unit/test_cli.rs`
 
 ### Performance and Edge Cases
+
 - [x] T082 [P] Performance tests for large files (up to 100MB) in `tests/performance/test_large_files.rs`
 - [x] T083 [P] Memory usage tests with streaming in `tests/performance/test_memory.rs`
 - [x] T084 [P] Network timeout and retry logic tests in `tests/integration/test_network.rs`
 
 ### Documentation and Examples
+
 - [x] T085 [P] Update README.md with installation and usage instructions
 - [x] T086 [P] Create examples directory with sample files and configurations
 - [x] T087 [P] Generate man page from clap help text
 - [x] T088 [P] Update shell completion documentation in README.md
 
 ### Containerization
+
 - [x] T089 [P] Create Dockerfile for multi-stage Rust build
 - [x] T090 [P] Create Docker Compose file for local testing
 - [x] T091 [P] Set up GitHub Actions for multi-arch container builds (AMD64, ARM64)
 - [x] T092 [P] Add container integration tests in `tests/container/test_docker.rs`
 
 ### Final Polish
+
 - [x] T093 [P] Remove code duplication and refactor
 - [x] T094 [P] Run cargo clippy and fix all warnings
 - [x] T095 [P] Run cargo fmt and ensure consistent formatting
@@ -182,6 +204,7 @@
 - [x] T097 [P] Performance validation and optimization
 
 ## Dependencies
+
 - Setup (T001-T006) before everything else
 - Contract tests (T007-T012) before CLI tests (T013-T017)
 - Test fixtures (T018) before integration tests (T019-T035)
@@ -192,6 +215,7 @@
 - Integration (T052-T076) before polish (T077-T097)
 
 ## Parallel Example
+
 ```
 # Launch contract tests together (T007-T012):
 Task: "Contract test for file upload request in tests/integration/test_file_upload_contract.rs"
@@ -223,6 +247,7 @@ Task: "Shell completion test: unsupported shell error handling in tests/integrat
 ```
 
 ## Notes
+
 - [P] tasks = different files, no dependencies between them
 - Verify all tests fail before implementing
 - Commit after completing each phase
@@ -232,16 +257,17 @@ Task: "Shell completion test: unsupported shell error handling in tests/integrat
 - Multi-architecture container support required
 
 ## Task Generation Rules
+
 *Applied during main() execution*
 
 1. **From Contracts** (6 contract files):
    - Each contract file → contract test task [P]
    - API integration → implementation tasks
-   
+
 2. **From Data Model** (5 entities):
    - Each entity → model creation task [P]
    - Relationships → integration tasks
-   
+
 3. **From Quickstart Scenarios**:
    - Each usage example → integration test [P]
    - Installation methods → setup and containerization tasks
@@ -251,6 +277,7 @@ Task: "Shell completion test: unsupported shell error handling in tests/integrat
    - API workflow → file upload + OCR processing tasks
 
 ## Validation Checklist
+
 *GATE: Checked by main() before returning*
 
 - [x] All contracts have corresponding tests (T007-T012)

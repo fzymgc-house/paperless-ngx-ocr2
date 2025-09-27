@@ -1,6 +1,7 @@
 # Docker Usage Examples
 
-This directory contains Docker-related examples and configurations for the paperless-ngx-ocr2 CLI tool.
+This directory contains Docker-related examples and configurations for the
+paperless-ngx-ocr2 CLI tool.
 
 ## Files
 
@@ -13,27 +14,30 @@ This directory contains Docker-related examples and configurations for the paper
 ### Using Docker Compose (Recommended)
 
 1. **Set up environment variables:**
+
    ```bash
    # Copy the example environment file
    cp .env.example .env
-   
+
    # Edit .env and add your Mistral AI API key
    nano .env
    ```
 
 2. **Build and run the container:**
+
    ```bash
    # Build the image
    docker-compose build
-   
+
    # Run with help
    docker-compose run --rm paperless-ngx-ocr2 --help
-   
+
    # Process a file
    docker-compose run --rm paperless-ngx-ocr2 --file /path/to/your/file.pdf
    ```
 
 3. **Interactive mode:**
+
    ```bash
    # Start an interactive container
    docker-compose run --rm paperless-ngx-ocr2 bash
@@ -42,11 +46,13 @@ This directory contains Docker-related examples and configurations for the paper
 ### Using Docker directly
 
 1. **Build the image:**
+
    ```bash
    docker build -t paperless-ngx-ocr2:latest .
    ```
 
 2. **Run the container:**
+
    ```bash
    # With environment variables
    docker run --rm \
@@ -74,7 +80,8 @@ The Dockerfile supports multi-architecture builds for both AMD64 and ARM64:
 
 ```bash
 # Build for multiple architectures
-docker buildx build --platform linux/amd64,linux/arm64 -t paperless-ngx-ocr2:latest .
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t paperless-ngx-ocr2:latest .
 ```
 
 ## Configuration
@@ -82,7 +89,7 @@ docker buildx build --platform linux/amd64,linux/arm64 -t paperless-ngx-ocr2:lat
 ### Environment Variables
 
 - `PAPERLESS_OCR_API_KEY` - Your Mistral AI API key (required)
-- `PAPERLESS_OCR_API_BASE_URL` - Mistral AI API base URL (default: https://api.mistral.ai)
+- `PAPERLESS_OCR_API_BASE_URL` - Mistral AI API base URL (default: <https://api.mistral.ai>)
 - `RUST_LOG` - Logging level (default: info)
 
 ### Volume Mounts
@@ -103,18 +110,21 @@ docker buildx build --platform linux/amd64,linux/arm64 -t paperless-ngx-ocr2:lat
 ### Common Issues
 
 1. **Permission denied errors:**
+
    ```bash
    # Ensure the container has read access to your files
    docker-compose run --rm paperless-ngx-ocr2 --file /workspace/your_file.pdf
    ```
 
 2. **API key not found:**
+
    ```bash
    # Check environment variables
    docker-compose run --rm paperless-ngx-ocr2 env | grep PAPERLESS
    ```
 
 3. **File not found:**
+
    ```bash
    # Ensure files are mounted in /workspace
    docker-compose run --rm paperless-ngx-ocr2 ls -la /workspace

@@ -1,10 +1,10 @@
 .ie \n(.g .ds Aq \(aq
 .el .ds Aq '
-.TH paperless-ngx-ocr2 1  "paperless-ngx-ocr2 0.1.0" 
+.TH paperless-ngx-ocr2 1  "paperless-ngx-ocr2 0.1.0"
 .SH NAME
 paperless\-ngx\-ocr2 \- OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction
 .SH SYNOPSIS
-\fBpaperless\-ngx\-ocr2\fR [\fB\-f\fR|\fB\-\-file\fR] [\fB\-a\fR|\fB\-\-api\-key\fR] [\fB\-\-api\-base\-url\fR] [\fB\-\-config\fR] [\fB\-\-json\fR] [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-\-completions\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] 
+\fBpaperless\-ngx\-ocr2\fR [\fB\-f\fR|\fB\-\-file\fR] [\fB\-a\fR|\fB\-\-api\-key\fR] [\fB\-\-api\-base\-url\fR] [\fB\-\-config\fR] [\fB\-\-json\fR] [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-\-completions\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR]
 .SH DESCRIPTION
 A command\-line tool for extracting text from PDF and image files using Mistral AI\*(Aqs OCR capabilities. Supports TOML configuration, 12\-factor app principles, and provides both human\-readable and JSON output formats.
 .SH OPTIONS
@@ -15,13 +15,13 @@ Path to the PDF or image file to process
 \fB\-a\fR, \fB\-\-api\-key\fR \fI<KEY>\fR
 Mistral AI API key (can also be set via environment variable)
 .RS
-May also be specified with the \fBPAPERLESS_OCR_API_KEY\fR environment variable. 
+May also be specified with the \fBPAPERLESS_OCR_API_KEY\fR environment variable.
 .RE
 .TP
 \fB\-\-api\-base\-url\fR \fI<URL>\fR [default: https://api.mistral.ai]
 Mistral AI API base URL
 .RS
-May also be specified with the \fBPAPERLESS_OCR_API_BASE_URL\fR environment variable. 
+May also be specified with the \fBPAPERLESS_OCR_API_BASE_URL\fR environment variable.
 .RE
 .TP
 \fB\-\-config\fR \fI<PATH>\fR

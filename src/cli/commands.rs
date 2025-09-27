@@ -167,7 +167,7 @@ EXAMPLES:
 
 SUPPORTED FILE FORMATS:
     - PDF files (.pdf) up to 100MB
-    - PNG images (.png) up to 100MB  
+    - PNG images (.png) up to 100MB
     - JPEG images (.jpg, .jpeg) up to 100MB
 
 CONFIGURATION:

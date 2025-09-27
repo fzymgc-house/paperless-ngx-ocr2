@@ -1,4 +1,6 @@
-use assert_cmd::prelude::*;
+mod common;
+
+use common::*;
 use predicates::prelude::*;
 use std::process::Command;
 use std::time::Duration;
@@ -9,9 +11,9 @@ use tempfile::TempDir;
 fn test_docker_build() {
     let mut cmd = Command::new("docker");
     cmd.args(&["build", "-t", "paperless-ngx-ocr2:test", "."]);
-    
+
     let output = cmd.output().expect("Failed to execute docker build");
-    
+
     assert!(
         output.status.success(),
         "Docker build failed: {}",
@@ -27,26 +29,21 @@ fn test_docker_container_help() {
         .args(&["build", "-t", "paperless-ngx-ocr2:test", "."])
         .output()
         .expect("Failed to execute docker build");
-    
+
     assert!(build_cmd.status.success(), "Docker build failed");
-    
+
     // Then run the container with --help
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "--help"
-    ]);
-    
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "--help"]);
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container help failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("paperless-ngx-ocr2"));
     assert!(stdout.contains("OCR CLI tool"));
@@ -58,21 +55,16 @@ fn test_docker_container_help() {
 #[test]
 fn test_docker_container_version() {
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "--version"
-    ]);
-    
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "--version"]);
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container version failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("paperless-ngx-ocr2"));
     assert!(stdout.contains(env!("CARGO_PKG_VERSION")));
@@ -87,17 +79,17 @@ fn test_docker_container_completions() {
         "--rm",
         "paperless-ngx-ocr2:test",
         "--completions",
-        "bash"
+        "bash",
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container completions failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("complete -F _paperless_ngx_ocr2_completion"));
     assert!(stdout.contains("paperless-ngx-ocr2"));
@@ -112,14 +104,14 @@ fn test_docker_container_missing_api_key() {
         "--rm",
         "paperless-ngx-ocr2:test",
         "--file",
-        "/dev/null"
+        "/dev/null",
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     // Should fail with configuration error
     assert!(!output.status.success());
-    
+
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("Configuration error") || stderr.contains("API key"));
 }
@@ -132,32 +124,36 @@ fn test_docker_container_with_api_key() {
         println!("Skipping test_docker_container_with_api_key: No API key provided");
         return;
     }
-    
-    // Create a temporary test file
+
+    // Create a temporary test file using fixture
     let temp_dir = TempDir::new().expect("Failed to create temp dir");
-    let test_file = temp_dir.path().join("test.txt");
-    std::fs::write(&test_file, "Test content for OCR").expect("Failed to write test file");
-    
+    let test_file = create_test_pdf("Test content for OCR");
+    let test_file_path = temp_dir.path().join("test.pdf");
+    std::fs::copy(test_file.path(), &test_file_path).expect("Failed to copy test file");
+
     let mut cmd = Command::new("docker");
     cmd.args(&[
         "run",
         "--rm",
         "-e",
-        &format!("PAPERLESS_OCR_API_KEY={}", std::env::var("PAPERLESS_OCR_API_KEY").unwrap()),
+        &format!(
+            "PAPERLESS_OCR_API_KEY={}",
+            std::env::var("PAPERLESS_OCR_API_KEY").unwrap()
+        ),
         "-v",
-        &format!("{}:/test.txt:ro", test_file.display()),
+        &format!("{}:/test.pdf:ro", test_file_path.display()),
         "paperless-ngx-ocr2:test",
         "--file",
-        "/test.txt"
+        "/test.pdf",
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     // This might succeed or fail depending on API availability
     // We just want to ensure the container can run with the API key
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    
+
     // Should not crash with configuration error
     assert!(
         !stderr.contains("Configuration error") && !stderr.contains("API key must not be empty"),
@@ -170,21 +166,16 @@ fn test_docker_container_with_api_key() {
 #[test]
 fn test_docker_compose_help() {
     let mut cmd = Command::new("docker-compose");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2",
-        "--help"
-    ]);
-    
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2", "--help"]);
+
     let output = cmd.output().expect("Failed to execute docker-compose run");
-    
+
     assert!(
         output.status.success(),
         "Docker Compose help failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("paperless-ngx-ocr2"));
     assert!(stdout.contains("OCR CLI tool"));
@@ -200,11 +191,11 @@ fn test_docker_compose_with_env() {
         "-e",
         "PAPERLESS_OCR_API_KEY=test-key",
         "paperless-ngx-ocr2",
-        "--version"
+        "--version",
     ]);
-    
+
     let output = cmd.output().expect("Failed to execute docker-compose run");
-    
+
     assert!(
         output.status.success(),
         "Docker Compose with env failed: {}",
@@ -216,22 +207,16 @@ fn test_docker_compose_with_env() {
 #[test]
 fn test_docker_container_architecture() {
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "uname",
-        "-m"
-    ]);
-    
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "uname", "-m"]);
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container architecture check failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout).trim();
     // Should be x86_64 or aarch64
     assert!(
@@ -251,11 +236,13 @@ fn test_docker_container_resources() {
         "--memory=256m",
         "--cpus=0.5",
         "paperless-ngx-ocr2:test",
-        "--help"
+        "--help",
     ]);
-    
-    let output = cmd.output().expect("Failed to execute docker run with resource limits");
-    
+
+    let output = cmd
+        .output()
+        .expect("Failed to execute docker run with resource limits");
+
     assert!(
         output.status.success(),
         "Docker container with resource limits failed: {}",
@@ -267,21 +254,16 @@ fn test_docker_container_resources() {
 #[test]
 fn test_docker_container_security() {
     let mut cmd = Command::new("docker");
-    cmd.args(&[
-        "run",
-        "--rm",
-        "paperless-ngx-ocr2:test",
-        "id"
-    ]);
-    
+    cmd.args(&["run", "--rm", "paperless-ngx-ocr2:test", "id"]);
+
     let output = cmd.output().expect("Failed to execute docker run");
-    
+
     assert!(
         output.status.success(),
         "Docker container security check failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     // Should not be running as root (uid=0)
     assert!(

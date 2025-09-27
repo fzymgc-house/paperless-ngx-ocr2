@@ -75,6 +75,12 @@ sample-files/
 *.jpg
 *.jpeg
 
+# Exception: Test fixture files should be tracked
+!tests/fixtures/*.pdf
+!tests/fixtures/*.png
+!tests/fixtures/*.jpg
+!tests/fixtures/*.jpeg
+
 # Container build context
 .dockerignore.tmp
 

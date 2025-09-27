@@ -3,6 +3,7 @@
 ## Installation
 
 ### Option 1: From Source
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -16,6 +17,7 @@ cargo install --path .
 ```
 
 ### Option 2: Using Docker
+
 ```bash
 # Pull the multi-architecture image
 docker pull ghcr.io/fzymgc-house/paperless-ngx-ocr2:latest
@@ -30,9 +32,11 @@ alias paperless-ocr='docker run --rm -v $(pwd):/workspace ghcr.io/fzymgc-house/p
 ## Configuration
 
 ### Native Installation
+
 Create a configuration file at `~/.config/paperless-ngx-ocr2/config.toml`:
 
 ### Docker Usage
+
 For Docker usage, mount a config file or use environment variables:
 
 ```toml
@@ -46,16 +50,19 @@ log_level = "info"
 ## Basic Usage
 
 ### Extract text from a PDF file
+
 ```bash
 ./target/release/paperless-ngx-ocr2 --file document.pdf
 ```
 
 ### Extract text from an image file
+
 ```bash
 ./target/release/paperless-ngx-ocr2 --file image.png
 ```
 
 ### Use custom API key and base URL
+
 ```bash
 # Native
 ./target/release/paperless-ngx-ocr2 \
@@ -71,11 +78,13 @@ docker run --rm -v $(pwd):/workspace \
 ```
 
 ### Get JSON output
+
 ```bash
 ./target/release/paperless-ngx-ocr2 --file document.pdf --json
 ```
 
 ### Verbose logging
+
 ```bash
 ./target/release/paperless-ngx-ocr2 --file document.pdf --verbose
 ```
@@ -124,6 +133,7 @@ The tool provides clear error messages for common issues:
 ## Examples
 
 ### Process multiple files
+
 ```bash
 for file in *.pdf; do
   echo "Processing $file..."
@@ -132,11 +142,13 @@ done
 ```
 
 ### Save output to file
+
 ```bash
 ./target/release/paperless-ngx-ocr2 --file document.pdf > extracted_text.txt
 ```
 
 ### Get structured output for scripting
+
 ```bash
 result=$(./target/release/paperless-ngx-ocr2 --file document.pdf --json)
 echo "$result" | jq -r '.data.extracted_text'
@@ -178,6 +190,7 @@ RUST_LOG=debug ./target/release/paperless-ngx-ocr2 --file document.pdf --verbose
 ```
 
 This will show:
+
 - Configuration loading
 - File validation steps
 - API request details

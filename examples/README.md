@@ -1,10 +1,11 @@
 # Examples
 
-This directory contains example files and configurations for the paperless-ngx-ocr2 OCR CLI tool.
+This directory contains example files and configurations for the
+paperless-ngx-ocr2 OCR CLI tool.
 
 ## Directory Structure
 
-```
+```text
 examples/
 ├── README.md                 # This file
 ├── configs/                  # Configuration examples

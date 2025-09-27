@@ -5,6 +5,7 @@
 **Input**: Feature specification from `/specs/001-ocr-cli/spec.md`
 
 ## Execution Flow (/plan command scope)
+
 ```
 1. Load feature spec from Input path
    → If not found: ERROR "No feature spec at {path}"
@@ -27,57 +28,68 @@
 ```
 
 **IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands:
+
 - Phase 2: /tasks command creates tasks.md
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
+
 OCR CLI tool that uploads PDF/image files to Mistral AI APIs for text extraction. Supports TOML configuration, 12-factor app principles, and provides both human-readable and JSON output formats. Uses Rust for cross-platform CLI with official Mistral AI Files and OCR APIs. Includes multi-architecture container image for deployment.
 
 ## Updated Functional Requirements (Post-Clarification)
+
 Based on clarification session, the following additional requirements have been added:
 
 ### Configuration Management
+
 - **FR-021**: System MUST support --config flag for custom configuration file path
 - **FR-022**: System MUST search for config files in: custom path (if specified), current directory, then ~/.config/paperless-ngx-ocr2/
 - **Configuration Priority**: CLI args → Environment variables → .env file → TOML config → defaults
 
 ### Error Handling & Resilience
+
 - **FR-018**: System MUST implement retry logic with exponential backoff for rate limit errors (3 attempts max)
 - **FR-019**: System MUST detect and reject password-protected PDFs with validation error
 - **FR-020**: System MUST return warning message for files with no extractable text (exit code 0)
 
 ### Shell Completion Support
+
 - **FR-023**: System MUST support generating shell completion scripts via --completions flag
 - **FR-024**: System MUST support completion generation for bash, zsh, fish, and PowerShell shells
 - **FR-025**: System MUST make --file argument optional when generating completions
 - **FR-026**: System MUST output completion scripts to stdout for easy redirection to files
 
 ### Dependencies
+
 - **dotenv**: Added for .env file support in configuration loading
 - **clap_complete**: Added for shell completion generation support
 
 ## Technical Context
-**Language/Version**: Rust 1.80 (stable)  
-**Primary Dependencies**: clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml, dotenv, clap_complete  
-**Storage**: N/A (stateless CLI tool)  
-**Testing**: cargo test with assert_cmd, predicates  
+
+**Language/Version**: Rust 1.80 (stable)
+**Primary Dependencies**: clap, serde, anyhow, thiserror, tracing, reqwest, tokio, toml, dotenv, clap_complete
+**Storage**: N/A (stateless CLI tool)
+**Testing**: cargo test with assert_cmd, predicates
 **Target Platform**: macOS, Linux (cross-platform CLI)
-**Project Type**: single (CLI application)  
-**Performance Goals**: <5s for typical PDF/image processing  
-**Constraints**: <50MB file size limit, network timeout handling, memory efficient streaming, retry logic for rate limits, password-protected PDF detection  
+**Project Type**: single (CLI application)
+**Performance Goals**: <5s for typical PDF/image processing
+**Constraints**: <50MB file size limit, network timeout handling, memory efficient streaming, retry logic for rate limits, password-protected PDF detection
 **Scale/Scope**: Single-user CLI tool, batch processing capability
 **Containerization**: Must have a multi-architecture container image
 
 ## Constitution Check
+
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 ### CLI Contract Compliance
+
 - ✅ Text I/O: stdin for config, stdout for results, stderr for errors
 - ✅ JSON output via --json flag
 - ✅ Proper exit codes (0 success, 2 validation, 3 I/O, 4 config, 5 internal)
 - ✅ Human-readable output by default
 
 ### Safety & Reliability
+
 - ✅ Error handling with anyhow/thiserror (no unwrap in CLI paths)
 - ✅ Input validation for file paths and API credentials
 - ✅ Network error handling with timeouts
@@ -85,22 +97,26 @@ Based on clarification session, the following additional requirements have been 
 - ✅ Password-protected PDF detection and rejection
 
 ### Test-First Discipline
+
 - ✅ CLI behavior tests with assert_cmd
 - ✅ Unit tests for core parsing/validation
 - ✅ Integration tests for API interactions
 
 ### Observability & Logging
+
 - ✅ Structured logging with tracing
 - ✅ --verbose flag for debug output
 - ✅ No logs on stdout (reserved for program output)
 
 ### Versioning & Compatibility
+
 - ✅ Semantic versioning for CLI interface
 - ✅ Backward compatible configuration format
 - ✅ Configuration file search order with fallback paths
 - ✅ Shell completion generation for multiple shells (bash, zsh, fish, PowerShell)
 
 ### Containerization Compliance
+
 - ✅ Cross-platform support (macOS, Linux) enables container deployment
 - ✅ Stateless design suitable for container environments
 - ✅ 12-factor app principles support containerization
@@ -109,6 +125,7 @@ Based on clarification session, the following additional requirements have been 
 ## Project Structure
 
 ### Documentation (this feature)
+
 ```
 specs/[###-feature]/
 ├── plan.md              # This file (/plan command output)
@@ -120,6 +137,7 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
+
 ```
 # Option 1: Single project (DEFAULT)
 src/
@@ -159,12 +177,14 @@ ios/ or android/
 **Structure Decision**: Option 1 (Single CLI application) with containerization support
 
 ## Phase 0: Outline & Research
+
 1. **Extract unknowns from Technical Context** above:
    - For each NEEDS CLARIFICATION → research task
    - For each dependency → best practices task
    - For each integration → patterns task
 
 2. **Generate and dispatch research agents**:
+
    ```
    For each unknown in Technical Context:
      Task: "Research {unknown} for {feature context}"
@@ -180,6 +200,7 @@ ios/ or android/
 **Output**: research.md with all NEEDS CLARIFICATION resolved
 
 ## Phase 1: Design & Contracts
+
 *Prerequisites: research.md complete*
 
 1. **Extract entities from feature spec** → `data-model.md`:
@@ -217,13 +238,15 @@ ios/ or android/
 **Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
 
 ## Phase 2: Task Planning Approach
+
 *This section describes what the /tasks command will do - DO NOT execute during /plan*
 
 **Task Generation Strategy**:
+
 - Load `.specify/templates/tasks-template.md` as base
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
 - Each contract → contract test task [P]
-- Each entity → model creation task [P] 
+- Each entity → model creation task [P]
 - Each user story → integration test task
 - Implementation tasks to make tests pass
 - Configuration management tasks (dotenv, file search, priority order)
@@ -231,7 +254,8 @@ ios/ or android/
 - Shell completion generation tasks (--completions flag, multi-shell support)
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
+
+- TDD order: Tests before implementation
 - Dependency order: Models before services before UI
 - Mark [P] for parallel execution (independent files)
 
@@ -240,13 +264,15 @@ ios/ or android/
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
 ## Phase 3+: Future Implementation
+
 *These phases are beyond the scope of the /plan command*
 
-**Phase 3**: Task execution (/tasks command creates tasks.md)  
-**Phase 4**: Implementation (execute tasks.md following constitutional principles)  
+**Phase 3**: Task execution (/tasks command creates tasks.md)
+**Phase 4**: Implementation (execute tasks.md following constitutional principles)
 **Phase 5**: Validation (run tests, execute quickstart.md, performance validation)
 
 ## Complexity Tracking
+
 *Fill ONLY if Constitution Check has violations that must be justified*
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
@@ -254,11 +280,12 @@ ios/ or android/
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
 
-
 ## Progress Tracking
+
 *This checklist is updated during execution flow*
 
 **Phase Status**:
+
 - [x] Phase 0: Research complete (/plan command) - Updated with containerization
 - [x] Phase 1: Design complete (/plan command) - Updated with container deployment
 - [x] Phase 2: Task planning complete (/plan command - describe approach only)
@@ -269,6 +296,7 @@ ios/ or android/
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
+
 - [x] Initial Constitution Check: PASS
 - [x] Post-Design Constitution Check: PASS - Including containerization compliance
 - [x] All NEEDS CLARIFICATION resolved

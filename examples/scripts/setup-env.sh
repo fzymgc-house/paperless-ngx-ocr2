@@ -111,7 +111,7 @@ set_env_var() {
     local var_name="$1"
     local var_value="$2"
     local description="$3"
-    
+
     if [[ -n "$var_value" ]]; then
         if [[ "$EXPORT_MODE" == true ]]; then
             echo "export $var_name=\"$var_value\""
@@ -127,33 +127,33 @@ set_env_var() {
 # Function to load .env file
 load_env_file() {
     local file="$1"
-    
+
     if [[ ! -f "$file" ]]; then
         print_error "Environment file '$file' does not exist"
         return 1
     fi
-    
+
     print_status "Loading environment from: $file"
-    
+
     # Read .env file and export variables
     while IFS= read -r line || [[ -n "$line" ]]; do
         # Skip empty lines and comments
         if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
             continue
         fi
-        
+
         # Check if line contains =
         if [[ "$line" =~ ^[^=]+=.* ]]; then
             if [[ "$EXPORT_MODE" == true ]]; then
                 echo "export $line"
             else
-                export "$line"
+                export "${line?}"
             fi
         else
             print_warning "Invalid line in .env file: $line"
         fi
     done < "$file"
-    
+
     print_success "Loaded environment from: $file"
 }
 
@@ -180,7 +180,7 @@ set_env_var "PAPERLESS_OCR_LOG_LEVEL" "$LOG_LEVEL" "Log level not set - using de
 if [[ "$EXPORT_MODE" == false ]]; then
     print_success "Environment setup complete!"
     print_status "You can now run: paperless-ngx-ocr2 --file <file>"
-    
+
     # Check if API key is set
     if [[ -z "$PAPERLESS_OCR_API_KEY" ]]; then
         print_warning "Remember to set your Mistral AI API key:"

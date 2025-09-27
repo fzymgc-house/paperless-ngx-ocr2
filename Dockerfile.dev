@@ -2,9 +2,9 @@
 FROM rust:1.80-slim as builder
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config=0.29.2-1ubuntu3 \
+    libssl-dev=3.0.2-0ubuntu1.12 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -24,8 +24,8 @@ RUN cargo build --release
 FROM rust:1.80-slim
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates=20240203~22.04.1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
