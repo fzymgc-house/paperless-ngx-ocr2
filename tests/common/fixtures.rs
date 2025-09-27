@@ -146,6 +146,21 @@ pub fn create_invalid_file() -> TestFile {
 
 /// Gets a reference to a test fixture
 pub fn get_fixture(name: &str) -> TestFile {
+    // Try multiple possible paths to find the fixture
+    let possible_paths = [
+        format!("tests/fixtures/{}", name),
+        format!("./tests/fixtures/{}", name),
+        format!("../tests/fixtures/{}", name),
+        format!("../../tests/fixtures/{}", name),
+    ];
+
+    for path in &possible_paths {
+        if std::path::Path::new(path).exists() {
+            return TestFile::fixture(path);
+        }
+    }
+
+    // If no path works, use the default and let the test fail with a clear error
     TestFile::fixture(&format!("tests/fixtures/{}", name))
 }
 
