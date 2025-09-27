@@ -219,7 +219,11 @@ mod tests {
     #[test]
     fn test_fixture_access() {
         let fixture = sample_fixtures::sample_pdf();
-        assert!(fixture.exists(), "Fixture should exist at {:?}", fixture.path());
+        assert!(
+            fixture.exists(),
+            "Fixture should exist at {:?}",
+            fixture.path()
+        );
     }
 
     #[test]
