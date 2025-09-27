@@ -25,9 +25,7 @@ async fn test_cli_smoke_help_command() {
     cmd.arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
-            "A command-line tool for extracting text",
-        ))
+        .stdout(predicate::str::contains("A command-line tool for extracting text"))
         .stdout(predicate::str::contains("--file"))
         .stdout(predicate::str::contains("--api-key"))
         .stdout(predicate::str::contains("--json"))
@@ -38,20 +36,14 @@ async fn test_cli_smoke_help_command() {
 async fn test_cli_smoke_version_command() {
     let mut cmd = cli::create_test_command();
 
-    cmd.arg("--version")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("paperless-ngx-ocr2"))
-        .stdout(predicate::str::contains("0.1.0"));
+    cmd.arg("--version").assert().success().stdout(predicate::str::contains("paperless-ngx-ocr2")).stdout(predicate::str::contains("0.1.0"));
 }
 
 #[tokio::test]
 async fn test_cli_smoke_no_args_shows_help() {
     let mut cmd = cli::create_test_command();
 
-    cmd.assert().success().stdout(predicate::str::contains(
-        "OCR CLI tool that uploads PDF/image files",
-    ));
+    cmd.assert().success().stdout(predicate::str::contains("OCR CLI tool that uploads PDF/image files"));
 }
 
 // ============================================================================
@@ -95,12 +87,8 @@ async fn test_cli_file_argument_valid_pdf() {
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Should fail with network error (code 5)
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Should fail with network error (code 5)
+                                                                        // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -110,12 +98,8 @@ async fn test_cli_file_argument_valid_image() {
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Should fail with network error (code 5)
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Should fail with network error (code 5)
+                                                                        // Automatic cleanup on drop
 }
 
 // ============================================================================
@@ -131,21 +115,15 @@ async fn test_cli_json_output_flag() {
     let mut cmd = cli::create_configured_command(&config);
 
     // Test JSON output
-    let output = cmd
-        .arg("--file")
-        .arg(test_file.path())
-        .output()
-        .expect("Failed to execute command");
+    let output = cmd.arg("--file").arg(test_file.path()).output().expect("Failed to execute command");
 
     if output.status.success() {
         // Validate JSON structure using contract validation
         let stdout = String::from_utf8(output.stdout).unwrap();
-        let _json: serde_json::Value = serde_json::from_str(&stdout)
-            .expect("Output should be valid JSON when --json flag is used");
+        let _json: serde_json::Value = serde_json::from_str(&stdout).expect("Output should be valid JSON when --json flag is used");
 
         // Use contract validation
-        validate_json_contract(&stdout, ContractType::CliOutput)
-            .expect("JSON output should conform to CLI output contract");
+        validate_json_contract(&stdout, ContractType::CliOutput).expect("JSON output should conform to CLI output contract");
     }
     // Automatic cleanup on drop
 }
@@ -156,20 +134,14 @@ async fn test_cli_json_output_error_format() {
 
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg("nonexistent.pdf")
-        .assert()
-        .failure()
-        .stdout(predicate::function(|output: &str| {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
-                // Validate error JSON structure using contract validation
-                validate_json_contract(output, ContractType::CliOutput).is_ok()
-                    && !json.get("success").unwrap().as_bool().unwrap()
-                    && json.get("error").is_some()
-            } else {
-                false
-            }
-        }));
+    cmd.arg("--file").arg("nonexistent.pdf").assert().failure().stdout(predicate::function(|output: &str| {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
+            // Validate error JSON structure using contract validation
+            validate_json_contract(output, ContractType::CliOutput).is_ok() && !json.get("success").unwrap().as_bool().unwrap() && json.get("error").is_some()
+        } else {
+            false
+        }
+    }));
 }
 
 #[tokio::test]
@@ -180,20 +152,12 @@ async fn test_cli_json_vs_human_readable_output() {
 
     // Test human-readable output (default)
     let mut cmd_human = cli::create_configured_command(&config);
-    let human_output = cmd_human
-        .arg("--file")
-        .arg(test_file.path())
-        .output()
-        .expect("Failed to execute command");
+    let human_output = cmd_human.arg("--file").arg(test_file.path()).output().expect("Failed to execute command");
 
     // Test JSON output
     let json_config = config.with_json_output(true);
     let mut cmd_json = cli::create_configured_command(&json_config);
-    let json_output = cmd_json
-        .arg("--file")
-        .arg(test_file.path())
-        .output()
-        .expect("Failed to execute command");
+    let json_output = cmd_json.arg("--file").arg(test_file.path()).output().expect("Failed to execute command");
 
     // Outputs should be different formats
     let human_stdout = String::from_utf8(human_output.stdout).unwrap();
@@ -201,16 +165,12 @@ async fn test_cli_json_vs_human_readable_output() {
 
     // JSON output should be parseable as JSON
     if !json_stdout.is_empty() {
-        serde_json::from_str::<serde_json::Value>(&json_stdout)
-            .expect("JSON output should be valid JSON");
+        serde_json::from_str::<serde_json::Value>(&json_stdout).expect("JSON output should be valid JSON");
     }
 
     // Human output should not be valid JSON (unless empty)
     if !human_stdout.is_empty() {
-        assert!(
-            serde_json::from_str::<serde_json::Value>(&human_stdout).is_err(),
-            "Human-readable output should not be valid JSON"
-        );
+        assert!(serde_json::from_str::<serde_json::Value>(&human_stdout).is_err(), "Human-readable output should not be valid JSON");
     }
     // Automatic cleanup on drop
 }
@@ -240,13 +200,10 @@ async fn test_cli_benchmark() {
     let config = presets::invalid_api_key();
 
     // Run CLI benchmark
-    let results = Benchmark::new("cli_benchmark")
-        .iterations(50)
-        .warmup_iterations(5)
-        .run(|| {
-            let mut cmd = cli::create_configured_command(&config);
-            let _output = cmd.arg("--file").arg(test_file.path()).output();
-        });
+    let results = Benchmark::new("cli_benchmark").iterations(50).warmup_iterations(5).run(|| {
+        let mut cmd = cli::create_configured_command(&config);
+        let _output = cmd.arg("--file").arg(test_file.path()).output();
+    });
 
     // Assert performance requirements
     results.assert_avg_time_less_than(Duration::from_millis(500));
@@ -263,27 +220,15 @@ async fn test_cli_with_different_configs() {
     let test_file = create_test_pdf("Config test content");
 
     // Test different configuration presets
-    let configs = vec![
-        ("invalid_api", presets::invalid_api_key()),
-        ("timeout", presets::with_timeout(5)),
-        ("verbose", presets::verbose()),
-        ("debug", presets::debug()),
-    ];
+    let configs =
+        vec![("invalid_api", presets::invalid_api_key()), ("timeout", presets::with_timeout(5)), ("verbose", presets::verbose()), ("debug", presets::debug())];
 
     for (config_name, config) in configs {
         let mut cmd = cli::create_configured_command(&config);
-        let output = cmd
-            .arg("--file")
-            .arg(test_file.path())
-            .output()
-            .expect("Failed to execute command");
+        let output = cmd.arg("--file").arg(test_file.path()).output().expect("Failed to execute command");
 
         // All should fail but with different error patterns
-        assert!(
-            !output.status.success(),
-            "Config '{}' should fail",
-            config_name
-        );
+        assert!(!output.status.success(), "Config '{}' should fail", config_name);
     }
     // Automatic cleanup on drop
 }

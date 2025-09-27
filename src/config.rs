@@ -25,13 +25,7 @@ pub struct RetryPolicy {
 
 impl Default for RetryPolicy {
     fn default() -> Self {
-        Self {
-            max_retries: 3,
-            base_delay_ms: 1000,
-            max_delay_ms: 10000,
-            exponential_backoff: true,
-            jitter_factor: 0.1,
-        }
+        Self { max_retries: 3, base_delay_ms: 1000, max_delay_ms: 10000, exponential_backoff: true, jitter_factor: 0.1 }
     }
 }
 
@@ -42,16 +36,11 @@ impl RetryPolicy {
             return Duration::ZERO;
         }
 
-        let mut delay_ms = if self.exponential_backoff {
-            self.base_delay_ms * 2_u64.pow(attempt - 1)
-        } else {
-            self.base_delay_ms
-        };
+        let mut delay_ms = if self.exponential_backoff { self.base_delay_ms * 2_u64.pow(attempt - 1) } else { self.base_delay_ms };
 
         // Apply jitter
         if self.jitter_factor > 0.0 {
-            let jitter =
-                (delay_ms as f64 * self.jitter_factor * (rand::random::<f64>() - 0.5) * 2.0) as i64;
+            let jitter = (delay_ms as f64 * self.jitter_factor * (rand::random::<f64>() - 0.5) * 2.0) as i64;
             delay_ms = (delay_ms as i64 + jitter).max(1) as u64;
         }
 
@@ -68,9 +57,7 @@ impl RetryPolicy {
         }
 
         if self.base_delay_ms == 0 {
-            return Err(Error::Config(
-                "Base delay must be greater than 0".to_string(),
-            ));
+            return Err(Error::Config("Base delay must be greater than 0".to_string()));
         }
 
         if self.max_delay_ms < self.base_delay_ms {
@@ -78,9 +65,7 @@ impl RetryPolicy {
         }
 
         if self.jitter_factor < 0.0 || self.jitter_factor > 1.0 {
-            return Err(Error::Config(
-                "Jitter factor must be between 0.0 and 1.0".to_string(),
-            ));
+            return Err(Error::Config("Jitter factor must be between 0.0 and 1.0".to_string()));
         }
 
         Ok(())
@@ -160,11 +145,9 @@ impl Config {
         let config_path = Self::get_config_path();
 
         if config_path.exists() {
-            let content = fs::read_to_string(&config_path)
-                .map_err(|e| Error::Config(format!("Failed to read config file: {}", e)))?;
+            let content = fs::read_to_string(&config_path).map_err(|e| Error::Config(format!("Failed to read config file: {}", e)))?;
 
-            let config: Config = toml::from_str(&content)
-                .map_err(|e| Error::Config(format!("Failed to parse config file: {}", e)))?;
+            let config: Config = toml::from_str(&content).map_err(|e| Error::Config(format!("Failed to parse config file: {}", e)))?;
 
             Ok(config)
         } else {
@@ -181,11 +164,9 @@ impl Config {
         let config_path = PathBuf::from(path);
 
         if config_path.exists() {
-            let content = fs::read_to_string(&config_path)
-                .map_err(|e| Error::Config(format!("Failed to read config file: {}", e)))?;
+            let content = fs::read_to_string(&config_path).map_err(|e| Error::Config(format!("Failed to read config file: {}", e)))?;
 
-            let mut config: Config = toml::from_str(&content)
-                .map_err(|e| Error::Config(format!("Failed to parse config file: {}", e)))?;
+            let mut config: Config = toml::from_str(&content).map_err(|e| Error::Config(format!("Failed to parse config file: {}", e)))?;
 
             config.apply_env_overrides();
             config.validate()?;
@@ -230,30 +211,22 @@ impl Config {
         }
 
         // Validate API base URL
-        Url::parse(&self.api_base_url)
-            .map_err(|_| Error::Config("API base URL must be a valid URL".to_string()))?;
+        Url::parse(&self.api_base_url).map_err(|_| Error::Config("API base URL must be a valid URL".to_string()))?;
 
         // Validate timeout range
         if self.timeout_seconds < 1 || self.timeout_seconds > 300 {
-            return Err(Error::Config(
-                "Timeout must be between 1 and 300 seconds".to_string(),
-            ));
+            return Err(Error::Config("Timeout must be between 1 and 300 seconds".to_string()));
         }
 
         // Validate file size range
         if self.max_file_size_mb < 1 || self.max_file_size_mb > 100 {
-            return Err(Error::Config(
-                "Max file size must be between 1 and 100 MB".to_string(),
-            ));
+            return Err(Error::Config("Max file size must be between 1 and 100 MB".to_string()));
         }
 
         // Validate log level
         let valid_levels = ["error", "warn", "info", "debug", "trace"];
         if !valid_levels.contains(&self.log_level.as_str()) {
-            return Err(Error::Config(format!(
-                "Log level must be one of: {}",
-                valid_levels.join(", ")
-            )));
+            return Err(Error::Config(format!("Log level must be one of: {}", valid_levels.join(", "))));
         }
 
         // Validate retry policy
@@ -273,9 +246,7 @@ impl Config {
 
         // Then try XDG config directory
         if let Ok(config_dir) = env::var("XDG_CONFIG_HOME") {
-            let xdg_config = PathBuf::from(config_dir)
-                .join("paperless-ngx-ocr2")
-                .join("config.toml");
+            let xdg_config = PathBuf::from(config_dir).join("paperless-ngx-ocr2").join("config.toml");
             if xdg_config.exists() {
                 return xdg_config;
             }
@@ -283,10 +254,7 @@ impl Config {
 
         // Finally try ~/.config/paperless-ngx-ocr2/
         if let Ok(home_dir) = env::var("HOME") {
-            let home_config = PathBuf::from(home_dir)
-                .join(".config")
-                .join("paperless-ngx-ocr2")
-                .join("config.toml");
+            let home_config = PathBuf::from(home_dir).join(".config").join("paperless-ngx-ocr2").join("config.toml");
             if home_config.exists() {
                 return home_config;
             }
@@ -430,11 +398,7 @@ mod tests {
                 log_level: level.to_string(),
                 retry_policy: RetryPolicy::default(),
             };
-            assert!(
-                config.validate().is_ok(),
-                "Level '{}' should be valid",
-                level
-            );
+            assert!(config.validate().is_ok(), "Level '{}' should be valid", level);
         }
 
         // Test invalid log level

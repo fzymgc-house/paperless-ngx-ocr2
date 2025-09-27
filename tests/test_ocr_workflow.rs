@@ -81,27 +81,17 @@ async fn test_pdf_workflow_with_json_output() {
     // This test MUST FAIL until JSON output and workflow are implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nSimple PDF with text content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nSimple PDF with text content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
-    let output = cmd
-        .arg("--file")
-        .arg(&temp_path)
-        .arg("--api-key")
-        .arg("sk-test-valid-api-key")
-        .arg("--json")
-        .output()
-        .expect("Failed to execute command");
+    let output = cmd.arg("--file").arg(&temp_path).arg("--api-key").arg("sk-test-valid-api-key").arg("--json").output().expect("Failed to execute command");
 
     if output.status.success() {
         let stdout = String::from_utf8(output.stdout).unwrap();
-        let json: serde_json::Value =
-            serde_json::from_str(&stdout).expect("JSON output should be valid JSON");
+        let json: serde_json::Value = serde_json::from_str(&stdout).expect("JSON output should be valid JSON");
 
         // Validate JSON structure matches contract (should be error response)
         assert!(!json.get("success").unwrap().as_bool().unwrap());
@@ -135,9 +125,7 @@ log_level = "info"
 
     // Create test PDF
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nConfig test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nConfig test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -160,9 +148,7 @@ async fn test_workflow_with_environment_variables() {
     // This test MUST FAIL until environment variable support is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nEnvironment test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nEnvironment test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 

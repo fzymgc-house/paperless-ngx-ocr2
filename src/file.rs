@@ -35,10 +35,7 @@ impl FileUpload {
 
         // Check if file exists and is readable
         if !path.exists() {
-            return Err(Error::Io(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                format!("File not found: {}", file_path_str),
-            )));
+            return Err(Error::Io(std::io::Error::new(std::io::ErrorKind::NotFound, format!("File not found: {}", file_path_str))));
         }
 
         // Get file metadata
@@ -47,18 +44,9 @@ impl FileUpload {
         let file_size = metadata.len();
 
         // Determine MIME type
-        let mime_type = MimeGuess::from_path(path)
-            .first_or_octet_stream()
-            .to_string();
+        let mime_type = MimeGuess::from_path(path).first_or_octet_stream().to_string();
 
-        let mut file_upload = Self {
-            file_path: file_path_str,
-            file_size,
-            mime_type,
-            file_id: None,
-            upload_status: None,
-            is_valid: false,
-        };
+        let mut file_upload = Self { file_path: file_path_str, file_size, mime_type, file_id: None, upload_status: None, is_valid: false };
 
         // Validate the file
         file_upload.validate_file()?;
@@ -72,29 +60,20 @@ impl FileUpload {
         // Validate file path exists and is readable
         let path = Path::new(&self.file_path);
         if !path.exists() {
-            return Err(Error::Validation(format!(
-                "File does not exist: {}",
-                self.file_path
-            )));
+            return Err(Error::Validation(format!("File does not exist: {}", self.file_path)));
         }
 
         // Validate file size (convert MB to bytes for comparison)
         let max_size_bytes = 100 * 1024 * 1024; // 100MB in bytes
         if self.file_size > max_size_bytes {
-            return Err(Error::Validation(format!(
-                "File size ({:.2} MB) exceeds maximum allowed size (100 MB)",
-                self.file_size as f64 / (1024.0 * 1024.0)
-            )));
+            return Err(Error::Validation(format!("File size ({:.2} MB) exceeds maximum allowed size (100 MB)", self.file_size as f64 / (1024.0 * 1024.0))));
         }
 
         // Validate MIME type
         let supported_types = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 
         if !supported_types.contains(&self.mime_type.as_str()) {
-            return Err(Error::Validation(format!(
-                "Unsupported file format: {}. Supported: pdf, png, jpg, jpeg",
-                self.mime_type
-            )));
+            return Err(Error::Validation(format!("Unsupported file format: {}. Supported: pdf, png, jpg, jpeg", self.mime_type)));
         }
 
         // Validate file content by checking magic bytes
@@ -112,9 +91,7 @@ impl FileUpload {
         let bytes_read = file.read(&mut buffer).map_err(Error::Io)?;
 
         if bytes_read < 4 {
-            return Err(Error::Validation(
-                "File too small to determine format".to_string(),
-            ));
+            return Err(Error::Validation("File too small to determine format".to_string()));
         }
 
         // Check magic bytes for supported formats
@@ -126,10 +103,7 @@ impl FileUpload {
             }
             [0x89, 0x50, 0x4E, 0x47] => Ok(()), // PNG
             [0xFF, 0xD8, 0xFF, _] => Ok(()),    // JPEG
-            _ => Err(Error::Validation(format!(
-                "File does not appear to be a valid PDF, PNG, or JPEG file: {}",
-                self.file_path
-            ))),
+            _ => Err(Error::Validation(format!("File does not appear to be a valid PDF, PNG, or JPEG file: {}", self.file_path))),
         }
     }
 
@@ -154,11 +128,7 @@ impl FileUpload {
 
     /// Get filename from path
     pub fn get_filename(&self) -> String {
-        Path::new(&self.file_path)
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("unknown")
-            .to_string()
+        Path::new(&self.file_path).file_name().and_then(|name| name.to_str()).unwrap_or("unknown").to_string()
     }
 
     /// Check if PDF is password-protected by looking for encryption dictionary
@@ -179,10 +149,7 @@ impl FileUpload {
             || content.contains("/O ")
             || content.contains("/Filter/Standard")
         {
-            return Err(Error::Validation(
-                "Password-protected PDF detected. Please provide an unprotected PDF file."
-                    .to_string(),
-            ));
+            return Err(Error::Validation("Password-protected PDF detected. Please provide an unprotected PDF file.".to_string()));
         }
 
         Ok(())
@@ -204,8 +171,7 @@ mod tests {
         let temp_path = temp_file.path().with_extension("pdf");
         fs::copy(temp_file.path(), &temp_path).unwrap();
 
-        let file_upload =
-            FileUpload::new(&temp_path).expect("Should create FileUpload for valid PDF");
+        let file_upload = FileUpload::new(&temp_path).expect("Should create FileUpload for valid PDF");
 
         assert_eq!(file_upload.mime_type, "application/pdf");
         assert!(file_upload.is_valid);

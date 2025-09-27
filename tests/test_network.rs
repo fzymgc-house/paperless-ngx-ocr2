@@ -11,9 +11,7 @@ use tempfile::NamedTempFile;
 async fn test_network_timeout_handling() {
     // Test that network timeouts are handled properly
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTimeout test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTimeout test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -46,11 +44,7 @@ async fn test_network_timeout_handling() {
     let duration = start.elapsed();
 
     // Should timeout within reasonable time (not hang indefinitely)
-    assert!(
-        duration.as_secs() < 10,
-        "Command should timeout quickly: {:?}",
-        duration
-    );
+    assert!(duration.as_secs() < 10, "Command should timeout quickly: {:?}", duration);
 
     // Cleanup
     fs::remove_file(&temp_path).ok();
@@ -83,9 +77,7 @@ async fn test_invalid_hostname_handling() {
 async fn test_connection_refused_handling() {
     // Test handling of connection refused (using localhost on unused port)
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nConnection refused test")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nConnection refused test").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -108,9 +100,7 @@ async fn test_connection_refused_handling() {
 async fn test_network_error_json_output() {
     // Test that network errors are properly formatted in JSON output
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nJSON network error test")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nJSON network error test").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -126,9 +116,7 @@ async fn test_network_error_json_output() {
         .failure()
         .stdout(predicate::function(|output: &str| {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
-                !json.get("success").unwrap().as_bool().unwrap()
-                    && json.get("error").is_some()
-                    && json.get("error").unwrap().get("type").is_some()
+                !json.get("success").unwrap().as_bool().unwrap() && json.get("error").is_some() && json.get("error").unwrap().get("type").is_some()
             } else {
                 false
             }
@@ -160,11 +148,7 @@ async fn test_api_response_timeout() {
     let duration = start.elapsed();
 
     // Should respect timeout setting (fail within ~1-3 seconds)
-    assert!(
-        duration.as_secs() < 5,
-        "Should respect timeout setting: {:?}",
-        duration
-    );
+    assert!(duration.as_secs() < 5, "Should respect timeout setting: {:?}", duration);
 
     // Cleanup
     fs::remove_file(&temp_path).ok();
@@ -174,9 +158,7 @@ async fn test_api_response_timeout() {
 async fn test_verbose_network_logging() {
     // Test that verbose mode shows network request details
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nVerbose network test")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nVerbose network test").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -207,9 +189,7 @@ async fn test_network_error_categorization() {
 
     for (url, _expected_error_type) in test_cases {
         let mut temp_file = NamedTempFile::new().unwrap();
-        temp_file
-            .write_all(b"%PDF-1.4\nError categorization test")
-            .unwrap();
+        temp_file.write_all(b"%PDF-1.4\nError categorization test").unwrap();
         let temp_path = temp_file.path().with_extension("pdf");
         fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -230,18 +210,11 @@ async fn test_network_error_categorization() {
 
         let stdout = String::from_utf8(output.stdout).unwrap();
         if let Ok(json) = serde_json::from_str::<serde_json::Value>(&stdout) {
-            if let Some(error_type) = json
-                .get("error")
-                .and_then(|e| e.get("type"))
-                .and_then(|t| t.as_str())
-            {
+            if let Some(error_type) = json.get("error").and_then(|e| e.get("type")).and_then(|t| t.as_str()) {
                 // Note: Some of these might map differently in practice
                 // This test validates that errors are categorized, not specific mappings
                 assert!(
-                    error_type == "network"
-                        || error_type == "api"
-                        || error_type == "internal"
-                        || error_type == "validation",
+                    error_type == "network" || error_type == "api" || error_type == "internal" || error_type == "validation",
                     "Error should be properly categorized, got: {}",
                     error_type
                 );
@@ -258,11 +231,7 @@ fn test_api_key_redaction_in_network_logs() {
     // Test that API keys are redacted in network error logs
     use paperless_ngx_ocr2::{api::MistralClient, APICredentials};
 
-    let credentials = APICredentials::new(
-        "sk-test123456789abcdef".to_string(),
-        "https://api.mistral.ai".to_string(),
-    )
-    .expect("Should create credentials");
+    let credentials = APICredentials::new("sk-test123456789abcdef".to_string(), "https://api.mistral.ai".to_string()).expect("Should create credentials");
 
     let client = MistralClient::new(credentials, 30).expect("Should create client");
 

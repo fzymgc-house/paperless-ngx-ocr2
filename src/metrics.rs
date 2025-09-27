@@ -42,12 +42,7 @@ impl Default for APIMetrics {
 
 impl APIMetrics {
     /// Record a successful API call
-    pub fn record_success(
-        &mut self,
-        duration: Duration,
-        bytes_uploaded: u64,
-        bytes_downloaded: u64,
-    ) {
+    pub fn record_success(&mut self, duration: Duration, bytes_uploaded: u64, bytes_downloaded: u64) {
         self.successful_calls += 1;
         self.total_duration += duration;
         self.total_bytes_uploaded += bytes_uploaded;
@@ -76,8 +71,7 @@ impl APIMetrics {
     fn update_average_response_time(&mut self) {
         let total_calls = self.successful_calls + self.failed_calls;
         if total_calls > 0 {
-            self.average_response_time =
-                Duration::from_millis(self.total_duration.as_millis() as u64 / total_calls);
+            self.average_response_time = Duration::from_millis(self.total_duration.as_millis() as u64 / total_calls);
         }
     }
 
@@ -117,18 +111,11 @@ impl Default for MetricsCollector {
 impl MetricsCollector {
     /// Create a new metrics collector
     pub fn new() -> Self {
-        Self {
-            metrics: Arc::new(RwLock::new(APIMetrics::default())),
-        }
+        Self { metrics: Arc::new(RwLock::new(APIMetrics::default())) }
     }
 
     /// Record a successful API call
-    pub async fn record_success(
-        &self,
-        duration: Duration,
-        bytes_uploaded: u64,
-        bytes_downloaded: u64,
-    ) {
+    pub async fn record_success(&self, duration: Duration, bytes_uploaded: u64, bytes_downloaded: u64) {
         let mut metrics = self.metrics.write().await;
         metrics.record_success(duration, bytes_uploaded, bytes_downloaded);
     }
@@ -211,9 +198,7 @@ macro_rules! measure_api_call {
 
         match result {
             Ok(_) => {
-                $metrics
-                    .record_success(duration, $bytes_uploaded, $bytes_downloaded)
-                    .await;
+                $metrics.record_success(duration, $bytes_uploaded, $bytes_downloaded).await;
             }
             Err(_) => {
                 $metrics.record_failure(duration).await;
@@ -241,13 +226,7 @@ pub struct FileMetrics {
 
 impl Default for FileMetrics {
     fn default() -> Self {
-        Self {
-            files_processed: 0,
-            total_file_size: 0,
-            average_file_size: 0,
-            total_processing_time: Duration::ZERO,
-            average_processing_time: Duration::ZERO,
-        }
+        Self { files_processed: 0, total_file_size: 0, average_file_size: 0, total_processing_time: Duration::ZERO, average_processing_time: Duration::ZERO }
     }
 }
 
@@ -260,9 +239,7 @@ impl FileMetrics {
 
         if self.files_processed > 0 {
             self.average_file_size = self.total_file_size / self.files_processed;
-            self.average_processing_time = Duration::from_millis(
-                self.total_processing_time.as_millis() as u64 / self.files_processed,
-            );
+            self.average_processing_time = Duration::from_millis(self.total_processing_time.as_millis() as u64 / self.files_processed);
         }
     }
 
@@ -286,12 +263,8 @@ mod tests {
         let metrics = MetricsCollector::new();
 
         // Record some test data
-        metrics
-            .record_success(Duration::from_millis(100), 1024, 512)
-            .await;
-        metrics
-            .record_success(Duration::from_millis(200), 2048, 1024)
-            .await;
+        metrics.record_success(Duration::from_millis(100), 1024, 512).await;
+        metrics.record_success(Duration::from_millis(200), 2048, 1024).await;
         metrics.record_failure(Duration::from_millis(150)).await;
         metrics.record_retry().await;
         metrics.record_rate_limit_hit().await;
@@ -327,9 +300,7 @@ mod tests {
     #[tokio::test]
     async fn test_metrics_json_output() {
         let metrics = MetricsCollector::new();
-        metrics
-            .record_success(Duration::from_millis(100), 1024, 512)
-            .await;
+        metrics.record_success(Duration::from_millis(100), 1024, 512).await;
 
         let json = metrics.get_metrics_json().await;
 

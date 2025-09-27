@@ -34,11 +34,7 @@ async fn test_cli_exit_code_io_error() {
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg("nonexistent_file.pdf")
-        .assert()
-        .failure()
-        .code(3); // I/O error per constitution
+    cmd.arg("--file").arg("nonexistent_file.pdf").assert().failure().code(3); // I/O error per constitution
 }
 
 #[tokio::test]
@@ -51,12 +47,8 @@ async fn test_cli_exit_code_config_error() {
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Network error per constitution
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Network error per constitution
+                                                                        // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -68,12 +60,8 @@ async fn test_cli_exit_code_internal_error() {
     let config = presets::invalid_endpoint();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Network error per constitution
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Network error per constitution
+                                                                        // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -86,12 +74,8 @@ async fn test_cli_exit_code_success() {
     let mut cmd = cli::create_configured_command(&config);
 
     // This would need a real API key and working implementation to succeed
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Network error with invalid key
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Network error with invalid key
+                                                                        // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -105,10 +89,6 @@ async fn test_cli_exit_code_file_size_validation() {
     let mut cmd = cli::create_configured_command(&config);
 
     // This should fail with validation error when size checking is implemented
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Network error per constitution
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Network error per constitution
+                                                                        // Automatic cleanup on drop
 }

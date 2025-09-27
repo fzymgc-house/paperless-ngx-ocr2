@@ -18,23 +18,13 @@ pub struct PerformanceTest {
 impl PerformanceTest {
     /// Creates a new performance test with a maximum duration constraint
     pub fn new(name: &str, max_duration: Duration) -> Self {
-        Self {
-            name: name.to_string(),
-            start: Instant::now(),
-            max_duration,
-        }
+        Self { name: name.to_string(), start: Instant::now(), max_duration }
     }
 
     /// Asserts that the test completed within the maximum duration
     pub fn assert_within_time(self) {
         let elapsed = self.start.elapsed();
-        assert!(
-            elapsed <= self.max_duration,
-            "Performance test '{}' took {:?}, expected <= {:?}",
-            self.name,
-            elapsed,
-            self.max_duration
-        );
+        assert!(elapsed <= self.max_duration, "Performance test '{}' took {:?}, expected <= {:?}", self.name, elapsed, self.max_duration);
     }
 
     /// Gets the elapsed time so far
@@ -132,11 +122,7 @@ pub struct Benchmark {
 impl Benchmark {
     /// Creates a new benchmark
     pub fn new(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            iterations: 100,
-            warmup_iterations: 10,
-        }
+        Self { name: name.to_string(), iterations: 100, warmup_iterations: 10 }
     }
 
     /// Sets the number of iterations
@@ -203,49 +189,22 @@ impl BenchmarkResults {
         let p95_time = times[(iterations * 95) / 100];
         let p99_time = times[(iterations * 99) / 100];
 
-        Self {
-            name,
-            iterations,
-            min_time,
-            max_time,
-            avg_time,
-            median_time,
-            p95_time,
-            p99_time,
-        }
+        Self { name, iterations, min_time, max_time, avg_time, median_time, p95_time, p99_time }
     }
 
     /// Asserts that the average time is within the specified threshold
     pub fn assert_avg_time_less_than(&self, threshold: Duration) {
-        assert!(
-            self.avg_time <= threshold,
-            "Benchmark '{}' average time {:?} exceeded threshold {:?}",
-            self.name,
-            self.avg_time,
-            threshold
-        );
+        assert!(self.avg_time <= threshold, "Benchmark '{}' average time {:?} exceeded threshold {:?}", self.name, self.avg_time, threshold);
     }
 
     /// Asserts that the 95th percentile time is within the specified threshold
     pub fn assert_p95_time_less_than(&self, threshold: Duration) {
-        assert!(
-            self.p95_time <= threshold,
-            "Benchmark '{}' 95th percentile time {:?} exceeded threshold {:?}",
-            self.name,
-            self.p95_time,
-            threshold
-        );
+        assert!(self.p95_time <= threshold, "Benchmark '{}' 95th percentile time {:?} exceeded threshold {:?}", self.name, self.p95_time, threshold);
     }
 
     /// Asserts that the maximum time is within the specified threshold
     pub fn assert_max_time_less_than(&self, threshold: Duration) {
-        assert!(
-            self.max_time <= threshold,
-            "Benchmark '{}' maximum time {:?} exceeded threshold {:?}",
-            self.name,
-            self.max_time,
-            threshold
-        );
+        assert!(self.max_time <= threshold, "Benchmark '{}' maximum time {:?} exceeded threshold {:?}", self.name, self.max_time, threshold);
     }
 
     /// Prints the benchmark results
@@ -289,10 +248,7 @@ pub mod memory {
 
     /// Global tracking allocator instance
     #[global_allocator]
-    static GLOBAL: TrackingAllocator = TrackingAllocator {
-        inner: System,
-        allocated: AtomicUsize::new(0),
-    };
+    static GLOBAL: TrackingAllocator = TrackingAllocator { inner: System, allocated: AtomicUsize::new(0) };
 
     /// Gets the current allocated memory in bytes
     pub fn get_allocated_bytes() -> usize {
@@ -313,10 +269,7 @@ pub mod memory {
     impl MemoryTest {
         /// Creates a new memory test
         pub fn new() -> Self {
-            Self {
-                start_memory: get_allocated_bytes(),
-                max_memory_increase: None,
-            }
+            Self { start_memory: get_allocated_bytes(), max_memory_increase: None }
         }
 
         /// Sets the maximum allowed memory increase
@@ -331,12 +284,7 @@ pub mod memory {
             let memory_increase = current_memory.saturating_sub(self.start_memory);
 
             if let Some(max_increase) = self.max_memory_increase {
-                assert!(
-                    memory_increase <= max_increase,
-                    "Memory usage increased by {} bytes, expected <= {} bytes",
-                    memory_increase,
-                    max_increase
-                );
+                assert!(memory_increase <= max_increase, "Memory usage increased by {} bytes, expected <= {} bytes", memory_increase, max_increase);
             }
         }
 
@@ -367,12 +315,7 @@ pub mod stress {
 
             // Print progress every 10% of iterations
             if (i + 1) % (iterations / 10).max(1) == 0 {
-                println!(
-                    "Stress test '{}': {}/{} iterations completed",
-                    name,
-                    i + 1,
-                    iterations
-                );
+                println!("Stress test '{}': {}/{} iterations completed", name, i + 1, iterations);
             }
         }
 
@@ -441,13 +384,7 @@ pub mod stress {
 
         /// Asserts that the average time is within acceptable limits
         pub fn assert_avg_time_less_than(&self, threshold: Duration) {
-            assert!(
-                self.avg_time <= threshold,
-                "Stress test '{}' average time {:?} exceeded threshold {:?}",
-                self.name,
-                self.avg_time,
-                threshold
-            );
+            assert!(self.avg_time <= threshold, "Stress test '{}' average time {:?} exceeded threshold {:?}", self.name, self.avg_time, threshold);
         }
 
         /// Prints the stress test results
@@ -488,12 +425,9 @@ mod tests {
 
     #[test]
     fn test_benchmark() {
-        let results = Benchmark::new("test")
-            .iterations(10)
-            .warmup_iterations(2)
-            .run(|| {
-                thread::sleep(Duration::from_millis(1));
-            });
+        let results = Benchmark::new("test").iterations(10).warmup_iterations(2).run(|| {
+            thread::sleep(Duration::from_millis(1));
+        });
 
         assert_eq!(results.iterations, 10);
         results.assert_avg_time_less_than(Duration::from_millis(50));

@@ -9,12 +9,7 @@ use crate::ocr::OCRResult;
 use std::path::Path;
 
 /// Process OCR command
-pub async fn process_ocr_command(
-    input_file_path: &str,
-    app_config: &Config,
-    enable_json_output: bool,
-    enable_verbose_logging: bool,
-) -> Result<String> {
+pub async fn process_ocr_command(input_file_path: &str, app_config: &Config, enable_json_output: bool, enable_verbose_logging: bool) -> Result<String> {
     if enable_verbose_logging {
         tracing::info!("Processing OCR command for file: {}", input_file_path);
     }
@@ -23,12 +18,7 @@ pub async fn process_ocr_command(
     let file_upload = FileUpload::new(input_file_path)?;
 
     if enable_verbose_logging {
-        tracing::debug!(
-            "File validation passed: {} ({} bytes, {})",
-            file_upload.get_filename(),
-            file_upload.file_size,
-            file_upload.mime_type
-        );
+        tracing::debug!("File validation passed: {} ({} bytes, {})", file_upload.get_filename(), file_upload.file_size, file_upload.mime_type);
     }
 
     // Check file size against configuration
@@ -74,22 +64,15 @@ pub async fn process_ocr_command(
         file_upload.file_size,
         {
             let mut usage_map = std::collections::HashMap::new();
-            usage_map.insert(
-                "pages_processed".to_string(),
-                ocr_response.usage_info.pages_processed as i64,
-            );
-            usage_map.insert(
-                "doc_size_bytes".to_string(),
-                ocr_response.usage_info.doc_size_bytes as i64,
-            );
+            usage_map.insert("pages_processed".to_string(), ocr_response.usage_info.pages_processed as i64);
+            usage_map.insert("doc_size_bytes".to_string(), ocr_response.usage_info.doc_size_bytes as i64);
             Some(usage_map)
         },
     );
 
     // Format output based on user preference
     let output = if enable_json_output {
-        serde_json::to_string_pretty(&result.to_json_output())
-            .map_err(|e| Error::Internal(format!("Failed to serialize JSON: {}", e)))?
+        serde_json::to_string_pretty(&result.to_json_output()).map_err(|e| Error::Internal(format!("Failed to serialize JSON: {}", e)))?
     } else {
         result.to_human_readable()
     };
@@ -103,35 +86,21 @@ pub fn validate_file_path(input_file_path: &str) -> Result<()> {
 
     // Check if file exists
     if !file_path.exists() {
-        return Err(Error::Io(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            format!("Input file not found: {}", input_file_path),
-        )));
+        return Err(Error::Io(std::io::Error::new(std::io::ErrorKind::NotFound, format!("Input file not found: {}", input_file_path))));
     }
 
     // Check if it's a file (not directory)
     if !file_path.is_file() {
-        return Err(Error::Validation(format!(
-            "Path is not a file: {}",
-            input_file_path
-        )));
+        return Err(Error::Validation(format!("Path is not a file: {}", input_file_path)));
     }
 
     // Check file extension
-    let extension = file_path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.to_lowercase());
+    let extension = file_path.extension().and_then(|ext| ext.to_str()).map(|ext| ext.to_lowercase());
 
     match extension.as_deref() {
         Some("pdf") | Some("png") | Some("jpg") | Some("jpeg") => Ok(()),
-        Some(ext) => Err(Error::Validation(format!(
-            "Unsupported file format: .{}. Supported formats: pdf, png, jpg, jpeg",
-            ext
-        ))),
-        None => Err(Error::Validation(
-            "File has no extension. Supported formats: pdf, png, jpg, jpeg".to_string(),
-        )),
+        Some(ext) => Err(Error::Validation(format!("Unsupported file format: .{}. Supported formats: pdf, png, jpg, jpeg", ext))),
+        None => Err(Error::Validation("File has no extension. Supported formats: pdf, png, jpg, jpeg".to_string())),
     }
 }
 

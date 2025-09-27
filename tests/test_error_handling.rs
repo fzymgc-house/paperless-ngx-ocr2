@@ -48,9 +48,7 @@ async fn test_error_handling_file_too_large() {
 
     // Create a small file but configure very small size limit to trigger error
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nThis file will be considered too large")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nThis file will be considered too large").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -80,9 +78,7 @@ async fn test_error_handling_invalid_api_key() {
     // This test MUST FAIL until API authentication error handling is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTest content for auth error")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content for auth error").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -112,9 +108,7 @@ async fn test_error_handling_network_timeout() {
     // This test MUST FAIL until network timeout handling is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTest content for timeout")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content for timeout").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -148,9 +142,7 @@ async fn test_error_handling_empty_api_key() {
     // This test MUST FAIL until API key validation is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nTest content for empty key")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nTest content for empty key").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -176,9 +168,7 @@ async fn test_error_handling_malformed_pdf() {
 
     // Create a file with PDF extension but invalid content
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"This is not a valid PDF file at all")
-        .unwrap();
+    temp_file.write_all(b"This is not a valid PDF file at all").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 
@@ -209,24 +199,17 @@ async fn test_error_handling_with_json_output() {
 
     let mut cmd = Command::cargo_bin("paperless-ngx-ocr2").unwrap();
 
-    cmd.arg("--file")
-        .arg("nonexistent.pdf")
-        .arg("--api-key")
-        .arg("test-key")
-        .arg("--json")
-        .assert()
-        .failure()
-        .stdout(predicate::function(|output: &str| {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
-                // Validate error JSON structure
-                !json.get("success").unwrap().as_bool().unwrap()
-                    && json.get("error").is_some()
-                    && json.get("error").unwrap().get("type").is_some()
-                    && json.get("error").unwrap().get("message").is_some()
-            } else {
-                false
-            }
-        }));
+    cmd.arg("--file").arg("nonexistent.pdf").arg("--api-key").arg("test-key").arg("--json").assert().failure().stdout(predicate::function(|output: &str| {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(output) {
+            // Validate error JSON structure
+            !json.get("success").unwrap().as_bool().unwrap()
+                && json.get("error").is_some()
+                && json.get("error").unwrap().get("type").is_some()
+                && json.get("error").unwrap().get("message").is_some()
+        } else {
+            false
+        }
+    }));
 }
 
 #[tokio::test]
@@ -253,9 +236,7 @@ async fn test_error_handling_api_rate_limit() {
     // This test MUST FAIL until rate limit error handling is implemented
 
     let mut temp_file = NamedTempFile::new().unwrap();
-    temp_file
-        .write_all(b"%PDF-1.4\nRate limit test content")
-        .unwrap();
+    temp_file.write_all(b"%PDF-1.4\nRate limit test content").unwrap();
     let temp_path = temp_file.path().with_extension("pdf");
     std::fs::copy(temp_file.path(), &temp_path).unwrap();
 

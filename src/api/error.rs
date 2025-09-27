@@ -15,9 +15,7 @@ impl APIErrorResponse {
     /// Validate API error response
     pub fn validate(&self) -> Result<()> {
         if self.error.is_empty() {
-            return Err(Error::Validation(
-                "Error message cannot be empty".to_string(),
-            ));
+            return Err(Error::Validation("Error message cannot be empty".to_string()));
         }
         Ok(())
     }
@@ -53,12 +51,7 @@ pub struct APIError {
 impl APIError {
     /// Create a new API error
     pub fn new(error_type: String, message: String, details: Option<String>) -> Self {
-        Self {
-            error_type,
-            message,
-            details,
-            code: None,
-        }
+        Self { error_type, message, details, code: None }
     }
 
     /// Get error message

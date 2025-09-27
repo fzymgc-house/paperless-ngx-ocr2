@@ -20,18 +20,12 @@ pub struct TestFile {
 impl TestFile {
     /// Creates a new TestFile from an existing path (fixture)
     pub fn fixture(path: &str) -> Self {
-        Self {
-            path: PathBuf::from(path),
-            is_temporary: false,
-        }
+        Self { path: PathBuf::from(path), is_temporary: false }
     }
 
     /// Creates a new TestFile from a temporary path
     pub fn new(path: PathBuf) -> Self {
-        Self {
-            path,
-            is_temporary: true,
-        }
+        Self { path, is_temporary: true }
     }
 
     /// Gets the path to the test file
@@ -219,11 +213,7 @@ mod tests {
     #[test]
     fn test_fixture_access() {
         let fixture = sample_fixtures::sample_pdf();
-        assert!(
-            fixture.exists(),
-            "Fixture should exist at {:?}",
-            fixture.path()
-        );
+        assert!(fixture.exists(), "Fixture should exist at {:?}", fixture.path());
     }
 
     #[test]

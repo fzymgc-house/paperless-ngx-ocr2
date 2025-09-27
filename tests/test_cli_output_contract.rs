@@ -27,47 +27,20 @@ async fn test_cli_output_contract_success_structure() {
     let json = ocr_result.to_json_output();
 
     // Validate required fields exist
-    assert!(
-        json.get("success").is_some(),
-        "Output must have 'success' field"
-    );
-    assert!(
-        json.get("data").is_some(),
-        "Success output must have 'data' field"
-    );
-    assert!(
-        json.get("error").is_none(),
-        "Success output must not have 'error' field"
-    );
+    assert!(json.get("success").is_some(), "Output must have 'success' field");
+    assert!(json.get("data").is_some(), "Success output must have 'data' field");
+    assert!(json.get("error").is_none(), "Success output must not have 'error' field");
 
     // Validate success field value
-    assert!(
-        json.get("success").unwrap().as_bool().unwrap(),
-        "Success field must be true for success output"
-    );
+    assert!(json.get("success").unwrap().as_bool().unwrap(), "Success field must be true for success output");
 
     // Validate data structure
     let data = json.get("data").unwrap();
-    assert!(
-        data.get("extracted_text").is_some(),
-        "Data must have 'extracted_text' field"
-    );
-    assert!(
-        data.get("file_name").is_some(),
-        "Data must have 'file_name' field"
-    );
-    assert!(
-        data.get("file_size").is_some(),
-        "Data must have 'file_size' field"
-    );
-    assert!(
-        data.get("processing_time_ms").is_some(),
-        "Data must have 'processing_time_ms' field"
-    );
-    assert!(
-        data.get("confidence").is_some(),
-        "Data must have 'confidence' field"
-    );
+    assert!(data.get("extracted_text").is_some(), "Data must have 'extracted_text' field");
+    assert!(data.get("file_name").is_some(), "Data must have 'file_name' field");
+    assert!(data.get("file_size").is_some(), "Data must have 'file_size' field");
+    assert!(data.get("processing_time_ms").is_some(), "Data must have 'processing_time_ms' field");
+    assert!(data.get("confidence").is_some(), "Data must have 'confidence' field");
 }
 
 #[tokio::test]
@@ -81,39 +54,18 @@ async fn test_cli_output_contract_error_structure() {
     let json = error.to_json_output();
 
     // Validate required fields exist
-    assert!(
-        json.get("success").is_some(),
-        "Output must have 'success' field"
-    );
-    assert!(
-        json.get("error").is_some(),
-        "Error output must have 'error' field"
-    );
-    assert!(
-        json.get("data").is_none(),
-        "Error output must not have 'data' field"
-    );
+    assert!(json.get("success").is_some(), "Output must have 'success' field");
+    assert!(json.get("error").is_some(), "Error output must have 'error' field");
+    assert!(json.get("data").is_none(), "Error output must not have 'data' field");
 
     // Validate success field value
-    assert!(
-        !json.get("success").unwrap().as_bool().unwrap(),
-        "Success field must be false for error output"
-    );
+    assert!(!json.get("success").unwrap().as_bool().unwrap(), "Success field must be false for error output");
 
     // Validate error structure
     let error_obj = json.get("error").unwrap();
-    assert!(
-        error_obj.get("type").is_some(),
-        "Error must have 'type' field"
-    );
-    assert!(
-        error_obj.get("message").is_some(),
-        "Error must have 'message' field"
-    );
-    assert!(
-        error_obj.get("details").is_some(),
-        "Error must have 'details' field"
-    );
+    assert!(error_obj.get("type").is_some(), "Error must have 'type' field");
+    assert!(error_obj.get("message").is_some(), "Error must have 'message' field");
+    assert!(error_obj.get("details").is_some(), "Error must have 'details' field");
 }
 
 #[tokio::test]
@@ -134,38 +86,18 @@ async fn test_cli_output_contract_success_data_fields() {
     let data = json.get("data").unwrap();
 
     // Validate field types
-    assert!(
-        data.get("extracted_text").unwrap().is_string(),
-        "extracted_text must be string"
-    );
-    assert!(
-        data.get("file_name").unwrap().is_string(),
-        "file_name must be string"
-    );
-    assert!(
-        data.get("file_size").unwrap().is_number(),
-        "file_size must be number"
-    );
-    assert!(
-        data.get("processing_time_ms").unwrap().is_number(),
-        "processing_time_ms must be number"
-    );
-    assert!(
-        data.get("confidence").unwrap().is_null(),
-        "confidence should be null (hardcoded in to_json_output)"
-    );
+    assert!(data.get("extracted_text").unwrap().is_string(), "extracted_text must be string");
+    assert!(data.get("file_name").unwrap().is_string(), "file_name must be string");
+    assert!(data.get("file_size").unwrap().is_number(), "file_size must be number");
+    assert!(data.get("processing_time_ms").unwrap().is_number(), "processing_time_ms must be number");
+    assert!(data.get("confidence").unwrap().is_null(), "confidence should be null (hardcoded in to_json_output)");
 
     // Validate field values
-    assert_eq!(
-        data.get("extracted_text").unwrap().as_str().unwrap(),
-        "Sample text"
-    );
+    assert_eq!(data.get("extracted_text").unwrap().as_str().unwrap(), "Sample text");
     assert_eq!(data.get("file_name").unwrap().as_str().unwrap(), "test.pdf");
     assert_eq!(data.get("file_size").unwrap().as_u64().unwrap(), 1024);
-    assert_eq!(
-        data.get("processing_time_ms").unwrap().as_u64().unwrap(),
-        2000
-    ); // get_processing_time_ms() returns 2000
+    assert_eq!(data.get("processing_time_ms").unwrap().as_u64().unwrap(), 2000);
+    // get_processing_time_ms() returns 2000
 }
 
 #[tokio::test]
@@ -180,10 +112,7 @@ async fn test_cli_output_contract_error_type_enum() {
     // Test validation error
     let json = validation_error.to_json_output();
     let error_obj = json.get("error").unwrap();
-    assert_eq!(
-        error_obj.get("type").unwrap().as_str().unwrap(),
-        "validation"
-    );
+    assert_eq!(error_obj.get("type").unwrap().as_str().unwrap(), "validation");
 
     // Test API error
     let json = api_error.to_json_output();
@@ -219,10 +148,7 @@ async fn test_cli_output_contract_optional_fields() {
     let json = ocr_result_with_confidence.to_json_output();
     let data = json.get("data").unwrap();
     // Note: to_json_output() always returns null for confidence regardless of the struct field
-    assert!(
-        data.get("confidence").unwrap().is_null(),
-        "Confidence should be null (hardcoded in to_json_output)"
-    );
+    assert!(data.get("confidence").unwrap().is_null(), "Confidence should be null (hardcoded in to_json_output)");
 
     // Test with confidence not provided
     let ocr_result_without_confidence = OCRResult {
@@ -237,10 +163,7 @@ async fn test_cli_output_contract_optional_fields() {
 
     let json = ocr_result_without_confidence.to_json_output();
     let data = json.get("data").unwrap();
-    assert!(
-        data.get("confidence").unwrap().is_null(),
-        "Confidence should be null (hardcoded in to_json_output)"
-    );
+    assert!(data.get("confidence").unwrap().is_null(), "Confidence should be null (hardcoded in to_json_output)");
 }
 
 #[tokio::test]
@@ -266,10 +189,7 @@ async fn test_cli_output_contract_validation() {
     assert!(json.get("data").is_some(), "Must have data field");
 
     // Validate that success is boolean
-    assert!(
-        json.get("success").unwrap().is_boolean(),
-        "Success must be boolean"
-    );
+    assert!(json.get("success").unwrap().is_boolean(), "Success must be boolean");
 
     // Validate that data is object
     assert!(json.get("data").unwrap().is_object(), "Data must be object");

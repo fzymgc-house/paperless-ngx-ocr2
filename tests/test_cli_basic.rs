@@ -22,9 +22,7 @@ async fn test_cli_smoke_help_command() {
     cmd.arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains(
-            "A command-line tool for extracting text",
-        ))
+        .stdout(predicate::str::contains("A command-line tool for extracting text"))
         .stdout(predicate::str::contains("--file"))
         .stdout(predicate::str::contains("--api-key"))
         .stdout(predicate::str::contains("--json"))
@@ -38,11 +36,7 @@ async fn test_cli_smoke_version_command() {
 
     let mut cmd = cli::create_test_command();
 
-    cmd.arg("--version")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("paperless-ngx-ocr2"))
-        .stdout(predicate::str::contains("0.1.0"));
+    cmd.arg("--version").assert().success().stdout(predicate::str::contains("paperless-ngx-ocr2")).stdout(predicate::str::contains("0.1.0"));
 }
 
 #[tokio::test]
@@ -123,12 +117,8 @@ async fn test_cli_file_argument_valid_pdf() {
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Should fail with network error, not validation error
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Should fail with network error, not validation error
+                                                                        // Automatic cleanup on drop
 }
 
 #[tokio::test]
@@ -141,10 +131,6 @@ async fn test_cli_file_argument_valid_image() {
     let config = presets::invalid_api_key();
     let mut cmd = cli::create_configured_command(&config);
 
-    cmd.arg("--file")
-        .arg(test_file.path())
-        .assert()
-        .failure()
-        .code(5); // Should fail with network error, not validation error
-                  // Automatic cleanup on drop
+    cmd.arg("--file").arg(test_file.path()).assert().failure().code(5); // Should fail with network error, not validation error
+                                                                        // Automatic cleanup on drop
 }

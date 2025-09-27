@@ -15,10 +15,7 @@ pub mod performance;
 // Re-export commonly used utilities
 pub use config::{presets, TestConfig};
 pub use contracts::{validate_json_contract, ContractType};
-pub use fixtures::{
-    create_corrupted_pdf, create_invalid_file, create_large_test_pdf, create_test_pdf,
-    create_test_png, TestFile,
-};
+pub use fixtures::{create_corrupted_pdf, create_invalid_file, create_large_test_pdf, create_test_pdf, create_test_png, TestFile};
 pub use performance::{measure_performance, measure_performance_async, stress, Benchmark};
 
 /// Test utilities for temporary file management
@@ -43,9 +40,7 @@ pub mod temp_files {
     pub fn create_temp_png() -> TestFile {
         let mut temp_file = NamedTempFile::new().unwrap();
         // Minimal PNG header
-        temp_file
-            .write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
-            .unwrap();
+        temp_file.write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
         let path = temp_file.path().with_extension("png");
         fs::copy(temp_file.path(), &path).unwrap();
         TestFile::new(path)
@@ -90,9 +85,7 @@ pub mod env {
     impl TestEnv {
         /// Creates a new test environment manager
         pub fn new() -> Self {
-            Self {
-                original_values: HashMap::new(),
-            }
+            Self { original_values: HashMap::new() }
         }
 
         /// Sets an environment variable, remembering the original value

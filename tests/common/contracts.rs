@@ -29,9 +29,7 @@ pub fn validate_cli_output_contract(json: &Value) -> Result<(), String> {
 
 /// Validates the success data structure
 fn validate_success_data(json: &Value) -> Result<(), String> {
-    let data = json
-        .get("data")
-        .ok_or("Missing 'data' field for success response")?;
+    let data = json.get("data").ok_or("Missing 'data' field for success response")?;
 
     if !data.is_object() {
         return Err("'data' field must be an object".to_string());
@@ -80,9 +78,7 @@ fn validate_success_data(json: &Value) -> Result<(), String> {
 
 /// Validates the error data structure
 fn validate_error_data(json: &Value) -> Result<(), String> {
-    let error = json
-        .get("error")
-        .ok_or("Missing 'error' field for error response")?;
+    let error = json.get("error").ok_or("Missing 'error' field for error response")?;
 
     if !error.is_object() {
         return Err("'error' field must be an object".to_string());
@@ -98,15 +94,9 @@ fn validate_error_data(json: &Value) -> Result<(), String> {
 
     // Validate error type enum
     let error_type = error.get("type").unwrap().as_str().unwrap_or("");
-    let valid_types: HashSet<&str> = ["validation", "network", "api", "file_io", "internal"]
-        .iter()
-        .cloned()
-        .collect();
+    let valid_types: HashSet<&str> = ["validation", "network", "api", "file_io", "internal"].iter().cloned().collect();
     if !valid_types.contains(error_type) {
-        return Err(format!(
-            "Invalid error type '{}'. Must be one of: {:?}",
-            error_type, valid_types
-        ));
+        return Err(format!("Invalid error type '{}'. Must be one of: {:?}", error_type, valid_types));
     }
 
     // Validate field types
@@ -241,15 +231,9 @@ pub fn validate_file_upload_response_contract(json: &Value) -> Result<(), String
             return Err("'status' field must be a string".to_string());
         }
         let status_value = status.as_str().unwrap_or("");
-        let valid_statuses: HashSet<&str> = ["uploaded", "processing", "processed", "error"]
-            .iter()
-            .cloned()
-            .collect();
+        let valid_statuses: HashSet<&str> = ["uploaded", "processing", "processed", "error"].iter().cloned().collect();
         if !valid_statuses.contains(status_value) {
-            return Err(format!(
-                "Invalid status '{}'. Must be one of: {:?}",
-                status_value, valid_statuses
-            ));
+            return Err(format!("Invalid status '{}'. Must be one of: {:?}", status_value, valid_statuses));
         }
     }
 
@@ -269,10 +253,7 @@ pub fn validate_ocr_request_contract(json: &Value) -> Result<(), String> {
     // Validate model field
     let model = json.get("model").unwrap().as_str().unwrap_or("");
     if model != "mistral-ocr-latest" {
-        return Err(format!(
-            "Invalid model '{}'. Must be 'mistral-ocr-latest'",
-            model
-        ));
+        return Err(format!("Invalid model '{}'. Must be 'mistral-ocr-latest'", model));
     }
 
     // Validate document structure
@@ -291,10 +272,7 @@ pub fn validate_ocr_request_contract(json: &Value) -> Result<(), String> {
     // Validate document type
     let doc_type = document.get("type").unwrap().as_str().unwrap_or("");
     if doc_type != "file" {
-        return Err(format!(
-            "Invalid document type '{}'. Must be 'file'",
-            doc_type
-        ));
+        return Err(format!("Invalid document type '{}'. Must be 'file'", doc_type));
     }
 
     Ok(())
@@ -334,10 +312,7 @@ pub fn validate_ocr_response_contract(json: &Value) -> Result<(), String> {
     // Validate object enum
     let object = json.get("object").unwrap().as_str().unwrap_or("");
     if object != "chat.completion" {
-        return Err(format!(
-            "Invalid object '{}'. Must be 'chat.completion'",
-            object
-        ));
+        return Err(format!("Invalid object '{}'. Must be 'chat.completion'", object));
     }
 
     // Validate choices array
@@ -363,10 +338,7 @@ fn validate_choice_item(choice: &Value, index: usize) -> Result<(), String> {
     let required_fields = ["index", "message", "finish_reason"];
     for field in &required_fields {
         if choice.get(field).is_none() {
-            return Err(format!(
-                "Missing required field 'choices[{}].{}'",
-                index, field
-            ));
+            return Err(format!("Missing required field 'choices[{}].{}'", index, field));
         }
     }
 
@@ -379,33 +351,21 @@ fn validate_choice_item(choice: &Value, index: usize) -> Result<(), String> {
     let msg_required_fields = ["role", "content"];
     for field in &msg_required_fields {
         if message.get(field).is_none() {
-            return Err(format!(
-                "Missing required field 'choices[{}].message.{}'",
-                index, field
-            ));
+            return Err(format!("Missing required field 'choices[{}].message.{}'", index, field));
         }
     }
 
     // Validate role
     let role = message.get("role").unwrap().as_str().unwrap_or("");
     if role != "assistant" {
-        return Err(format!(
-            "Invalid role '{}' in choice {}. Must be 'assistant'",
-            role, index
-        ));
+        return Err(format!("Invalid role '{}' in choice {}. Must be 'assistant'", role, index));
     }
 
     // Validate finish_reason
     let finish_reason = choice.get("finish_reason").unwrap().as_str().unwrap_or("");
-    let valid_reasons: HashSet<&str> = ["stop", "length", "content_filter"]
-        .iter()
-        .cloned()
-        .collect();
+    let valid_reasons: HashSet<&str> = ["stop", "length", "content_filter"].iter().cloned().collect();
     if !valid_reasons.contains(finish_reason) {
-        return Err(format!(
-            "Invalid finish_reason '{}' in choice {}. Must be one of: {:?}",
-            finish_reason, index, valid_reasons
-        ));
+        return Err(format!("Invalid finish_reason '{}' in choice {}. Must be one of: {:?}", finish_reason, index, valid_reasons));
     }
 
     Ok(())

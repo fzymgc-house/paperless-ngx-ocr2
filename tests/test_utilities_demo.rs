@@ -117,13 +117,10 @@ async fn test_comprehensive_utility_demonstration() {
     assert!(elapsed < Duration::from_millis(100));
 
     // Test benchmarking
-    let benchmark_results = Benchmark::new("demo_benchmark")
-        .iterations(50)
-        .warmup_iterations(5)
-        .run(|| {
-            // Simulate some work
-            std::thread::sleep(Duration::from_micros(100));
-        });
+    let benchmark_results = Benchmark::new("demo_benchmark").iterations(50).warmup_iterations(5).run(|| {
+        // Simulate some work
+        std::thread::sleep(Duration::from_micros(100));
+    });
 
     // Verify benchmark results
     assert!(benchmark_results.iterations > 0);
@@ -236,19 +233,14 @@ fn test_utility_combinations() {
     // Combine file utilities with performance testing
     let _test_file = create_test_pdf("Combination test");
 
-    let results = Benchmark::new("file_creation_benchmark")
-        .iterations(10)
-        .run(|| {
-            let _temp_file = create_test_pdf("Benchmark content");
-        });
+    let results = Benchmark::new("file_creation_benchmark").iterations(10).run(|| {
+        let _temp_file = create_test_pdf("Benchmark content");
+    });
 
     results.assert_avg_time_less_than(Duration::from_millis(100));
 
     // Combine configuration with contract validation
-    let config = TestConfig::new()
-        .with_api_key("test-key")
-        .with_json_output(true)
-        .with_verbose(true);
+    let config = TestConfig::new().with_api_key("test-key").with_json_output(true).with_verbose(true);
 
     let _cmd = cli::create_configured_command(&config);
 

@@ -31,22 +31,8 @@ pub struct OCRResult {
 
 impl OCRResult {
     /// Create a new OCRResult
-    pub fn new(
-        extracted_text: String,
-        file_id: String,
-        model: String,
-        file_name: String,
-        file_size: u64,
-    ) -> Self {
-        Self {
-            extracted_text,
-            file_id,
-            model,
-            usage: None,
-            file_name,
-            file_size,
-            timestamp: Utc::now(),
-        }
+    pub fn new(extracted_text: String, file_id: String, model: String, file_name: String, file_size: u64) -> Self {
+        Self { extracted_text, file_id, model, usage: None, file_name, file_size, timestamp: Utc::now() }
     }
 
     /// Create OCRResult from extracted text and metadata
@@ -58,15 +44,7 @@ impl OCRResult {
         file_size: u64,
         usage: Option<HashMap<String, i64>>,
     ) -> Self {
-        Self {
-            extracted_text,
-            file_id,
-            model,
-            usage,
-            file_name,
-            file_size,
-            timestamp: Utc::now(),
-        }
+        Self { extracted_text, file_id, model, usage, file_name, file_size, timestamp: Utc::now() }
     }
 
     /// Validate OCR result according to data model rules
@@ -114,14 +92,10 @@ impl OCRResult {
         if self.is_empty_text() {
             format!(
                 "Warning: No text could be extracted from {} ({} bytes). The file may contain only images without text, or the text may not be readable.",
-                self.file_name,
-                self.file_size
+                self.file_name, self.file_size
             )
         } else {
-            format!(
-                "Extracted text from {} ({} bytes):\n\n{}",
-                self.file_name, self.file_size, self.extracted_text
-            )
+            format!("Extracted text from {} ({} bytes):\n\n{}", self.file_name, self.file_size, self.extracted_text)
         }
     }
 

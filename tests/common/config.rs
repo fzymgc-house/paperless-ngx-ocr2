@@ -89,10 +89,7 @@ impl TestConfig {
             .arg("--api-base-url")
             .arg(&self.api_base_url)
             .env("PAPERLESS_OCR_TIMEOUT", self.timeout_seconds.to_string())
-            .env(
-                "PAPERLESS_OCR_MAX_FILE_SIZE",
-                self.max_file_size_mb.to_string(),
-            )
+            .env("PAPERLESS_OCR_MAX_FILE_SIZE", self.max_file_size_mb.to_string())
             .env("PAPERLESS_OCR_LOG_LEVEL", &self.log_level);
 
         if self.json_output {
@@ -108,22 +105,10 @@ impl TestConfig {
     pub fn to_env_vars(&self) -> HashMap<String, String> {
         let mut vars = HashMap::new();
         vars.insert("PAPERLESS_OCR_API_KEY".to_string(), self.api_key.clone());
-        vars.insert(
-            "PAPERLESS_OCR_API_BASE_URL".to_string(),
-            self.api_base_url.clone(),
-        );
-        vars.insert(
-            "PAPERLESS_OCR_TIMEOUT".to_string(),
-            self.timeout_seconds.to_string(),
-        );
-        vars.insert(
-            "PAPERLESS_OCR_MAX_FILE_SIZE".to_string(),
-            self.max_file_size_mb.to_string(),
-        );
-        vars.insert(
-            "PAPERLESS_OCR_LOG_LEVEL".to_string(),
-            self.log_level.clone(),
-        );
+        vars.insert("PAPERLESS_OCR_API_BASE_URL".to_string(), self.api_base_url.clone());
+        vars.insert("PAPERLESS_OCR_TIMEOUT".to_string(), self.timeout_seconds.to_string());
+        vars.insert("PAPERLESS_OCR_MAX_FILE_SIZE".to_string(), self.max_file_size_mb.to_string());
+        vars.insert("PAPERLESS_OCR_LOG_LEVEL".to_string(), self.log_level.clone());
         vars
     }
 }
@@ -164,9 +149,7 @@ pub mod presets {
 
     /// Configuration for testing network timeouts
     pub fn network_timeout() -> TestConfig {
-        TestConfig::new()
-            .with_timeout(2)
-            .with_api_base_url("https://httpbin.org/delay/10")
+        TestConfig::new().with_timeout(2).with_api_base_url("https://httpbin.org/delay/10")
     }
 
     /// Configuration for testing invalid endpoints
@@ -188,9 +171,7 @@ pub struct TestConfigBuilder {
 impl TestConfigBuilder {
     /// Creates a new builder with default configuration
     pub fn new() -> Self {
-        Self {
-            config: TestConfig::default(),
-        }
+        Self { config: TestConfig::default() }
     }
 
     /// Sets the API key
@@ -261,11 +242,7 @@ mod tests {
 
     #[test]
     fn test_config_builder() {
-        let config = TestConfigBuilder::new()
-            .api_key("custom-key")
-            .timeout(60)
-            .json_output(true)
-            .build();
+        let config = TestConfigBuilder::new().api_key("custom-key").timeout(60).json_output(true).build();
 
         assert_eq!(config.api_key, "custom-key");
         assert_eq!(config.timeout_seconds, 60);
@@ -289,13 +266,7 @@ mod tests {
         let config = TestConfig::new().with_api_key("test-key").with_timeout(45);
 
         let env_vars = config.to_env_vars();
-        assert_eq!(
-            env_vars.get("PAPERLESS_OCR_API_KEY"),
-            Some(&"test-key".to_string())
-        );
-        assert_eq!(
-            env_vars.get("PAPERLESS_OCR_TIMEOUT"),
-            Some(&"45".to_string())
-        );
+        assert_eq!(env_vars.get("PAPERLESS_OCR_API_KEY"), Some(&"test-key".to_string()));
+        assert_eq!(env_vars.get("PAPERLESS_OCR_TIMEOUT"), Some(&"45".to_string()));
     }
 }
