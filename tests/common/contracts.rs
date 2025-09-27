@@ -3,6 +3,8 @@
 //! This module provides utilities for validating API contracts and CLI output
 //! against expected schemas and formats.
 
+#![allow(dead_code)]
+
 use serde_json::Value;
 use std::collections::HashSet;
 

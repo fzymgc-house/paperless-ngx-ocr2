@@ -1,6 +1,7 @@
 # Contributing to paperless-ngx-ocr2
 
-Thank you for your interest in contributing to paperless-ngx-ocr2! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to paperless-ngx-ocr2! This
+document provides guidelines for contributing to the project.
 
 ## Development Setup
 
@@ -62,13 +63,13 @@ pre-commit run --all-files
 
 # Run hooks on staged files only
 pre-commit run
-```
+```bash
 
 ### Commit Messages
 
 Follow conventional commit format:
 
-```
+```text
 type(scope): description
 
 [optional body]
@@ -88,7 +89,7 @@ Types:
 
 Examples:
 
-```
+```text
 feat(cli): add support for batch processing
 fix(api): handle rate limit errors gracefully
 docs(readme): update installation instructions
@@ -143,13 +144,15 @@ cargo test -- --nocapture
 
 # Run tests with coverage (if tarpaulin is installed)
 cargo tarpaulin --out html
-```
+```bash
 
 #### Test Categories
 
 - **Unit tests**: Test individual functions and modules
-- **Integration tests**: Test CLI functionality and API contracts
-- **Performance tests**: Test memory usage and large file handling
+- **Integration tests**: Test CLI functionality and API
+  contracts
+- **Performance tests**: Test memory usage and large file
+  handling
 - **Container tests**: Test Docker functionality
 
 #### Writing Tests

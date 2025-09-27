@@ -126,7 +126,7 @@ for file in "$INPUT_DIR"/*; do
         extension="${extension,,}"  # Convert to lowercase
 
         # Check if file extension is supported
-        if [[ " ${SUPPORTED_EXTENSIONS[*]} " =~ " ${extension} " ]]; then
+        if [[ " ${SUPPORTED_EXTENSIONS[*]} " =~ ${extension} ]]; then
             echo "Processing: $(basename "$file")"
 
             # Build output file path if output directory is specified

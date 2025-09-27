@@ -2,15 +2,16 @@
 
 mod common;
 
-use paperless_ngx_ocr2::{FileUpload, Error};
 use common::*;
+use paperless_ngx_ocr2::{Error, FileUpload};
 
 #[test]
 fn test_file_upload_new_valid_pdf() {
     // Use TestFile helper for automatic cleanup
     let test_file = create_test_pdf("Test content");
 
-    let file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload for valid PDF");
+    let file_upload =
+        FileUpload::new(test_file.path()).expect("Should create FileUpload for valid PDF");
 
     assert_eq!(file_upload.mime_type, "application/pdf");
     assert!(file_upload.is_valid);
@@ -23,8 +24,8 @@ fn test_file_upload_new_valid_pdf() {
 fn test_file_upload_new_valid_png() {
     // Use fixture helper for better type safety
     let fixture = fixtures::fixtures::sample_png();
-    let file_upload = FileUpload::new(fixture.path_str())
-        .expect("Should create FileUpload for valid PNG");
+    let file_upload =
+        FileUpload::new(fixture.path_str()).expect("Should create FileUpload for valid PNG");
 
     assert_eq!(file_upload.mime_type, "image/png");
     assert!(file_upload.is_valid);
@@ -112,15 +113,14 @@ fn test_file_upload_set_upload_status() {
     // Test invalid status (should be ignored)
     file_upload.set_upload_status("invalid_status".to_string());
     assert_eq!(file_upload.upload_status, Some("uploaded".to_string())); // Should remain unchanged
-    // Automatic cleanup on drop
+                                                                         // Automatic cleanup on drop
 }
 
 #[test]
 fn test_file_upload_read_file_data() {
     // Use fixture for stable test data
     let fixture = fixtures::fixtures::sample_pdf();
-    let file_upload = FileUpload::new(fixture.path_str())
-        .expect("Should create FileUpload");
+    let file_upload = FileUpload::new(fixture.path_str()).expect("Should create FileUpload");
 
     let file_data = file_upload.read_file_data().expect("Should read file data");
 
@@ -131,8 +131,7 @@ fn test_file_upload_read_file_data() {
 #[test]
 fn test_file_upload_get_filename() {
     let fixture = fixtures::fixtures::sample_pdf();
-    let file_upload = FileUpload::new(fixture.path_str())
-        .expect("Should create FileUpload");
+    let file_upload = FileUpload::new(fixture.path_str()).expect("Should create FileUpload");
 
     assert_eq!(file_upload.get_filename(), "sample.pdf");
 }

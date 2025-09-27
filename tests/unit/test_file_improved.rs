@@ -6,16 +6,16 @@
 
 mod common;
 
-use paperless_ngx_ocr2::{FileUpload, Error};
 use common::*;
+use paperless_ngx_ocr2::{Error, FileUpload};
 
 #[test]
 fn test_file_upload_new_valid_pdf() {
     // Use TestFile helper for automatic cleanup
     let test_file = create_test_pdf("Test content");
 
-    let file_upload = FileUpload::new(test_file.path())
-        .expect("Should create FileUpload for valid PDF");
+    let file_upload =
+        FileUpload::new(test_file.path()).expect("Should create FileUpload for valid PDF");
 
     assert_eq!(file_upload.mime_type, "application/pdf");
     assert!(file_upload.is_valid);
@@ -28,8 +28,8 @@ fn test_file_upload_new_valid_pdf() {
 fn test_file_upload_new_valid_png() {
     // Use fixture for stable test data
     let fixture = fixtures::sample_png();
-    let file_upload = FileUpload::new(fixture.path_str())
-        .expect("Should create FileUpload for valid PNG");
+    let file_upload =
+        FileUpload::new(fixture.path_str()).expect("Should create FileUpload for valid PNG");
 
     assert_eq!(file_upload.mime_type, "image/png");
     assert!(file_upload.is_valid);
@@ -70,8 +70,7 @@ fn test_file_upload_validate_file_size() {
     // Use TestFile for temporary content
     let test_file = create_test_pdf("Small file content");
 
-    let file_upload = FileUpload::new(test_file.path())
-        .expect("Should create FileUpload");
+    let file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
 
     // File should be valid (small size)
     assert!(file_upload.validate_file().is_ok());
@@ -81,8 +80,7 @@ fn test_file_upload_validate_file_size() {
 fn test_file_upload_magic_bytes_validation() {
     // Test PDF magic bytes with TestFile
     let pdf_file = create_test_pdf("Valid PDF content");
-    let pdf_upload = FileUpload::new(pdf_file.path())
-        .expect("Should validate PDF magic bytes");
+    let pdf_upload = FileUpload::new(pdf_file.path()).expect("Should validate PDF magic bytes");
     assert!(pdf_upload.is_valid);
 
     // Test invalid magic bytes with corrupted file
@@ -94,8 +92,7 @@ fn test_file_upload_magic_bytes_validation() {
 #[test]
 fn test_file_upload_set_file_id() {
     let test_file = create_test_pdf("Test content");
-    let mut file_upload = FileUpload::new(test_file.path())
-        .expect("Should create FileUpload");
+    let mut file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
 
     assert!(file_upload.file_id.is_none());
 
@@ -106,8 +103,7 @@ fn test_file_upload_set_file_id() {
 #[test]
 fn test_file_upload_set_upload_status() {
     let test_file = create_test_pdf("Test content");
-    let mut file_upload = FileUpload::new(test_file.path())
-        .expect("Should create FileUpload");
+    let mut file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
 
     // Test valid status
     file_upload.set_upload_status("uploaded".to_string());
@@ -122,11 +118,9 @@ fn test_file_upload_set_upload_status() {
 fn test_file_upload_read_file_data() {
     // Use fixture for stable test data
     let fixture = fixtures::sample_pdf();
-    let file_upload = FileUpload::new(fixture.path_str())
-        .expect("Should create FileUpload");
+    let file_upload = FileUpload::new(fixture.path_str()).expect("Should create FileUpload");
 
-    let file_data = file_upload.read_file_data()
-        .expect("Should read file data");
+    let file_data = file_upload.read_file_data().expect("Should read file data");
 
     assert!(!file_data.is_empty());
     assert!(file_data.starts_with(b"%PDF"));
@@ -135,8 +129,7 @@ fn test_file_upload_read_file_data() {
 #[test]
 fn test_file_upload_get_filename() {
     let fixture = fixtures::sample_pdf();
-    let file_upload = FileUpload::new(fixture.path_str())
-        .expect("Should create FileUpload");
+    let file_upload = FileUpload::new(fixture.path_str()).expect("Should create FileUpload");
 
     assert_eq!(file_upload.get_filename(), "sample.pdf");
 }
@@ -148,8 +141,7 @@ fn test_file_validation_performance() {
 
     // Measure file validation performance
     measure_performance("file_validation", Duration::from_millis(100), || {
-        let _file_upload = FileUpload::new(test_file.path())
-            .expect("Should create FileUpload");
+        let _file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
     });
 }
 
@@ -162,8 +154,7 @@ fn test_file_validation_benchmark() {
         .iterations(100)
         .warmup_iterations(10)
         .run(|| {
-            let _file_upload = FileUpload::new(test_file.path())
-                .expect("Should create FileUpload");
+            let _file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
         });
 
     // Assert performance requirements
@@ -178,8 +169,8 @@ fn test_large_file_performance() {
 
     // Test that validation is still fast for larger files
     measure_performance("large_file_validation", Duration::from_millis(200), || {
-        let _file_upload = FileUpload::new(large_file.path())
-            .expect("Should create FileUpload for large file");
+        let _file_upload =
+            FileUpload::new(large_file.path()).expect("Should create FileUpload for large file");
     });
 }
 
@@ -189,14 +180,12 @@ fn test_memory_usage_with_file_validation() {
 
     // Reset memory tracking
     reset_memory_tracking();
-    let memory_test = MemoryTest::new()
-        .with_max_increase(1024 * 1024); // 1MB max increase
+    let memory_test = MemoryTest::new().with_max_increase(1024 * 1024); // 1MB max increase
 
     // Create and validate multiple files
     for _ in 0..10 {
         let test_file = create_test_pdf("Memory test content");
-        let _file_upload = FileUpload::new(test_file.path())
-            .expect("Should create FileUpload");
+        let _file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
     }
 
     // Assert memory usage is within limits
@@ -209,8 +198,7 @@ fn test_file_validation_stress() {
 
     // Run stress test for file validation
     let results = stress::stress_test("file_validation_stress", 100, || {
-        let _file_upload = FileUpload::new(test_file.path())
-            .expect("Should create FileUpload");
+        let _file_upload = FileUpload::new(test_file.path()).expect("Should create FileUpload");
     });
 
     // Assert stress test results
@@ -231,8 +219,8 @@ fn test_multiple_file_types_performance() {
             .iterations(50)
             .warmup_iterations(5)
             .run(|| {
-                let _file_upload = FileUpload::new(test_file.path())
-                    .expect("Should create FileUpload");
+                let _file_upload =
+                    FileUpload::new(test_file.path()).expect("Should create FileUpload");
             });
 
         // All file types should validate quickly

@@ -1,17 +1,26 @@
 # paperless-ngx-ocr2
 
-A command-line tool for extracting text from PDF and image files using Mistral AI's OCR capabilities. Supports TOML configuration, 12-factor app principles, and provides both human-readable and JSON output formats.
+A command-line tool for extracting text from PDF and image files using
+Mistral AI's OCR capabilities. Supports TOML configuration, 12-factor app
+principles, and provides both human-readable and JSON output formats.
 
 ## Features
 
 - **Multi-format Support**: Process PDF, PNG, JPEG, and JPG files
-- **Mistral AI Integration**: Leverages Mistral AI's advanced OCR capabilities
-- **Flexible Configuration**: TOML config files, environment variables, and CLI arguments
-- **12-Factor App**: Follows 12-factor app principles for configuration management
-- **Multiple Output Formats**: Human-readable text or structured JSON output
-- **Robust Error Handling**: Comprehensive error handling with constitutional exit codes
-- **Retry Logic**: Automatic retry with exponential backoff for rate limits
-- **Security Features**: Password-protected PDF detection and API key redaction
+- **Mistral AI Integration**: Leverages Mistral AI's advanced OCR
+  capabilities
+- **Flexible Configuration**: TOML config files, environment variables,
+  and CLI arguments
+- **12-Factor App**: Follows 12-factor app principles for
+  configuration management
+- **Multiple Output Formats**: Human-readable text or structured
+  JSON output
+- **Robust Error Handling**: Comprehensive error handling with
+  constitutional exit codes
+- **Retry Logic**: Automatic retry with exponential backoff for
+  rate limits
+- **Security Features**: Password-protected PDF detection and API
+  key redaction
 - **Cross-Platform**: Works on macOS and Linux
 - **Containerized**: Docker support with multi-architecture builds
 
@@ -149,7 +158,7 @@ paperless-ngx-ocr2 --generate-completions bash > paperless-ngx-ocr2.bash
 
 ### Command Line Options
 
-```
+```text
 USAGE:
     paperless-ngx-ocr2 [OPTIONS] --file <FILE>
 
@@ -213,7 +222,7 @@ paperless-ngx-ocr2 --generate-completions powershell > paperless-ngx-ocr2.ps1
 source paperless-ngx-ocr2.bash  # For bash
 source paperless-ngx-ocr2.zsh   # For zsh
 source paperless-ngx-ocr2.fish  # For fish
-```
+```bash
 
 ## Development
 

@@ -6,10 +6,10 @@ FROM rust:1.84-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
-    musl-dev \
-    openssl-dev \
-    openssl-libs-static \
-    pkgconfig
+    musl-dev=1.2.4-r6 \
+    openssl-dev=3.1.4-r5 \
+    openssl-libs-static=3.1.4-r5 \
+    pkgconfig=1.8.1-r0
 
 # Set up working directory
 WORKDIR /app
@@ -42,8 +42,8 @@ FROM alpine:3.19 AS runtime
 
 # Install runtime dependencies
 RUN apk add --no-cache \
-    ca-certificates \
-    tzdata
+    ca-certificates=20240226-r0 \
+    tzdata=2024a-r0
 
 # Create non-root user
 RUN addgroup -g 1000 ocr && \

@@ -3,6 +3,8 @@
 //! This module provides utilities for measuring and validating performance
 //! in tests, including timing constraints and memory usage monitoring.
 
+#![allow(dead_code)]
+
 use std::time::{Duration, Instant};
 
 /// A performance test that validates execution time

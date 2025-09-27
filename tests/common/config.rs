@@ -3,6 +3,8 @@
 //! This module provides utilities for managing test configurations,
 //! including API keys, endpoints, and other test-specific settings.
 
+#![allow(dead_code)]
+
 use assert_cmd::Command;
 use std::collections::HashMap;
 

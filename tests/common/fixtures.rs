@@ -3,6 +3,8 @@
 //! This module provides utilities for creating and managing test files,
 //! both temporary and fixture-based.
 
+#![allow(dead_code)]
+
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};

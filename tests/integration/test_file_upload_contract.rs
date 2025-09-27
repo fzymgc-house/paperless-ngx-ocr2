@@ -3,8 +3,8 @@
 
 mod common;
 
-use paperless_ngx_ocr2::api::files::FileUploadRequest;
 use common::*;
+use paperless_ngx_ocr2::api::files::FileUploadRequest;
 
 #[tokio::test]
 async fn test_file_upload_request_contract_structure() {
@@ -25,7 +25,10 @@ async fn test_file_upload_request_contract_structure() {
 
     // Validate required fields exist
     assert!(json.get("file").is_some(), "Request must have 'file' field");
-    assert!(json.get("purpose").is_some(), "Request must have 'purpose' field");
+    assert!(
+        json.get("purpose").is_some(),
+        "Request must have 'purpose' field"
+    );
 
     // Validate purpose field value
     assert_eq!(
@@ -80,11 +83,7 @@ async fn test_file_upload_request_contract_purpose_enum() {
 
     // Validate purpose enum constraint
     let purpose = json.get("purpose").unwrap().as_str().unwrap();
-    assert!(
-        purpose == "ocr",
-        "Purpose must be 'ocr', got '{}'",
-        purpose
-    );
+    assert!(purpose == "ocr", "Purpose must be 'ocr', got '{}'", purpose);
 }
 
 #[tokio::test]
@@ -99,11 +98,16 @@ async fn test_file_upload_request_contract_multipart_format() {
     };
 
     // Test conversion to multipart form
-    let form = request.to_multipart_form().expect("Should convert to multipart form");
+    let form = request
+        .to_multipart_form()
+        .expect("Should convert to multipart form");
 
     // Validate that multipart form contains expected parts
     assert!(form.has_file_part(), "Multipart form must have file part");
-    assert!(form.has_purpose_part(), "Multipart form must have purpose part");
+    assert!(
+        form.has_purpose_part(),
+        "Multipart form must have purpose part"
+    );
 }
 
 #[tokio::test]

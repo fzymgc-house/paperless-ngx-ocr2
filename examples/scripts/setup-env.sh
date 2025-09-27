@@ -147,7 +147,7 @@ load_env_file() {
             if [[ "$EXPORT_MODE" == true ]]; then
                 echo "export $line"
             else
-                export "$line"
+                export "${line?}"
             fi
         else
             print_warning "Invalid line in .env file: $line"

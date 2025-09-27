@@ -2,8 +2,8 @@
 
 mod common;
 
-use predicates::prelude::*;
 use common::*;
+use predicates::prelude::*;
 use std::time::Duration;
 
 #[tokio::test]
@@ -22,11 +22,25 @@ async fn test_network_timeout_handling() {
             .arg(test_file.path())
             .assert()
             .failure()
-            .stderr(predicate::str::contains("timeout").or(predicate::str::contains("network")).or(predicate::str::contains("operation timed out")).or(predicate::str::contains("Server error")).or(predicate::str::contains("503")).or(predicate::str::contains("Error:")).or(predicate::str::contains("error sending request")).or(predicate::str::contains("timed out")).or(predicate::str::contains("unavailable")));
+            .stderr(
+                predicate::str::contains("timeout")
+                    .or(predicate::str::contains("network"))
+                    .or(predicate::str::contains("operation timed out"))
+                    .or(predicate::str::contains("Server error"))
+                    .or(predicate::str::contains("503"))
+                    .or(predicate::str::contains("Error:"))
+                    .or(predicate::str::contains("error sending request"))
+                    .or(predicate::str::contains("timed out"))
+                    .or(predicate::str::contains("unavailable")),
+            );
     });
 
     // Should timeout within reasonable time (not hang indefinitely)
-    assert!(duration.as_secs() < 10, "Command should timeout quickly: {:?}", duration);
+    assert!(
+        duration.as_secs() < 10,
+        "Command should timeout quickly: {:?}",
+        duration
+    );
     // Automatic cleanup on drop
 }
 
@@ -101,14 +115,15 @@ async fn test_api_response_timeout() {
 
     let duration = measure_performance("api_timeout", Duration::from_secs(5), || {
         let mut cmd = cli::create_configured_command(&config);
-        cmd.arg("--file")
-            .arg(test_file.path())
-            .assert()
-            .failure(); // Should fail due to timeout or auth error
+        cmd.arg("--file").arg(test_file.path()).assert().failure(); // Should fail due to timeout or auth error
     });
 
     // Should respect timeout setting (fail within ~1-3 seconds)
-    assert!(duration.as_secs() < 5, "Should respect timeout setting: {:?}", duration);
+    assert!(
+        duration.as_secs() < 5,
+        "Should respect timeout setting: {:?}",
+        duration
+    );
     // Automatic cleanup on drop
 }
 
@@ -162,12 +177,17 @@ async fn test_network_error_categorization() {
 
         let stdout = String::from_utf8(output.stdout).unwrap();
         if let Ok(json) = serde_json::from_str::<serde_json::Value>(&stdout) {
-            if let Some(error_type) = json.get("error").and_then(|e| e.get("type")).and_then(|t| t.as_str()) {
+            if let Some(error_type) = json
+                .get("error")
+                .and_then(|e| e.get("type"))
+                .and_then(|t| t.as_str())
+            {
                 // Note: Some of these might map differently in practice
                 // This test validates that errors are categorized, not specific mappings
                 assert!(
                     error_type == "network" || error_type == "api" || error_type == "internal",
-                    "Error should be properly categorized, got: {}", error_type
+                    "Error should be properly categorized, got: {}",
+                    error_type
                 );
             }
         }
@@ -179,12 +199,13 @@ async fn test_network_error_categorization() {
 #[test]
 fn test_api_key_redaction_in_network_logs() {
     // Test that API keys are redacted in network error logs
-    use paperless_ngx_ocr2::{APICredentials, api::MistralClient};
+    use paperless_ngx_ocr2::{api::MistralClient, APICredentials};
 
     let credentials = APICredentials::new(
         "sk-test123456789abcdef".to_string(),
         "https://api.mistral.ai".to_string(),
-    ).expect("Should create credentials");
+    )
+    .expect("Should create credentials");
 
     let client = MistralClient::new(credentials, 30).expect("Should create client");
 

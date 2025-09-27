@@ -4,6 +4,9 @@
 //! It includes helpers for temporary file management, test configuration,
 //! contract validation, and performance testing.
 
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 pub mod config;
 pub mod contracts;
 pub mod fixtures;

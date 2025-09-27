@@ -38,11 +38,10 @@ repos:
       # Format Rust code
       - id: rustfmt
         name: rustfmt
-        entry: rustfmt
+        entry: bash -c 'rustfmt --edition 2021 --check $@ || rustfmt --edition 2021 $@'
         language: system
         types: [rust]
         pass_filenames: true
-        args: [--edition, "2021"]
         description: Format Rust code with rustfmt
 
       # Check for common Rust issues
@@ -92,21 +91,34 @@ repos:
         files: \.dockerfile$|^Dockerfile.*$
         args: [--ignore, DL3008, --ignore, DL3009]
 
-  # Shell script linting
+  # Shell script linting (excluding third-party/template files)
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
         description: Lint shell scripts
         args: [--severity=warning]
+        exclude: |
+          (?x)^(
+            \.specify/.*|
+            \.cursor/.*|
+            .*template.*
+          )$
 
-  # Markdown linting
+  # Markdown linting (excluding third-party/template/spec files)
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.45.0
     hooks:
       - id: markdownlint
         description: Lint Markdown files
         args: [--fix]
+        exclude: |
+          (?x)^(
+            \.specify/.*|
+            \.cursor/.*|
+            specs/.*|
+            .*template.*
+          )$
 
 # Configuration
 default_stages: [pre-commit]
