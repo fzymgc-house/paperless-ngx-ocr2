@@ -38,7 +38,7 @@ RUN case "$TARGETPLATFORM" in \
     esac
 
 # Runtime stage
-FROM alpine:3.19 AS runtime
+FROM alpine:3.22 AS runtime
 
 # Install runtime dependencies
 RUN apk add --no-cache \
