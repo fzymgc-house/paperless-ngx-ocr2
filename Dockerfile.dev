@@ -1,5 +1,5 @@
 # Development Dockerfile for hot reload
-FROM rust:1.80-slim as builder
+FROM rust:1.96-slim as builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,7 +21,7 @@ COPY build.rs ./
 RUN cargo build --release
 
 # Runtime stage
-FROM rust:1.80-slim
+FROM rust:1.96-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
