@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Renovate configuration for paperless-ngx-ocr2",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":dependencyDashboard",
     ":semanticPrefixFixDepsChoreOthers",
     ":ignoreModulesAndTests"
@@ -13,6 +13,22 @@
   "assignees": ["@fzymgc-house"],
   "reviewers": ["@fzymgc-house"],
   "packageRules": [
+    {
+      "matchCategories": [
+        "rust"
+      ],
+      "enabled": true
+    },
+    {
+      "matchCategories": [
+        "docker"
+      ],
+      "enabled": true,
+      "managerFilePatterns": [
+        "/Dockerfile/",
+        "/docker-compose.yml/"
+      ]
+    },
     {
       "description": "Group Rust dependencies",
       "matchManagers": ["cargo"],
@@ -29,14 +45,22 @@
     },
     {
       "description": "Group GitHub Actions updates",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "groupName": "github actions",
-      "schedule": ["before 6am on monday"]
+      "schedule": [
+        "before 6am on monday"
+      ]
     },
     {
       "description": "Auto-merge patch updates for GitHub Actions",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["patch"],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true
@@ -56,25 +80,21 @@
       }
     }
   ],
-  "rust": {
-    "enabled": true
-  },
   "cargo": {
     "enabled": true,
     "rangeStrategy": "bump"
   },
   "github-actions": {
     "enabled": true,
-    "fileMatch": ["\\.github/workflows/[^/]+\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/\\.github/workflows/[^/]+\\.ya?ml$/"
+    ]
   },
-  "docker": {
-    "enabled": true,
-    "fileMatch": ["Dockerfile", "docker-compose.yml"]
-  },
-  "regexManagers": [
+  "customManagers": [
     {
+      "customType": "regex",
       "description": "Update Rust version in Dockerfile",
-      "fileMatch": ["Dockerfile"],
+      "managerFilePatterns": ["/Dockerfile/"],
       "matchStrings": ["FROM rust:(?<currentValue>.*?)-alpine"],
       "datasourceTemplate": "docker",
       "depNameTemplate": "rust",
