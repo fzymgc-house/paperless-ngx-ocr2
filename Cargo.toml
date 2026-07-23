@@ -16,33 +16,33 @@ path = "src/main.rs"
 
 [dependencies]
 # CLI framework
-clap = { version = "4.4", features = ["derive", "env"] }
+clap = { version = "4.4.18", features = ["derive", "env"] }
 
 # Serialization
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.8"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+toml = "0.8.23"
 
 # Error handling
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "1.0.69"
 
 # Logging
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
 
 # HTTP client
-reqwest = { version = "0.11", features = ["json", "multipart", "stream", "gzip", "brotli", "deflate"] }
-tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.11.27", features = ["json", "multipart", "stream", "gzip", "brotli", "deflate"] }
+tokio = { version = "1.0.3", features = ["full"] }
 
 # File handling
-mime_guess = "2.0"
+mime_guess = "2.0.5"
 
 # Date/time handling
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4.45", features = ["serde"] }
 
 # URL parsing
-url = "2.5"
+url = "2.5.8"
 
 # UUID generation
 uuid = { version = "1.0", features = ["v4"] }
@@ -51,28 +51,28 @@ uuid = { version = "1.0", features = ["v4"] }
 dotenv = "0.15"
 
 # Metrics and lazy initialization
-lazy_static = "1.4"
+lazy_static = "1.5.0"
 
 # Random number generation for retry jitter
 rand = "0.8"
 
 [dev-dependencies]
 # CLI testing
-assert_cmd = "2.0"
-predicates = "3.0"
+assert_cmd = "2.0.17"
+predicates = "3.0.4"
 
 # Test utilities
-tempfile = "3.0"
-wiremock = "0.5"
+tempfile = "3.0.8"
+wiremock = "0.5.22"
 
 # Documentation generation
-clap_mangen = "0.2"
-clap_complete = "4.4"
+clap_mangen = "0.2.33"
+clap_complete = "4.4.10"
 
 [build-dependencies]
-clap = { version = "4.4", features = ["derive"] }
-clap_mangen = "0.2"
-clap_complete = "4.4"
+clap = { version = "4.4.18", features = ["derive"] }
+clap_mangen = "0.2.33"
+clap_complete = "4.4.10"
 
 [profile.release]
 # Optimize for binary size and performance
