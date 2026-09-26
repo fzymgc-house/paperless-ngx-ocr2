@@ -2,7 +2,7 @@
 # Supports multi-architecture builds (AMD64, ARM64)
 
 # Build stage
-FROM rust:1.84-alpine AS builder
+FROM rust:1.98-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -38,7 +38,7 @@ RUN case "$TARGETPLATFORM" in \
     esac
 
 # Runtime stage
-FROM alpine:3.19 AS runtime
+FROM alpine:3.24 AS runtime
 
 # Install runtime dependencies
 RUN apk add --no-cache \
